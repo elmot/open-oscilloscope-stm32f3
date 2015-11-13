@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.usb4java:usb4java-javax:1.2.0">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/usb4java/usb4java-javax/1.2.0/usb4java-javax-1.2.0.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/usb4java/usb4java-javax/1.2.0/usb4java-javax-1.2.0-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/usb4java/usb4java-javax/1.2.0/usb4java-javax-1.2.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
