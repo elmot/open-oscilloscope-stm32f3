@@ -45,12 +45,11 @@
 /** @defgroup usbd_oscill_Exported_Defines
   * @{
   */ 
-#define OSCILL_IN_CONF_EP                       0x81  /* EP for CONF IN */
-#define OSCILL_IN_DATA_EP                       0x82  /* EP for DATA IN */
-#define OSCILL_CMD_EP                           0x03  /* EP for OSCILL commands */
+#define OSCILL_IN_EP                       			0x81  /* EP for Data IN */
+#define OSCILL_OUT_EP                           0x02  /* EP for commands commands */
 
 
-# define USB_OSCILL_CONFIG_DESC_SIZ                39
+# define USB_OSCILL_CONFIG_DESC_SIZ                32
 
 /*---------------------------------------------------------------------*/
 /*  OSCILL definitions                                                    */

@@ -205,12 +205,11 @@ USBD_StatusTypeDef  USBD_LL_Init (USBD_HandleTypeDef *pdev)
   hpcd_USB_FS.pData = pdev;
   pdev->pData = &hpcd_USB_FS;
 
-
+	//TODO double buffer
   HAL_PCDEx_PMAConfig(pdev->pData , 0x00 , PCD_SNG_BUF, 0x18);
   HAL_PCDEx_PMAConfig(pdev->pData , 0x80 , PCD_SNG_BUF, 0x58);
-  HAL_PCDEx_PMAConfig(pdev->pData , OSCILL_IN_CONF_EP , PCD_SNG_BUF, 0x98);  
-  HAL_PCDEx_PMAConfig(pdev->pData , OSCILL_IN_DATA_EP, PCD_SNG_BUF, 0xD8);
-  HAL_PCDEx_PMAConfig(pdev->pData , OSCILL_CMD_EP , PCD_SNG_BUF, 0x118);  
+  HAL_PCDEx_PMAConfig(pdev->pData , OSCILL_IN_EP , PCD_SNG_BUF, 0x98);  
+  HAL_PCDEx_PMAConfig(pdev->pData , OSCILL_OUT_EP, PCD_SNG_BUF, 0xD8);
   return USBD_OK;
 }
 

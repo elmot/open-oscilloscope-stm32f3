@@ -64,6 +64,7 @@
   * @{
   */ 
   /* USER CODE BEGIN 2 */ 
+extern uint8_t OscillConfigData[];
   /* USER CODE END 2 */
 /**
   * @}
@@ -120,6 +121,7 @@ static int8_t OSCILL_Init_FS(void)
   /* Set Application Buffers */
   USBD_OSCILL_SetTxBuffer(hUsbDevice_0, UserTxBufferFS, 0);
   USBD_OSCILL_SetRxBuffer(hUsbDevice_0, UserRxBufferFS);
+	OSCILL_Transmit_FS(OscillConfigData, -2+*((int *)OscillConfigData));
   return (USBD_OK);
   /* USER CODE END 3 */ 
 }
@@ -181,7 +183,7 @@ static int8_t OSCILL_Receive_FS (uint8_t* Buf, uint32_t *Len)
   /* USER CODE END 6 */ 
 }
 
-/**
+/** TODO remove
   * @brief  OSCILL_Transmit_FS
   *         Data send over USB IN endpoint are sent over CDC interface 
   *         through this function.           
@@ -192,7 +194,7 @@ static int8_t OSCILL_Receive_FS (uint8_t* Buf, uint32_t *Len)
   * @param  Len: Number of data to be send (in bytes)
   * @retval Result of the operation: USBD_OK if all operations are OK else USBD_FAIL or USBD_BUSY
   */
-uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
+uint8_t OSCILL_Transmit_FS(uint8_t* Buf, uint16_t Len)
 {
   uint8_t result = USBD_OK;
   /* USER CODE BEGIN 7 */ 

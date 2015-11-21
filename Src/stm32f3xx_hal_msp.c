@@ -114,8 +114,8 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
   
     hdma_adc3.Instance = DMA2_Channel5;
     hdma_adc3.Init.Direction = DMA_PERIPH_TO_MEMORY;
-    hdma_adc3.Init.PeriphInc = DMA_PINC_ENABLE;
-    hdma_adc3.Init.MemInc = DMA_MINC_DISABLE;
+    hdma_adc3.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_adc3.Init.MemInc = DMA_MINC_ENABLE;
     hdma_adc3.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
     hdma_adc3.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
     hdma_adc3.Init.Mode = DMA_CIRCULAR;
@@ -143,8 +143,8 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
   
     hdma_adc4.Instance = DMA2_Channel4;
     hdma_adc4.Init.Direction = DMA_PERIPH_TO_MEMORY;
-    hdma_adc4.Init.PeriphInc = DMA_PINC_ENABLE;
-    hdma_adc4.Init.MemInc = DMA_MINC_DISABLE;
+    hdma_adc4.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_adc4.Init.MemInc = DMA_MINC_ENABLE;
     hdma_adc4.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
     hdma_adc4.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
     hdma_adc4.Init.Mode = DMA_CIRCULAR;
@@ -231,16 +231,16 @@ void HAL_DAC_MspInit(DAC_HandleTypeDef* hdac)
     /**DAC GPIO Configuration    
     PA4     ------> DAC_OUT1 
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_4;
+    GPIO_InitStruct.Pin = OSCILLOSCOPE_GEN_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    HAL_GPIO_Init(OSCILLOSCOPE_GEN_GPIO_Port, &GPIO_InitStruct);
 
     /* Peripheral DMA init*/
   
     hdma_dac_ch1.Instance = DMA2_Channel3;
     hdma_dac_ch1.Init.Direction = DMA_MEMORY_TO_PERIPH;
-    hdma_dac_ch1.Init.PeriphInc = DMA_PINC_ENABLE;
+    hdma_dac_ch1.Init.PeriphInc = DMA_PINC_DISABLE;
     hdma_dac_ch1.Init.MemInc = DMA_MINC_ENABLE;
     hdma_dac_ch1.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
     hdma_dac_ch1.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
@@ -271,7 +271,7 @@ void HAL_DAC_MspDeInit(DAC_HandleTypeDef* hdac)
     /**DAC GPIO Configuration    
     PA4     ------> DAC_OUT1 
     */
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_4);
+    HAL_GPIO_DeInit(OSCILLOSCOPE_GEN_GPIO_Port, OSCILLOSCOPE_GEN_Pin);
 
     /* Peripheral DMA DeInit*/
     HAL_DMA_DeInit(hdac->DMA_Handle1);
@@ -296,7 +296,7 @@ void HAL_OPAMP_MspInit(OPAMP_HandleTypeDef* hopamp)
     PA1     ------> OPAMP1_VINP
     PA2     ------> OPAMP1_VOUT 
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_2;
+    GPIO_InitStruct.Pin = OSCILLOSCOPE_A1_Pin|GPIO_PIN_2;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -315,7 +315,7 @@ void HAL_OPAMP_MspInit(OPAMP_HandleTypeDef* hopamp)
     PB0     ------> OPAMP3_VINP
     PB1     ------> OPAMP3_VOUT 
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
+    GPIO_InitStruct.Pin = OSCILLOSCOPE_B1_Pin|GPIO_PIN_1;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -334,7 +334,7 @@ void HAL_OPAMP_MspInit(OPAMP_HandleTypeDef* hopamp)
     PB11     ------> OPAMP4_VINP
     PB12     ------> OPAMP4_VOUT 
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
+    GPIO_InitStruct.Pin = OSCILLOSCOPE_C1_Pin|GPIO_PIN_12;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -359,7 +359,7 @@ void HAL_OPAMP_MspDeInit(OPAMP_HandleTypeDef* hopamp)
     PA1     ------> OPAMP1_VINP
     PA2     ------> OPAMP1_VOUT 
     */
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_1|GPIO_PIN_2);
+    HAL_GPIO_DeInit(GPIOA, OSCILLOSCOPE_A1_Pin|GPIO_PIN_2);
 
   /* USER CODE BEGIN OPAMP1_MspDeInit 1 */
 
@@ -375,7 +375,7 @@ void HAL_OPAMP_MspDeInit(OPAMP_HandleTypeDef* hopamp)
     PB0     ------> OPAMP3_VINP
     PB1     ------> OPAMP3_VOUT 
     */
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_0|GPIO_PIN_1);
+    HAL_GPIO_DeInit(GPIOB, OSCILLOSCOPE_B1_Pin|GPIO_PIN_1);
 
   /* USER CODE BEGIN OPAMP3_MspDeInit 1 */
 
@@ -391,7 +391,7 @@ void HAL_OPAMP_MspDeInit(OPAMP_HandleTypeDef* hopamp)
     PB11     ------> OPAMP4_VINP
     PB12     ------> OPAMP4_VOUT 
     */
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_11|GPIO_PIN_12);
+    HAL_GPIO_DeInit(GPIOB, OSCILLOSCOPE_C1_Pin|GPIO_PIN_12);
 
   /* USER CODE BEGIN OPAMP4_MspDeInit 1 */
 
@@ -511,7 +511,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* hpcd)
     PA11     ------> USB_DM
     PA12     ------> USB_DP 
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
+    GPIO_InitStruct.Pin = DM_Pin|DP_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
@@ -545,7 +545,7 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* hpcd)
     PA11     ------> USB_DM
     PA12     ------> USB_DP 
     */
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_11|GPIO_PIN_12);
+    HAL_GPIO_DeInit(GPIOA, DM_Pin|DP_Pin);
 
     /* Peripheral interrupt DeInit*/
     HAL_NVIC_DisableIRQ(USB_LP_CAN_RX0_IRQn);

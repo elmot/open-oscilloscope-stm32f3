@@ -174,7 +174,7 @@ __ALIGN_BEGIN uint8_t USBD_OSCILL_CfgFSDesc[USB_OSCILL_CONFIG_DESC_SIZ] __ALIGN_
   /* Interface descriptor type */
   0x00,   /* bInterfaceNumber: Number of Interface */
   0x00,   /* bAlternateSetting: Alternate setting */
-  0x03,   /* bNumEndpoints: One endpoints used */
+  0x02,   /* bNumEndpoints: Two endpoints used */
   0xFF,   /* bInterfaceClass: Communication Interface Class */
   0x00,   /* bInterfaceSubClass: Abstract Control Model */
   0x00,   /* bInterfaceProtocol: Common AT commands */
@@ -183,30 +183,21 @@ __ALIGN_BEGIN uint8_t USBD_OSCILL_CfgFSDesc[USB_OSCILL_CONFIG_DESC_SIZ] __ALIGN_
   /*Endpoint CMD Descriptor*/
   0x07,                           /* bLength: Endpoint Descriptor size */
   USB_DESC_TYPE_ENDPOINT,         /* bDescriptorType: Endpoint */
-  OSCILL_CMD_EP,                  /* bEndpointAddress */
+  OSCILL_IN_EP,                  /* bEndpointAddress */
   USBD_EP_TYPE_BULK,              /* bmAttributes */
   LOBYTE(USB_FS_MAX_PACKET_SIZE), /* wMaxPacketSize: */
   HIBYTE(USB_FS_MAX_PACKET_SIZE),
-  0x10,                           /* bInterval: */ 
+  0x00,                            /* bInterval: ignored */
   /*---------------------------------------------------------------------------*/
   
   /*Endpoint IN CONF Descriptor*/
   0x07,   											  /* bLength: Endpoint Descriptor size */
   USB_DESC_TYPE_ENDPOINT,         /* bDescriptorType: Endpoint */
-  OSCILL_IN_CONF_EP,              /* bEndpointAddress */
+  OSCILL_OUT_EP,              /* bEndpointAddress */
   USBD_EP_TYPE_BULK,              /* bmAttributes */
   LOBYTE(USB_FS_MAX_PACKET_SIZE), /* wMaxPacketSize: */
   HIBYTE(USB_FS_MAX_PACKET_SIZE),
-  0x00,                           /* bInterval: ignored */
-  
-  /*Endpoint IN DATA Descriptor*/
-  0x07,                           /* bLength: Endpoint Descriptor size */
-  USB_DESC_TYPE_ENDPOINT,         /* bDescriptorType: Endpoint */
-  OSCILL_IN_DATA_EP,              /* bEndpointAddress */
-  USBD_EP_TYPE_BULK,              /* bmAttributes: Bulk */
-  LOBYTE(USB_FS_MAX_PACKET_SIZE), /* wMaxPacketSize: */
-  HIBYTE(USB_FS_MAX_PACKET_SIZE),
-  0x00                            /* bInterval: ignored */
+  0x00                           /* bInterval: ignored */
 } ;
 
 /**
@@ -229,29 +220,24 @@ static uint8_t  USBD_OSCILL_Init (USBD_HandleTypeDef *pdev,
 {
   uint8_t ret = 0;
   
-	/* Open EP IN */
-	USBD_LL_OpenEP(pdev,
-								 OSCILL_IN_CONF_EP,
-								 USBD_EP_TYPE_BULK,
-								 USB_FS_MAX_PACKET_SIZE);
-	
-	/* Open EP OUT */
-	USBD_LL_OpenEP(pdev,
-								 OSCILL_IN_DATA_EP,
-								 USBD_EP_TYPE_BULK,
-								 USB_FS_MAX_PACKET_SIZE);
-
-  /* Open Command IN EP */
+  /* Open OUT EP */
   USBD_LL_OpenEP(pdev,
-                 OSCILL_CMD_EP,
+                 OSCILL_OUT_EP,
                  USBD_EP_TYPE_BULK,
                  USB_FS_MAX_PACKET_SIZE);
   
-  USBD_LL_PrepareReceive(pdev, OSCILL_CMD_EP, cmdBuffer, USB_FS_MAX_PACKET_SIZE);  
+  USBD_LL_PrepareReceive(pdev, OSCILL_OUT_EP, cmdBuffer, USB_FS_MAX_PACKET_SIZE);  
   
+	/* Open EP IN */
+	USBD_LL_OpenEP(pdev,
+								 OSCILL_IN_EP,
+								 USBD_EP_TYPE_BULK,
+								 USB_FS_MAX_PACKET_SIZE);
+	
 	pdev->pClassData = USBD_malloc(sizeof (USBD_OSCILL_HandleTypeDef));
   
-  if(pdev->pClassData == NULL)
+
+	if(pdev->pClassData == NULL)
   {
     ret = 1; 
   }
@@ -279,17 +265,13 @@ static uint8_t  USBD_OSCILL_DeInit (USBD_HandleTypeDef *pdev,
 {
   uint8_t ret = 0;
   
-  /* Open EP IN */
+  /* Close EP IN */
   USBD_LL_CloseEP(pdev,
-              OSCILL_IN_CONF_EP);
+              OSCILL_IN_EP);
   
-  /* Open EP OUT */
+  /* Close EP OUT */
   USBD_LL_CloseEP(pdev,
-              OSCILL_IN_DATA_EP);
-  
-  /* Open Command IN EP */
-  USBD_LL_CloseEP(pdev,
-              OSCILL_CMD_EP);
+              OSCILL_OUT_EP);
   
   
   /* DeInit  physical Interface components */
@@ -368,7 +350,7 @@ static uint8_t  USBD_OSCILL_DataIn (USBD_HandleTypeDef *pdev, uint8_t epnum)
   if(pdev->pClassData != NULL)
   {
     
-
+		USBD_LL_Transmit(pdev, epnum, NULL, 0);
     return USBD_OK;
   }
   else
@@ -396,7 +378,7 @@ static uint8_t  USBD_OSCILL_DataOut (USBD_HandleTypeDef *pdev, uint8_t epnum)
   if(pdev->pClassData != NULL)
   {
     ((USBD_OSCILL_ItfTypeDef *)pdev->pUserData)->Receive(hoscill->RxBuffer, &hoscill->RxLength);
-
+		USBD_LL_PrepareReceive(pdev, OSCILL_OUT_EP, cmdBuffer, USB_FS_MAX_PACKET_SIZE);  
     return USBD_OK;
   }
   else
@@ -408,10 +390,9 @@ static uint8_t  USBD_OSCILL_DataOut (USBD_HandleTypeDef *pdev, uint8_t epnum)
 
 
 /**
-  * @brief  USBD_OSCILL_DataOut
-  *         Data received on non-control Out endpoint
+  * @brief  USBD_OSCILL_EP0_RxReady
+  *         Data received on control Out endpoint
   * @param  pdev: device instance
-  * @param  epnum: endpoint number
   * @retval status
   */
 static uint8_t  USBD_OSCILL_EP0_RxReady (USBD_HandleTypeDef *pdev)
@@ -499,10 +480,9 @@ uint8_t  USBD_OSCILL_SetRxBuffer  (USBD_HandleTypeDef   *pdev,
 }
 
 /**
-  * @brief  USBD_OSCILL_DataOut
-  *         Data received on non-control Out endpoint
+  * @brief  USBD_OSCILL_TransmitPacket
+  *         Data sent through CONF_EP
   * @param  pdev: device instance
-  * @param  epnum: endpoint number
   * @retval status
   */
 uint8_t  USBD_OSCILL_TransmitPacket(USBD_HandleTypeDef *pdev)
@@ -516,7 +496,7 @@ uint8_t  USBD_OSCILL_TransmitPacket(USBD_HandleTypeDef *pdev)
       
       /* Transmit next packet */
       USBD_LL_Transmit(pdev,
-                       OSCILL_IN_CONF_EP,
+                       OSCILL_IN_EP,
                        hoscill->TxBuffer,
                        hoscill->TxLength);
       
