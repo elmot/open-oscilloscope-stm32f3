@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    system_stm32f3xx.c
   * @author  MCD Application Team
-  * @version $VERSION$
-  * @date    12-Sept-2014
+  * @version V2.2.0
+  * @date    13-November-2015
   * @brief   CMSIS Cortex-M4 Device Peripheral Access Layer System Source File.
   *
   * 1. This file provides two functions and one global variable to be called from
@@ -46,7 +46,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2014 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2015 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -142,7 +142,7 @@
   */
 uint32_t SystemCoreClock = 8000000;
 
-__IO const uint8_t AHBPrescTable[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
+const uint8_t AHBPrescTable[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
 
 /**
   * @}

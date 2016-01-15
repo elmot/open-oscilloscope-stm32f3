@@ -1,0 +1,28 @@
+{
+  "name": "USB Oscilloscope",
+  "version": "0.1",
+  "description": "Stm32F3 Oscilloscope",
+  "manifest_version": 2,
+  "minimum_chrome_version": "40.0.2213.0",
+  "app": {
+    "background": {
+      "scripts": [
+        "background.js"
+      ]
+    }
+  },
+  "permissions": [
+    "usb",
+    {
+      "usbDevices": [
+        {
+          "vendorId": 57664,
+          "productId": 57136
+        }
+      ]
+    }
+  ],
+  "icons": {
+    "128": "assets/icon_128.png"
+  }
+}

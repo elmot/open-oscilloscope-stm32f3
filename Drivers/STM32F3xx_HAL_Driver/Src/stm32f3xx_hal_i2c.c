@@ -2,15 +2,14 @@
   ******************************************************************************
   * @file    stm32f3xx_hal_i2c.c
   * @author  MCD Application Team
-  * @version V1.1.1
-  * @date    19-June-2015
+  * @version V1.2.0
+  * @date    13-November-2015
   * @brief   I2C HAL module driver.
-  *    
   *          This file provides firmware functions to manage the following 
   *          functionalities of the Inter Integrated Circuit (I2C) peripheral:
   *           + Initialization and de-initialization functions
   *           + IO operation functions
-  *           + Peripheral State functions
+  *           + Peripheral State and Errors functions
   *         
   @verbatim
   ==============================================================================
@@ -22,7 +21,7 @@
     (#) Declare a I2C_HandleTypeDef handle structure, for example:
         I2C_HandleTypeDef  hi2c; 
 
-    (#)Initialize the I2C low level resources by implement the HAL_I2C_MspInit ()API:
+    (#)Initialize the I2C low level resources by implementing the HAL_I2C_MspInit() API:
         (##) Enable the I2Cx interface clock
         (##) I2C pins configuration
             (+++) Enable the clock for the I2C GPIOs
@@ -35,19 +34,19 @@
             (+++) Enable the DMAx interface clock using
             (+++) Configure the DMA handle parameters
             (+++) Configure the DMA Tx or Rx channel
-            (+++) Associate the initilalized DMA handle to the hi2c DMA Tx or Rx handle
-            (+++) Configure the priority and enable the NVIC for the transfer complete interrupt on the DMA Tx or Rx channel
+            (+++) Associate the initialized DMA handle to the hi2c DMA Tx or Rx handle
+            (+++) Configure the priority and enable the NVIC for the transfer complete interrupt on 
+                  the DMA Tx or Rx channel
 
-    (#) Configure the Communication Clock Timing, Own Address1, Master Adressing Mode, Dual Addressing mode,
+    (#) Configure the Communication Clock Timing, Own Address1, Master Addressing mode, Dual Addressing mode,
         Own Address2, Own Address2 Mask, General call and Nostretch mode in the hi2c Init structure.
 
-    (#) Initialize the I2C registers by calling the HAL_I2C_Init() API:
-        (+++) These API's configures also the low level Hardware GPIO, CLOCK, CORTEX...etc)
-            by calling the customed HAL_I2C_MspInit(&hi2c) API.
+    (#) Initialize the I2C registers by calling the HAL_I2C_Init(), configures also the low level Hardware 
+        (GPIO, CLOCK, NVIC...etc) by calling the customized HAL_I2C_MspInit(&hi2c) API.
 
     (#) To check if target device is ready for communication, use the function HAL_I2C_IsDeviceReady()
 
-    (#) For I2C IO and IO MEM operations, three mode of operations are available within this driver :
+    (#) For I2C IO and IO MEM operations, three operation modes are available within this driver :
 
     *** Polling mode IO operation ***
     =================================
@@ -67,70 +66,70 @@
     *** Interrupt mode IO operation ***
     ===================================
     [..]
-      (+) Transmit in master mode an amount of data in non blocking mode using HAL_I2C_Master_Transmit_IT()
-      (+) At transmission end of transfer HAL_I2C_MasterTxCpltCallback is executed and user can
-           add his own code by customization of function pointer HAL_I2C_MasterTxCpltCallback
-      (+) Receive in master mode an amount of data in non blocking mode using HAL_I2C_Master_Receive_IT()
-      (+) At reception end of transfer HAL_I2C_MasterRxCpltCallback is executed and user can
-           add his own code by customization of function pointer HAL_I2C_MasterRxCpltCallback
-      (+) Transmit in slave mode an amount of data in non blocking mode using HAL_I2C_Slave_Transmit_IT()
-      (+) At transmission end of transfer HAL_I2C_SlaveTxCpltCallback is executed and user can
-           add his own code by customization of function pointer HAL_I2C_SlaveTxCpltCallback
-      (+) Receive in slave mode an amount of data in non blocking mode using HAL_I2C_Slave_Receive_IT()
-      (+) At reception end of transfer HAL_I2C_SlaveRxCpltCallback is executed and user can
-           add his own code by customization of function pointer HAL_I2C_SlaveRxCpltCallback
+      (+) Transmit in master mode an amount of data in non-blocking mode using HAL_I2C_Master_Transmit_IT()
+      (+) At transmission end of transfer, HAL_I2C_MasterTxCpltCallback() is executed and user can
+           add his own code by customization of function pointer HAL_I2C_MasterTxCpltCallback()
+      (+) Receive in master mode an amount of data in non-blocking mode using HAL_I2C_Master_Receive_IT()
+      (+) At reception end of transfer, HAL_I2C_MasterRxCpltCallback() is executed and user can
+           add his own code by customization of function pointer HAL_I2C_MasterRxCpltCallback()
+      (+) Transmit in slave mode an amount of data in non-blocking mode using HAL_I2C_Slave_Transmit_IT()
+      (+) At transmission end of transfer, HAL_I2C_SlaveTxCpltCallback() is executed and user can
+           add his own code by customization of function pointer HAL_I2C_SlaveTxCpltCallback()
+      (+) Receive in slave mode an amount of data in non-blocking mode using HAL_I2C_Slave_Receive_IT()
+      (+) At reception end of transfer, HAL_I2C_SlaveRxCpltCallback() is executed and user can
+           add his own code by customization of function pointer HAL_I2C_SlaveRxCpltCallback()
       (+) In case of transfer Error, HAL_I2C_ErrorCallback() function is executed and user can
-           add his own code by customization of function pointer HAL_I2C_ErrorCallback
+           add his own code by customization of function pointer HAL_I2C_ErrorCallback()
 
     *** Interrupt mode IO MEM operation ***
     =======================================
     [..]
-      (+) Write an amount of data in no-blocking mode with Interrupt to a specific memory address using
+      (+) Write an amount of data in non-blocking mode with Interrupt to a specific memory address using
           HAL_I2C_Mem_Write_IT()
-      (+) At MEM end of write transfer HAL_I2C_MemTxCpltCallback is executed and user can
-           add his own code by customization of function pointer HAL_I2C_MemTxCpltCallback
-      (+) Read an amount of data in no-blocking mode with Interrupt from a specific memory address using
+      (+) At Memory end of write transfer, HAL_I2C_MemTxCpltCallback() is executed and user can
+           add his own code by customization of function pointer HAL_I2C_MemTxCpltCallback()
+      (+) Read an amount of data in non-blocking mode with Interrupt from a specific memory address using
           HAL_I2C_Mem_Read_IT()
-      (+) At MEM end of read transfer HAL_I2C_MemRxCpltCallback is executed and user can
-           add his own code by customization of function pointer HAL_I2C_MemRxCpltCallback
+      (+) At Memory end of read transfer, HAL_I2C_MemRxCpltCallback() is executed and user can
+           add his own code by customization of function pointer HAL_I2C_MemRxCpltCallback()
       (+) In case of transfer Error, HAL_I2C_ErrorCallback() function is executed and user can
-           add his own code by customization of function pointer HAL_I2C_ErrorCallback
+           add his own code by customization of function pointer HAL_I2C_ErrorCallback()
 
     *** DMA mode IO operation ***
     ==============================
     [..]
-      (+) Transmit in master mode an amount of data in non blocking mode (DMA) using
+      (+) Transmit in master mode an amount of data in non-blocking mode (DMA) using
           HAL_I2C_Master_Transmit_DMA()
-      (+) At transmission end of transfer HAL_I2C_MasterTxCpltCallback is executed and user can
-           add his own code by customization of function pointer HAL_I2C_MasterTxCpltCallback
-      (+) Receive in master mode an amount of data in non blocking mode (DMA) using
+      (+) At transmission end of transfer, HAL_I2C_MasterTxCpltCallback() is executed and user can
+           add his own code by customization of function pointer HAL_I2C_MasterTxCpltCallback()
+      (+) Receive in master mode an amount of data in non-blocking mode (DMA) using
           HAL_I2C_Master_Receive_DMA()
-      (+) At reception end of transfer HAL_I2C_MasterRxCpltCallback is executed and user can
-           add his own code by customization of function pointer HAL_I2C_MasterRxCpltCallback
-      (+) Transmit in slave mode an amount of data in non blocking mode (DMA) using
+      (+) At reception end of transfer, HAL_I2C_MasterRxCpltCallback() is executed and user can
+           add his own code by customization of function pointer HAL_I2C_MasterRxCpltCallback()
+      (+) Transmit in slave mode an amount of data in non-blocking mode (DMA) using
           HAL_I2C_Slave_Transmit_DMA()
-      (+) At transmission end of transfer HAL_I2C_SlaveTxCpltCallback is executed and user can
-           add his own code by customization of function pointer HAL_I2C_SlaveTxCpltCallback
-      (+) Receive in slave mode an amount of data in non blocking mode (DMA) using
+      (+) At transmission end of transfer, HAL_I2C_SlaveTxCpltCallback() is executed and user can
+           add his own code by customization of function pointer HAL_I2C_SlaveTxCpltCallback()
+      (+) Receive in slave mode an amount of data in non-blocking mode (DMA) using
           HAL_I2C_Slave_Receive_DMA()
-      (+) At reception end of transfer HAL_I2C_SlaveRxCpltCallback is executed and user can
-           add his own code by customization of function pointer HAL_I2C_SlaveRxCpltCallback
+      (+) At reception end of transfer, HAL_I2C_SlaveRxCpltCallback() is executed and user can
+           add his own code by customization of function pointer HAL_I2C_SlaveRxCpltCallback()
       (+) In case of transfer Error, HAL_I2C_ErrorCallback() function is executed and user can
-           add his own code by customization of function pointer HAL_I2C_ErrorCallback
+           add his own code by customization of function pointer HAL_I2C_ErrorCallback()
 
     *** DMA mode IO MEM operation ***
     =================================
     [..]
-      (+) Write an amount of data in no-blocking mode with DMA to a specific memory address using
+      (+) Write an amount of data in non-blocking mode with DMA to a specific memory address using
           HAL_I2C_Mem_Write_DMA()
-      (+) At MEM end of write transfer HAL_I2C_MemTxCpltCallback is executed and user can
-           add his own code by customization of function pointer HAL_I2C_MemTxCpltCallback
-      (+) Read an amount of data in no-blocking mode with DMA from a specific memory address using
+      (+) At Memory end of write transfer, HAL_I2C_MemTxCpltCallback() is executed and user can
+           add his own code by customization of function pointer HAL_I2C_MemTxCpltCallback()
+      (+) Read an amount of data in non-blocking mode with DMA from a specific memory address using
           HAL_I2C_Mem_Read_DMA()
-      (+) At MEM end of read transfer HAL_I2C_MemRxCpltCallback is executed and user can
-           add his own code by customization of function pointer HAL_I2C_MemRxCpltCallback
+      (+) At Memory end of read transfer, HAL_I2C_MemRxCpltCallback() is executed and user can
+           add his own code by customization of function pointer HAL_I2C_MemRxCpltCallback()
       (+) In case of transfer Error, HAL_I2C_ErrorCallback() function is executed and user can
-           add his own code by customization of function pointer HAL_I2C_ErrorCallback
+           add his own code by customization of function pointer HAL_I2C_ErrorCallback()
 
 
      *** I2C HAL driver macros list ***
@@ -138,12 +137,12 @@
      [..]
        Below the list of most used macros in I2C HAL driver.
 
-      (+) __HAL_I2C_ENABLE: Enable the I2C peripheral
-      (+) __HAL_I2C_DISABLE: Disable the I2C peripheral
-      (+) __HAL_I2C_GET_FLAG : Checks whether the specified I2C flag is set or not
-      (+) __HAL_I2C_CLEAR_FLAG : Clears the specified I2C pending flag
-      (+) __HAL_I2C_ENABLE_IT: Enables the specified I2C interrupt
-      (+) __HAL_I2C_DISABLE_IT: Disables the specified I2C interrupt
+      (+) __HAL_I2C_ENABLE:      Enable the I2C peripheral
+      (+) __HAL_I2C_DISABLE:     Disable the I2C peripheral
+      (+) __HAL_I2C_GET_FLAG:    Check whether the specified I2C flag is set or not
+      (+) __HAL_I2C_CLEAR_FLAG:  Clear the specified I2C pending flag
+      (+) __HAL_I2C_ENABLE_IT:   Enable the specified I2C interrupt
+      (+) __HAL_I2C_DISABLE_IT:  Disable the specified I2C interrupt
 
      [..]
        (@) You can refer to the I2C HAL driver header file for more useful macros
@@ -186,7 +185,7 @@
   * @{
   */
 
-/** @defgroup I2C I2C HAL module driver
+/** @defgroup I2C I2C
   * @brief I2C HAL module driver
   * @{
   */
@@ -199,16 +198,16 @@
 /** @defgroup I2C_Private_Define I2C Private Define
   * @{
   */
-#define TIMING_CLEAR_MASK       ((uint32_t)0xF0FFFFFF)  /*<! I2C TIMING clear register Mask */
-#define I2C_TIMEOUT_ADDR    ((uint32_t)10000)  /* 10 s  */
-#define I2C_TIMEOUT_BUSY    ((uint32_t)25)     /* 25 ms */
-#define I2C_TIMEOUT_DIR     ((uint32_t)25)     /* 25 ms */
-#define I2C_TIMEOUT_RXNE    ((uint32_t)25)     /* 25 ms */
-#define I2C_TIMEOUT_STOPF   ((uint32_t)25)     /* 25 ms */
-#define I2C_TIMEOUT_TC      ((uint32_t)25)     /* 25 ms */
-#define I2C_TIMEOUT_TCR     ((uint32_t)25)     /* 25 ms */
-#define I2C_TIMEOUT_TXIS    ((uint32_t)25)     /* 25 ms */
-#define I2C_TIMEOUT_FLAG    ((uint32_t)25)     /* 25 ms */
+#define TIMING_CLEAR_MASK   ((uint32_t)0xF0FFFFFF)  /*!< I2C TIMING clear register Mask */
+#define I2C_TIMEOUT_ADDR    ((uint32_t)10000)       /*!< 10 s  */
+#define I2C_TIMEOUT_BUSY    ((uint32_t)25)          /*!< 25 ms */
+#define I2C_TIMEOUT_DIR     ((uint32_t)25)          /*!< 25 ms */
+#define I2C_TIMEOUT_RXNE    ((uint32_t)25)          /*!< 25 ms */
+#define I2C_TIMEOUT_STOPF   ((uint32_t)25)          /*!< 25 ms */
+#define I2C_TIMEOUT_TC      ((uint32_t)25)          /*!< 25 ms */
+#define I2C_TIMEOUT_TCR     ((uint32_t)25)          /*!< 25 ms */
+#define I2C_TIMEOUT_TXIS    ((uint32_t)25)          /*!< 25 ms */
+#define I2C_TIMEOUT_FLAG    ((uint32_t)25)          /*!< 25 ms */
 /**
   * @}
   */ 
@@ -231,7 +230,6 @@ static void I2C_DMAError(DMA_HandleTypeDef *hdma);
 static HAL_StatusTypeDef I2C_RequestMemoryWrite(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint32_t Timeout);
 static HAL_StatusTypeDef I2C_RequestMemoryRead(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint32_t Timeout);
 static HAL_StatusTypeDef I2C_WaitOnFlagUntilTimeout(I2C_HandleTypeDef *hi2c, uint32_t Flag, FlagStatus Status, uint32_t Timeout);
-static HAL_StatusTypeDef I2C_WaitOnRXNEFlagUntilTimeout(I2C_HandleTypeDef *hi2c, uint32_t Timeout);
 static HAL_StatusTypeDef I2C_WaitOnTXISFlagUntilTimeout(I2C_HandleTypeDef *hi2c, uint32_t Timeout);
 static HAL_StatusTypeDef I2C_WaitOnRXNEFlagUntilTimeout(I2C_HandleTypeDef *hi2c, uint32_t Timeout);
 static HAL_StatusTypeDef I2C_WaitOnSTOPFlagUntilTimeout(I2C_HandleTypeDef *hi2c, uint32_t Timeout);
@@ -248,7 +246,7 @@ static void I2C_TransferConfig(I2C_HandleTypeDef *hi2c,  uint16_t DevAddress, ui
   * @}
   */ 
   
-/* Exported functions ---------------------------------------------------------*/
+/* Exported functions --------------------------------------------------------*/
 
 /** @defgroup I2C_Exported_Functions I2C Exported Functions
   * @{
@@ -259,10 +257,10 @@ static void I2C_TransferConfig(I2C_HandleTypeDef *hi2c,  uint16_t DevAddress, ui
  *
 @verbatim    
  ===============================================================================
-              ##### Initialization/de-initialization functions #####
+              ##### Initialization and de-initialization functions #####
  ===============================================================================
     [..]  This subsection provides a set of functions allowing to initialize and 
-          de-initialiaze the I2Cx peripheral:
+          deinitialize the I2Cx peripheral:
 
       (+) User must Implement HAL_I2C_MspInit() function in which he configures 
           all related peripherals resources (CLOCK, GPIO, DMA, IT and NVIC ).
@@ -279,7 +277,7 @@ static void I2C_TransferConfig(I2C_HandleTypeDef *hi2c,  uint16_t DevAddress, ui
         (++) Nostretch mode
 
       (+) Call the function HAL_I2C_DeInit() to restore the default configuration 
-          of the selected I2Cx periperal.       
+          of the selected I2Cx peripheral.       
 
 @endverbatim
   * @{
@@ -287,8 +285,8 @@ static void I2C_TransferConfig(I2C_HandleTypeDef *hi2c,  uint16_t DevAddress, ui
 
 /**
   * @brief  Initializes the I2C according to the specified parameters 
-  *         in the I2C_InitTypeDef and create the associated handle.
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  *         in the I2C_InitTypeDef and initialize the associated handle.
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
   * @retval HAL status
   */
@@ -312,6 +310,9 @@ HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c)
 
   if(hi2c->State == HAL_I2C_STATE_RESET)
   {
+    /* Allocate lock resource and initialize it */
+    hi2c->Lock = HAL_UNLOCKED;
+
     /* Init the low level hardware : GPIO, CLOCK, CORTEX...etc */
     HAL_I2C_MspInit(hi2c);
   }
@@ -367,8 +368,8 @@ HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c)
 }
 
 /**
-  * @brief  DeInitializes the I2C peripheral. 
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @brief  DeInitialize the I2C peripheral. 
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
   * @retval HAL status
   */
@@ -392,6 +393,7 @@ HAL_StatusTypeDef HAL_I2C_DeInit(I2C_HandleTypeDef *hi2c)
   HAL_I2C_MspDeInit(hi2c);
   
   hi2c->ErrorCode = HAL_I2C_ERROR_NONE;
+
   hi2c->State = HAL_I2C_STATE_RESET;
   
   /* Release Lock */
@@ -401,27 +403,27 @@ HAL_StatusTypeDef HAL_I2C_DeInit(I2C_HandleTypeDef *hi2c)
 }
 
 /**
-  * @brief I2C MSP Init.
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @brief Initialize the I2C MSP.
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
   * @retval None
   */
  __weak void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
+  /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_I2C_MspInit could be implemented in the user file
    */ 
 }
 
 /**
-  * @brief I2C MSP DeInit
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @brief DeInitialize the I2C MSP.
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
   * @retval None
   */
  __weak void HAL_I2C_MspDeInit(I2C_HandleTypeDef *hi2c)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
+  /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_I2C_MspDeInit could be implemented in the user file
    */ 
 }
@@ -441,7 +443,7 @@ HAL_StatusTypeDef HAL_I2C_DeInit(I2C_HandleTypeDef *hi2c)
     This subsection provides a set of functions allowing to manage the I2C data 
     transfers.
 
-    (#) There is two mode of transfer:
+    (#) There are two modes of transfer:
        (++) Blocking mode : The communication is performed in the polling mode. 
             The status of all data processing is returned by the same function 
             after finishing transfer.  
@@ -476,7 +478,7 @@ HAL_StatusTypeDef HAL_I2C_DeInit(I2C_HandleTypeDef *hi2c)
         (++) HAL_I2C_Mem_Write_DMA()
         (++) HAL_I2C_Mem_Read_DMA()
 
-    (#) A set of Transfer Complete Callbacks are provided in No_Blocking mode:
+    (#) A set of Transfer Complete Callbacks are provided in non Blocking mode:
         (++) HAL_I2C_MemTxCpltCallback()
         (++) HAL_I2C_MemRxCpltCallback()
         (++) HAL_I2C_MasterTxCpltCallback()
@@ -489,18 +491,14 @@ HAL_StatusTypeDef HAL_I2C_DeInit(I2C_HandleTypeDef *hi2c)
   * @{
   */
 
-/** @defgroup Blocking_mode_Polling Blocking mode Polling
- * @{
- */
-
 /**
   * @brief  Transmits in master mode an amount of data in blocking mode.
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  DevAddress: Target device address
-  * @param  pData: Pointer to data buffer
-  * @param  Size: Amount of data to be sent
-  * @param  Timeout: Timeout duration
+  * @param  DevAddress Target device address
+  * @param  pData Pointer to data buffer
+  * @param  Size Amount of data to be sent
+  * @param  Timeout Timeout duration
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_I2C_Master_Transmit(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
@@ -560,7 +558,7 @@ HAL_StatusTypeDef HAL_I2C_Master_Transmit(I2C_HandleTypeDef *hi2c, uint16_t DevA
 
       if((sizetmp == 0)&&(Size!=0))
       {
-        /* Wait until TXE flag is set */
+        /* Wait until TCR flag is set */
         if(I2C_WaitOnFlagUntilTimeout(hi2c, I2C_FLAG_TCR, RESET, Timeout) != HAL_OK)      
         {
           return HAL_TIMEOUT;
@@ -598,7 +596,7 @@ HAL_StatusTypeDef HAL_I2C_Master_Transmit(I2C_HandleTypeDef *hi2c, uint16_t DevA
     __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
   	
     /* Clear Configuration Register 2 */
-    __HAL_I2C_RESET_CR2(hi2c);
+    I2C_RESET_CR2(hi2c);
 
     hi2c->State = HAL_I2C_STATE_READY; 	  
     
@@ -615,12 +613,12 @@ HAL_StatusTypeDef HAL_I2C_Master_Transmit(I2C_HandleTypeDef *hi2c, uint16_t DevA
 
 /**
   * @brief  Receives in master mode an amount of data in blocking mode. 
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  DevAddress: Target device address
-  * @param  pData: Pointer to data buffer
-  * @param  Size: Amount of data to be sent
-  * @param  Timeout: Timeout duration
+  * @param  DevAddress Target device address
+  * @param  pData Pointer to data buffer
+  * @param  Size Amount of data to be sent
+  * @param  Timeout Timeout duration
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_I2C_Master_Receive(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)
@@ -662,9 +660,16 @@ HAL_StatusTypeDef HAL_I2C_Master_Receive(I2C_HandleTypeDef *hi2c, uint16_t DevAd
     do
     {
       /* Wait until RXNE flag is set */
-      if(I2C_WaitOnFlagUntilTimeout(hi2c, I2C_FLAG_RXNE, RESET, Timeout) != HAL_OK)      
+      if(I2C_WaitOnRXNEFlagUntilTimeout(hi2c, I2C_FLAG_RXNE) != HAL_OK)      
       {
-        return HAL_TIMEOUT;
+        if(hi2c->ErrorCode == HAL_I2C_ERROR_AF)
+        {
+          return HAL_ERROR;
+        }
+        else
+        {
+          return HAL_TIMEOUT;
+        }
       }
      
       /* Write data to RXDR */
@@ -712,7 +717,7 @@ HAL_StatusTypeDef HAL_I2C_Master_Receive(I2C_HandleTypeDef *hi2c, uint16_t DevAd
     __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
   	
     /* Clear Configuration Register 2 */
-    __HAL_I2C_RESET_CR2(hi2c);
+    I2C_RESET_CR2(hi2c);
     
     hi2c->State = HAL_I2C_STATE_READY; 	  
     
@@ -729,11 +734,11 @@ HAL_StatusTypeDef HAL_I2C_Master_Receive(I2C_HandleTypeDef *hi2c, uint16_t DevAd
 
 /**
   * @brief  Transmits in slave mode an amount of data in blocking mode. 
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  pData: Pointer to data buffer
-  * @param  Size: Amount of data to be sent
-  * @param  Timeout: Timeout duration
+  * @param  pData Pointer to data buffer
+  * @param  Size Amount of data to be sent
+  * @param  Timeout Timeout duration
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_I2C_Slave_Transmit(I2C_HandleTypeDef *hi2c, uint8_t *pData, uint16_t Size, uint32_t Timeout)
@@ -858,11 +863,11 @@ HAL_StatusTypeDef HAL_I2C_Slave_Transmit(I2C_HandleTypeDef *hi2c, uint8_t *pData
 
 /**
   * @brief  Receive in slave mode an amount of data in blocking mode 
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  pData: Pointer to data buffer
-  * @param  Size: Amount of data to be sent
-  * @param  Timeout: Timeout duration
+  * @param  pData Pointer to data buffer
+  * @param  Size Amount of data to be sent
+  * @param  Timeout Timeout duration
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_I2C_Slave_Receive(I2C_HandleTypeDef *hi2c, uint8_t *pData, uint16_t Size, uint32_t Timeout)
@@ -909,6 +914,14 @@ HAL_StatusTypeDef HAL_I2C_Slave_Receive(I2C_HandleTypeDef *hi2c, uint8_t *pData,
       {
         /* Disable Address Acknowledge */
         hi2c->Instance->CR2 |= I2C_CR2_NACK;
+        
+        /* Store Last receive data if any */
+        if(__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_RXNE) == SET)
+        {
+          /* Read data from RXDR */
+          (*pData++) = hi2c->Instance->RXDR;
+        }
+        
         if(hi2c->ErrorCode == HAL_I2C_ERROR_TIMEOUT)
         {
           return HAL_TIMEOUT;
@@ -967,21 +980,14 @@ HAL_StatusTypeDef HAL_I2C_Slave_Receive(I2C_HandleTypeDef *hi2c, uint8_t *pData,
     return HAL_BUSY; 
   } 
 }
-/**
-  * @}
-  */ 
-
-/** @addtogroup Non_Blocking_mode_Interrupt Non Blocking mode Interrupt
- * @{
- */
 
 /**
-  * @brief  Transmit in master mode an amount of data in no-blocking mode with Interrupt
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @brief  Transmit in master mode an amount of data in non-blocking mode with Interrupt
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  DevAddress: Target device address
-  * @param  pData: Pointer to data buffer
-  * @param  Size: Amount of data to be sent
+  * @param  DevAddress Target device address
+  * @param  pData Pointer to data buffer
+  * @param  Size Amount of data to be sent
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_I2C_Master_Transmit_IT(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size)
@@ -1048,12 +1054,12 @@ HAL_StatusTypeDef HAL_I2C_Master_Transmit_IT(I2C_HandleTypeDef *hi2c, uint16_t D
 }
 
 /**
-  * @brief  Receive in master mode an amount of data in no-blocking mode with Interrupt
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @brief  Receive in master mode an amount of data in non-blocking mode with Interrupt
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  DevAddress: Target device address
-  * @param  pData: Pointer to data buffer
-  * @param  Size: Amount of data to be sent
+  * @param  DevAddress Target device address
+  * @param  pData Pointer to data buffer
+  * @param  Size Amount of data to be sent
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_I2C_Master_Receive_IT(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size)
@@ -1119,11 +1125,11 @@ HAL_StatusTypeDef HAL_I2C_Master_Receive_IT(I2C_HandleTypeDef *hi2c, uint16_t De
 }
 
 /**
-  * @brief  Transmit in slave mode an amount of data in no-blocking mode with Interrupt 
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @brief  Transmit in slave mode an amount of data in non-blocking mode with Interrupt 
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  pData: Pointer to data buffer
-  * @param  Size: Amount of data to be sent
+  * @param  pData Pointer to data buffer
+  * @param  Size Amount of data to be sent
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_I2C_Slave_Transmit_IT(I2C_HandleTypeDef *hi2c, uint8_t *pData, uint16_t Size)
@@ -1169,11 +1175,11 @@ HAL_StatusTypeDef HAL_I2C_Slave_Transmit_IT(I2C_HandleTypeDef *hi2c, uint8_t *pD
 }
 
 /**
-  * @brief  Receive in slave mode an amount of data in no-blocking mode with Interrupt 
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @brief  Receive in slave mode an amount of data in non-blocking mode with Interrupt 
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  pData: Pointer to data buffer
-  * @param  Size: Amount of data to be sent
+  * @param  pData Pointer to data buffer
+  * @param  Size Amount of data to be sent
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_I2C_Slave_Receive_IT(I2C_HandleTypeDef *hi2c, uint8_t *pData, uint16_t Size)
@@ -1219,20 +1225,12 @@ HAL_StatusTypeDef HAL_I2C_Slave_Receive_IT(I2C_HandleTypeDef *hi2c, uint8_t *pDa
 }
 
 /**
-  * @}
-  */ 
-
-/** @addtogroup Non_Blocking_mode_DMA Non Blocking mode DMA
- * @{
- */
- 
-/**
-  * @brief  Transmit in master mode an amount of data in no-blocking mode with DMA
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @brief  Transmit in master mode an amount of data in non-blocking mode with DMA
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  DevAddress: Target device address
-  * @param  pData: Pointer to data buffer
-  * @param  Size: Amount of data to be sent
+  * @param  DevAddress Target device address
+  * @param  pData Pointer to data buffer
+  * @param  Size Amount of data to be sent
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_I2C_Master_Transmit_DMA(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size)
@@ -1291,6 +1289,9 @@ HAL_StatusTypeDef HAL_I2C_Master_Transmit_DMA(I2C_HandleTypeDef *hi2c, uint16_t 
     {
       /* Disable Address Acknowledge */
       hi2c->Instance->CR2 |= I2C_CR2_NACK;
+      
+      /* Abort DMA */
+      HAL_DMA_Abort(hi2c->hdmatx);
 
       if(hi2c->ErrorCode == HAL_I2C_ERROR_AF)
       {
@@ -1301,7 +1302,6 @@ HAL_StatusTypeDef HAL_I2C_Master_Transmit_DMA(I2C_HandleTypeDef *hi2c, uint16_t 
         return HAL_TIMEOUT;
       }
     }
-
     
     /* Enable DMA Request */
     hi2c->Instance->CR1 |= I2C_CR1_TXDMAEN;   
@@ -1318,12 +1318,12 @@ HAL_StatusTypeDef HAL_I2C_Master_Transmit_DMA(I2C_HandleTypeDef *hi2c, uint16_t 
 }
 
 /**
-  * @brief  Receive in master mode an amount of data in no-blocking mode with DMA 
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @brief  Receive in master mode an amount of data in non-blocking mode with DMA 
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  DevAddress: Target device address
-  * @param  pData: Pointer to data buffer
-  * @param  Size: Amount of data to be sent
+  * @param  DevAddress Target device address
+  * @param  pData Pointer to data buffer
+  * @param  Size Amount of data to be sent
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_I2C_Master_Receive_DMA(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size)
@@ -1378,12 +1378,21 @@ HAL_StatusTypeDef HAL_I2C_Master_Receive_DMA(I2C_HandleTypeDef *hi2c, uint16_t D
     }
 
     /* Wait until RXNE flag is set */
-    if(I2C_WaitOnFlagUntilTimeout(hi2c, I2C_FLAG_RXNE, RESET, I2C_TIMEOUT_RXNE) != HAL_OK)      
+    if(I2C_WaitOnRXNEFlagUntilTimeout(hi2c, I2C_FLAG_RXNE) != HAL_OK)
     {
-      return HAL_TIMEOUT;
+      /* Abort DMA */
+      HAL_DMA_Abort(hi2c->hdmarx);
+
+      if(hi2c->ErrorCode == HAL_I2C_ERROR_AF)
+      {
+        return HAL_ERROR;
+      }
+      else
+      {
+        return HAL_TIMEOUT;
+      }
     }
 
-    
     /* Enable DMA Request */
     hi2c->Instance->CR1 |= I2C_CR1_RXDMAEN;   
     
@@ -1399,11 +1408,11 @@ HAL_StatusTypeDef HAL_I2C_Master_Receive_DMA(I2C_HandleTypeDef *hi2c, uint16_t D
 }
 
 /**
-  * @brief  Transmit in slave mode an amount of data in no-blocking mode with DMA 
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @brief  Transmit in slave mode an amount of data in non-blocking mode with DMA 
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  pData: Pointer to data buffer
-  * @param  Size: Amount of data to be sent
+  * @param  pData Pointer to data buffer
+  * @param  Size Amount of data to be sent
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_I2C_Slave_Transmit_DMA(I2C_HandleTypeDef *hi2c, uint8_t *pData, uint16_t Size)
@@ -1485,11 +1494,11 @@ HAL_StatusTypeDef HAL_I2C_Slave_Transmit_DMA(I2C_HandleTypeDef *hi2c, uint8_t *p
 }
 
 /**
-  * @brief  Receive in slave mode an amount of data in no-blocking mode with DMA 
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @brief  Receive in slave mode an amount of data in non-blocking mode with DMA 
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  pData: Pointer to data buffer
-  * @param  Size: Amount of data to be sent
+  * @param  pData Pointer to data buffer
+  * @param  Size Amount of data to be sent
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_I2C_Slave_Receive_DMA(I2C_HandleTypeDef *hi2c, uint8_t *pData, uint16_t Size)
@@ -1554,25 +1563,16 @@ HAL_StatusTypeDef HAL_I2C_Slave_Receive_DMA(I2C_HandleTypeDef *hi2c, uint8_t *pD
     return HAL_BUSY;
   }
 }
-
-/**
-  * @}
-  */ 
-
-/** @addtogroup Blocking_mode_Polling Blocking mode Polling
- * @{
- */
-   
 /**
   * @brief  Write an amount of data in blocking mode to a specific memory address
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  DevAddress: Target device address
-  * @param  MemAddress: Internal memory address
-  * @param  MemAddSize: Size of internal memory address
-  * @param  pData: Pointer to data buffer
-  * @param  Size: Amount of data to be sent
-  * @param  Timeout: Timeout duration
+  * @param  DevAddress Target device address
+  * @param  MemAddress Internal memory address
+  * @param  MemAddSize Size of internal memory address
+  * @param  pData Pointer to data buffer
+  * @param  Size Amount of data to be sent
+  * @param  Timeout Timeout duration
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_I2C_Mem_Write(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout)
@@ -1691,7 +1691,7 @@ HAL_StatusTypeDef HAL_I2C_Mem_Write(I2C_HandleTypeDef *hi2c, uint16_t DevAddress
     __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
   	
     /* Clear Configuration Register 2 */
-    __HAL_I2C_RESET_CR2(hi2c);
+    I2C_RESET_CR2(hi2c);
 
     hi2c->State = HAL_I2C_STATE_READY; 	  
     
@@ -1708,14 +1708,14 @@ HAL_StatusTypeDef HAL_I2C_Mem_Write(I2C_HandleTypeDef *hi2c, uint16_t DevAddress
 
 /**
   * @brief  Read an amount of data in blocking mode from a specific memory address
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  DevAddress: Target device address
-  * @param  MemAddress: Internal memory address
-  * @param  MemAddSize: Size of internal memory address
-  * @param  pData: Pointer to data buffer
-  * @param  Size: Amount of data to be sent
-  * @param  Timeout: Timeout duration
+  * @param  DevAddress Target device address
+  * @param  MemAddress Internal memory address
+  * @param  MemAddSize Size of internal memory address
+  * @param  pData Pointer to data buffer
+  * @param  Size Amount of data to be sent
+  * @param  Timeout Timeout duration
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout)
@@ -1829,7 +1829,7 @@ HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress,
     __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
   	
     /* Clear Configuration Register 2 */
-    __HAL_I2C_RESET_CR2(hi2c);
+    I2C_RESET_CR2(hi2c);
     
     hi2c->State = HAL_I2C_STATE_READY;
     
@@ -1844,22 +1844,14 @@ HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress,
   }
 }
 /**
-  * @}
-  */ 
-
-/** @addtogroup Non_Blocking_mode_Interrupt Non Blocking mode Interrupt
- * @{
- */
-   
-/**
-  * @brief  Write an amount of data in no-blocking mode with Interrupt to a specific memory address
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @brief  Write an amount of data in non-blocking mode with Interrupt to a specific memory address
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  DevAddress: Target device address
-  * @param  MemAddress: Internal memory address
-  * @param  MemAddSize: Size of internal memory address
-  * @param  pData: Pointer to data buffer
-  * @param  Size: Amount of data to be sent
+  * @param  DevAddress Target device address
+  * @param  MemAddress Internal memory address
+  * @param  MemAddSize Size of internal memory address
+  * @param  pData Pointer to data buffer
+  * @param  Size Amount of data to be sent
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_I2C_Mem_Write_IT(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
@@ -1945,14 +1937,14 @@ HAL_StatusTypeDef HAL_I2C_Mem_Write_IT(I2C_HandleTypeDef *hi2c, uint16_t DevAddr
 }
 
 /**
-  * @brief  Read an amount of data in no-blocking mode with Interrupt from a specific memory address
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @brief  Read an amount of data in non-blocking mode with Interrupt from a specific memory address
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  DevAddress: Target device address
-  * @param  MemAddress: Internal memory address
-  * @param  MemAddSize: Size of internal memory address
-  * @param  pData: Pointer to data buffer
-  * @param  Size: Amount of data to be sent
+  * @param  DevAddress Target device address
+  * @param  MemAddress Internal memory address
+  * @param  MemAddSize Size of internal memory address
+  * @param  pData Pointer to data buffer
+  * @param  Size Amount of data to be sent
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_I2C_Mem_Read_IT(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
@@ -2035,24 +2027,15 @@ HAL_StatusTypeDef HAL_I2C_Mem_Read_IT(I2C_HandleTypeDef *hi2c, uint16_t DevAddre
     return HAL_BUSY; 
   }   
 }
-
 /**
-  * @}
-  */ 
-
-/** @addtogroup Non_Blocking_mode_DMA Non Blocking mode DMA
- * @{
- */ 
- 
-/**
-  * @brief  Write an amount of data in no-blocking mode with DMA to a specific memory address
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @brief  Write an amount of data in non-blocking mode with DMA to a specific memory address
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  DevAddress: Target device address
-  * @param  MemAddress: Internal memory address
-  * @param  MemAddSize: Size of internal memory address
-  * @param  pData: Pointer to data buffer
-  * @param  Size: Amount of data to be sent
+  * @param  DevAddress Target device address
+  * @param  MemAddress Internal memory address
+  * @param  MemAddSize Size of internal memory address
+  * @param  pData Pointer to data buffer
+  * @param  Size Amount of data to be sent
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_I2C_Mem_Write_DMA(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
@@ -2154,14 +2137,14 @@ HAL_StatusTypeDef HAL_I2C_Mem_Write_DMA(I2C_HandleTypeDef *hi2c, uint16_t DevAdd
 }
 
 /**
-  * @brief  Reads an amount of data in no-blocking mode with DMA from a specific memory address.
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @brief  Reads an amount of data in non-blocking mode with DMA from a specific memory address.
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  DevAddress: Target device address
-  * @param  MemAddress: Internal memory address
-  * @param  MemAddSize: Size of internal memory address
-  * @param  pData: Pointer to data buffer
-  * @param  Size: Amount of data to be read
+  * @param  DevAddress Target device address
+  * @param  MemAddress Internal memory address
+  * @param  MemAddSize Size of internal memory address
+  * @param  pData Pointer to data buffer
+  * @param  Size Amount of data to be read
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_I2C_Mem_Read_DMA(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
@@ -2252,22 +2235,15 @@ HAL_StatusTypeDef HAL_I2C_Mem_Read_DMA(I2C_HandleTypeDef *hi2c, uint16_t DevAddr
     return HAL_BUSY;
   }
 }
-/**
-  * @}
-  */ 
-
-/** @addtogroup Blocking_mode_Polling Blocking mode Polling
- * @{
- */
 
 /**
   * @brief  Checks if target device is ready for communication. 
   * @note   This function is used with Memory devices
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  DevAddress: Target device address
-  * @param  Trials: Number of trials
-  * @param  Timeout: Timeout duration
+  * @param  DevAddress Target device address
+  * @param  Trials Number of trials
+  * @param  Timeout Timeout duration
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_I2C_IsDeviceReady(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint32_t Trials, uint32_t Timeout)
@@ -2292,7 +2268,7 @@ HAL_StatusTypeDef HAL_I2C_IsDeviceReady(I2C_HandleTypeDef *hi2c, uint16_t DevAdd
     do
     {
       /* Generate Start */
-      hi2c->Instance->CR2 = __HAL_I2C_GENERATE_START(hi2c->Init.AddressingMode,DevAddress);
+      hi2c->Instance->CR2 = I2C_GENERATE_START(hi2c->Init.AddressingMode,DevAddress);
       
       /* No need to Check TC flag, with AUTOEND mode the stop is automatically generated */
       /* Wait until STOPF flag is set or a NACK flag is set*/
@@ -2380,13 +2356,13 @@ HAL_StatusTypeDef HAL_I2C_IsDeviceReady(I2C_HandleTypeDef *hi2c, uint16_t DevAdd
   * @}
   */
 
-/** @defgroup IRQ_Handler_and_Callbacks IRQ Handler and Callbacks
+/** @defgroup I2C_IRQ_Handler_and_Callbacks IRQ Handler and Callbacks
  * @{
  */   
 
 /**
   * @brief  This function handles I2C event interrupt request.
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
   * @retval None
   */
@@ -2432,7 +2408,7 @@ void HAL_I2C_EV_IRQHandler(I2C_HandleTypeDef *hi2c)
 
 /**
   * @brief  This function handles I2C error interrupt request.
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
   * @retval None
   */
@@ -2466,7 +2442,7 @@ void HAL_I2C_ER_IRQHandler(I2C_HandleTypeDef *hi2c)
   }
 
   /* Call the Error Callback in case of Error detected */
-  if(hi2c->ErrorCode != HAL_I2C_ERROR_NONE)
+  if((hi2c->ErrorCode & (HAL_I2C_ERROR_BERR | HAL_I2C_ERROR_OVR | HAL_I2C_ERROR_ARLO)) !=  HAL_I2C_ERROR_NONE)
   {
     hi2c->State = HAL_I2C_STATE_READY;
     
@@ -2475,98 +2451,94 @@ void HAL_I2C_ER_IRQHandler(I2C_HandleTypeDef *hi2c)
 }
 
 /**
-  * @brief  Master Tx Transfer completed callbacks.
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @brief  Master Tx Transfer completed callback.
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
   * @retval None
   */
  __weak void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
+  /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_I2C_TxCpltCallback could be implemented in the user file
    */ 
 }
 
 /**
-  * @brief  Master Rx Transfer completed callbacks.
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @brief  Master Rx Transfer completed callback.
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
   * @retval None
   */
 __weak void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
+  /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_I2C_TxCpltCallback could be implemented in the user file
    */
 }
 
-/** @brief  Slave Tx Transfer completed callbacks.
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+/** @brief  Slave Tx Transfer completed callback.
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
   * @retval None
   */
  __weak void HAL_I2C_SlaveTxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
+  /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_I2C_TxCpltCallback could be implemented in the user file
    */ 
 }
 
 /**
-  * @brief  Slave Rx Transfer completed callbacks.
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @brief  Slave Rx Transfer completed callback.
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
   * @retval None
   */
 __weak void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
+  /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_I2C_TxCpltCallback could be implemented in the user file
    */
 }
 
 /**
-  * @brief  Memory Tx Transfer completed callbacks.
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @brief  Memory Tx Transfer completed callback.
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
   * @retval None
   */
  __weak void HAL_I2C_MemTxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
+  /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_I2C_TxCpltCallback could be implemented in the user file
    */ 
 }
 
 /**
-  * @brief  Memory Rx Transfer completed callbacks.
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @brief  Memory Rx Transfer completed callback.
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
   * @retval None
   */
 __weak void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
+  /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_I2C_TxCpltCallback could be implemented in the user file
    */
 }
 
 /**
-  * @brief  I2C error callbacks.
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @brief  I2C error callback.
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
   * @retval None
   */
  __weak void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
+  /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_I2C_ErrorCallback could be implemented in the user file
    */ 
 }
-
-/**
-  * @}
-  */
 
 /**
   * @}
@@ -2588,18 +2560,20 @@ __weak void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
   */
 
 /**
-  * @brief  Returns the I2C state.
-  * @param  hi2c : I2C handle
+  * @brief  Return the I2C handle state.
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
+  *                the configuration information for the specified I2C.
   * @retval HAL state
   */
 HAL_I2C_StateTypeDef HAL_I2C_GetState(I2C_HandleTypeDef *hi2c)
 {
+  /* Return I2C handle state */
   return hi2c->State;
 }
 
 /**
-* @brief  Return the I2C error code
-* @param  hi2c : pointer to a I2C_HandleTypeDef structure that contains
+* @brief  Return the I2C error code.
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *              the configuration information for the specified I2C.
 * @retval I2C Error Code
 */
@@ -2622,7 +2596,7 @@ uint32_t HAL_I2C_GetError(I2C_HandleTypeDef *hi2c)
   
 /**
   * @brief  Handle Interrupt Flags Master Transmit Mode
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
   * @retval HAL status
   */
@@ -2638,7 +2612,7 @@ static HAL_StatusTypeDef I2C_MasterTransmit_ISR(I2C_HandleTypeDef *hi2c)
     /* Write data to TXDR */
     hi2c->Instance->TXDR = (*hi2c->pBuffPtr++);
     hi2c->XferSize--;
-    hi2c->XferCount--;	
+    hi2c->XferCount--;
   }
   else if(__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_TCR) == SET)
   {
@@ -2686,6 +2660,14 @@ static HAL_StatusTypeDef I2C_MasterTransmit_ISR(I2C_HandleTypeDef *hi2c)
   }
   else if(__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_STOPF) == SET)
   {
+    if(__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_AF) == SET)
+    {
+      /* Clear NACK Flag */
+      __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_AF);
+
+      hi2c->ErrorCode |= HAL_I2C_ERROR_AF;
+    }
+
     /* Disable ERR, TC, STOP, NACK, TXI interrupt */
     __HAL_I2C_DISABLE_IT(hi2c,I2C_IT_ERRI | I2C_IT_TCI| I2C_IT_STOPI| I2C_IT_NACKI | I2C_IT_TXI );
 
@@ -2693,20 +2675,44 @@ static HAL_StatusTypeDef I2C_MasterTransmit_ISR(I2C_HandleTypeDef *hi2c)
     __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
 
     /* Clear Configuration Register 2 */
-    __HAL_I2C_RESET_CR2(hi2c);
-
-    hi2c->State = HAL_I2C_STATE_READY;
-
-    /* Process Unlocked */
-    __HAL_UNLOCK(hi2c);
-
-    if(hi2c->State == HAL_I2C_STATE_MEM_BUSY_TX)
+    I2C_RESET_CR2(hi2c);
+    
+    /* Flush TX register if not empty */
+    if(__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_TXE) == RESET)
     {
-      HAL_I2C_MemTxCpltCallback(hi2c);
+      __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_TXE);
+    }
+
+    /* Call the correct callback to inform upper layer */
+    if(hi2c->ErrorCode != HAL_I2C_ERROR_NONE)
+    {
+      hi2c->State = HAL_I2C_STATE_READY;
+
+      /* Process Unlocked */
+      __HAL_UNLOCK(hi2c);
+
+      HAL_I2C_ErrorCallback(hi2c);
     }
     else
     {
-      HAL_I2C_MasterTxCpltCallback(hi2c);
+      if(hi2c->State == HAL_I2C_STATE_MEM_BUSY_TX)
+      {
+        hi2c->State = HAL_I2C_STATE_READY;
+
+        /* Process Unlocked */
+        __HAL_UNLOCK(hi2c);
+
+        HAL_I2C_MemTxCpltCallback(hi2c);
+      }
+      else
+      {
+        hi2c->State = HAL_I2C_STATE_READY;
+
+        /* Process Unlocked */
+        __HAL_UNLOCK(hi2c);
+
+        HAL_I2C_MasterTxCpltCallback(hi2c);
+      }
     }
   }
   else if(__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_AF) == SET)
@@ -2720,7 +2726,7 @@ static HAL_StatusTypeDef I2C_MasterTransmit_ISR(I2C_HandleTypeDef *hi2c)
     hi2c->ErrorCode |= HAL_I2C_ERROR_AF;
     HAL_I2C_ErrorCallback(hi2c);
   }
-  
+
   /* Process Unlocked */
   __HAL_UNLOCK(hi2c);
   
@@ -2729,7 +2735,7 @@ static HAL_StatusTypeDef I2C_MasterTransmit_ISR(I2C_HandleTypeDef *hi2c)
 
 /**
   * @brief  Handle Interrupt Flags Master Receive Mode
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
   * @retval HAL status
   */
@@ -2793,6 +2799,14 @@ static HAL_StatusTypeDef I2C_MasterReceive_ISR(I2C_HandleTypeDef *hi2c)
   }
   else if(__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_STOPF) == SET)
   {
+    if(__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_AF) == SET)
+    {
+      /* Clear NACK Flag */
+      __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_AF);
+
+      hi2c->ErrorCode |= HAL_I2C_ERROR_AF;
+    }
+
     /* Disable ERR, TC, STOP, NACK, TXI interrupt */
     __HAL_I2C_DISABLE_IT(hi2c,I2C_IT_ERRI | I2C_IT_TCI| I2C_IT_STOPI| I2C_IT_NACKI | I2C_IT_RXI );
       
@@ -2800,34 +2814,52 @@ static HAL_StatusTypeDef I2C_MasterReceive_ISR(I2C_HandleTypeDef *hi2c)
     __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
       
     /* Clear Configuration Register 2 */
-    __HAL_I2C_RESET_CR2(hi2c);
+    I2C_RESET_CR2(hi2c);
     
-    hi2c->State = HAL_I2C_STATE_READY;
-
-    /* Process Unlocked */
-    __HAL_UNLOCK(hi2c);
-    
-    if(hi2c->State == HAL_I2C_STATE_MEM_BUSY_RX)
+    /* Call the correct callback to inform upper layer */
+    if(hi2c->ErrorCode != HAL_I2C_ERROR_NONE)
     {
-      HAL_I2C_MemRxCpltCallback(hi2c);
+      hi2c->State = HAL_I2C_STATE_READY;
+
+      /* Process Unlocked */
+      __HAL_UNLOCK(hi2c);
+
+      HAL_I2C_ErrorCallback(hi2c);
     }
     else
     {
-      HAL_I2C_MasterRxCpltCallback(hi2c);
+      if(hi2c->State == HAL_I2C_STATE_MEM_BUSY_RX)
+      {
+        hi2c->State = HAL_I2C_STATE_READY;
+
+        /* Process Unlocked */
+        __HAL_UNLOCK(hi2c);
+      
+        HAL_I2C_MemRxCpltCallback(hi2c);
+      }
+      else
+      {
+        hi2c->State = HAL_I2C_STATE_READY;
+
+        /* Process Unlocked */
+        __HAL_UNLOCK(hi2c);
+      
+        HAL_I2C_MasterRxCpltCallback(hi2c);
+      }
     }
   }
   else if(__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_AF) == SET)
   {
     /* Clear NACK Flag */
     __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_AF);
-
+ 
     /* Process Unlocked */
     __HAL_UNLOCK(hi2c);
-    
+  
     hi2c->ErrorCode |= HAL_I2C_ERROR_AF;
     HAL_I2C_ErrorCallback(hi2c);
   }
-    
+
   /* Process Unlocked */
   __HAL_UNLOCK(hi2c); 
   
@@ -2837,7 +2869,7 @@ static HAL_StatusTypeDef I2C_MasterReceive_ISR(I2C_HandleTypeDef *hi2c)
 
 /**
   * @brief  Handle Interrupt Flags Slave Transmit Mode
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
   * @retval HAL status
   */
@@ -2923,7 +2955,7 @@ static HAL_StatusTypeDef I2C_SlaveTransmit_ISR(I2C_HandleTypeDef *hi2c)
 
 /**
   * @brief  Handle Interrupt Flags Slave Receive Mode
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
   * @retval HAL status
   */
@@ -2982,12 +3014,12 @@ static HAL_StatusTypeDef I2C_SlaveReceive_ISR(I2C_HandleTypeDef *hi2c)
 
 /**
   * @brief  Master sends target device address followed by internal memory address for write request.
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  DevAddress: Target device address
-  * @param  MemAddress: Internal memory address
-  * @param  MemAddSize: Size of internal memory address
-  * @param  Timeout: Timeout duration
+  * @param  DevAddress Target device address
+  * @param  MemAddress Internal memory address
+  * @param  MemAddSize Size of internal memory address
+  * @param  Timeout Timeout duration
   * @retval HAL status
   */
 static HAL_StatusTypeDef I2C_RequestMemoryWrite(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint32_t Timeout)   
@@ -3011,13 +3043,13 @@ static HAL_StatusTypeDef I2C_RequestMemoryWrite(I2C_HandleTypeDef *hi2c, uint16_
   if(MemAddSize == I2C_MEMADD_SIZE_8BIT)
   {
     /* Send Memory Address */
-    hi2c->Instance->TXDR = __HAL_I2C_MEM_ADD_LSB(MemAddress);    
+    hi2c->Instance->TXDR = I2C_MEM_ADD_LSB(MemAddress);    
   }      
   /* If Memory address size is 16Bit */
   else
   {
     /* Send MSB of Memory Address */
-    hi2c->Instance->TXDR = __HAL_I2C_MEM_ADD_MSB(MemAddress); 
+    hi2c->Instance->TXDR = I2C_MEM_ADD_MSB(MemAddress); 
     
     /* Wait until TXIS flag is set */
     if(I2C_WaitOnTXISFlagUntilTimeout(hi2c, Timeout) != HAL_OK)
@@ -3033,7 +3065,7 @@ static HAL_StatusTypeDef I2C_RequestMemoryWrite(I2C_HandleTypeDef *hi2c, uint16_
     }
     
     /* Send LSB of Memory Address */
-    hi2c->Instance->TXDR = __HAL_I2C_MEM_ADD_LSB(MemAddress);  
+    hi2c->Instance->TXDR = I2C_MEM_ADD_LSB(MemAddress);  
   }
   
   /* Wait until TCR flag is set */
@@ -3047,12 +3079,12 @@ return HAL_OK;
 
 /**
   * @brief  Master sends target device address followed by internal memory address for read request.
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  DevAddress: Target device address
-  * @param  MemAddress: Internal memory address
-  * @param  MemAddSize: Size of internal memory address
-  * @param  Timeout: Timeout duration
+  * @param  DevAddress Target device address
+  * @param  MemAddress Internal memory address
+  * @param  MemAddSize Size of internal memory address
+  * @param  Timeout Timeout duration
   * @retval HAL status
   */
 static HAL_StatusTypeDef I2C_RequestMemoryRead(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint32_t Timeout)
@@ -3076,13 +3108,13 @@ static HAL_StatusTypeDef I2C_RequestMemoryRead(I2C_HandleTypeDef *hi2c, uint16_t
   if(MemAddSize == I2C_MEMADD_SIZE_8BIT)
   {
     /* Send Memory Address */
-    hi2c->Instance->TXDR = __HAL_I2C_MEM_ADD_LSB(MemAddress);    
+    hi2c->Instance->TXDR = I2C_MEM_ADD_LSB(MemAddress);    
   }      
-  /* If Mememory address size is 16Bit */
+  /* If Memory address size is 16Bit */
   else
   {
     /* Send MSB of Memory Address */
-    hi2c->Instance->TXDR = __HAL_I2C_MEM_ADD_MSB(MemAddress); 
+    hi2c->Instance->TXDR = I2C_MEM_ADD_MSB(MemAddress); 
     
     /* Wait until TXIS flag is set */
     if(I2C_WaitOnTXISFlagUntilTimeout(hi2c, Timeout) != HAL_OK)
@@ -3098,7 +3130,7 @@ static HAL_StatusTypeDef I2C_RequestMemoryRead(I2C_HandleTypeDef *hi2c, uint16_t
     }
     
     /* Send LSB of Memory Address */
-    hi2c->Instance->TXDR = __HAL_I2C_MEM_ADD_LSB(MemAddress);  
+    hi2c->Instance->TXDR = I2C_MEM_ADD_LSB(MemAddress);  
   }
   
   /* Wait until TC flag is set */
@@ -3112,7 +3144,7 @@ static HAL_StatusTypeDef I2C_RequestMemoryRead(I2C_HandleTypeDef *hi2c, uint16_t
 
 /**
   * @brief  DMA I2C master transmit process complete callback.
-  * @param  hdma: DMA handle
+  * @param  hdma DMA handle
   * @retval None
   */
 static void I2C_DMAMasterTransmitCplt(DMA_HandleTypeDef *hdma) 
@@ -3154,7 +3186,7 @@ static void I2C_DMAMasterTransmitCplt(DMA_HandleTypeDef *hdma)
       __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
           
       /* Clear Configuration Register 2 */
-      __HAL_I2C_RESET_CR2(hi2c);
+      I2C_RESET_CR2(hi2c);
 
       hi2c->XferCount = 0;
     
@@ -3211,7 +3243,7 @@ static void I2C_DMAMasterTransmitCplt(DMA_HandleTypeDef *hdma)
         __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
             
         /* Clear Configuration Register 2 */
-        __HAL_I2C_RESET_CR2(hi2c);
+        I2C_RESET_CR2(hi2c);
 
         hi2c->XferCount = 0;
       
@@ -3245,7 +3277,7 @@ static void I2C_DMAMasterTransmitCplt(DMA_HandleTypeDef *hdma)
     __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
   	
     /* Clear Configuration Register 2 */
-    __HAL_I2C_RESET_CR2(hi2c);
+    I2C_RESET_CR2(hi2c);
 
     /* Disable DMA Request */
     hi2c->Instance->CR1 &= ~I2C_CR1_TXDMAEN; 
@@ -3268,7 +3300,7 @@ static void I2C_DMAMasterTransmitCplt(DMA_HandleTypeDef *hdma)
 
 /**
   * @brief  DMA I2C slave transmit process complete callback. 
-  * @param  hdma: DMA handle
+  * @param  hdma DMA handle
   * @retval None
   */
 static void I2C_DMASlaveTransmitCplt(DMA_HandleTypeDef *hdma) 
@@ -3319,7 +3351,7 @@ static void I2C_DMASlaveTransmitCplt(DMA_HandleTypeDef *hdma)
 
 /**
   * @brief DMA I2C master receive process complete callback 
-  * @param  hdma: DMA handle
+  * @param  hdma DMA handle
   * @retval None
   */
 static void I2C_DMAMasterReceiveCplt(DMA_HandleTypeDef *hdma) 
@@ -3361,7 +3393,7 @@ static void I2C_DMAMasterReceiveCplt(DMA_HandleTypeDef *hdma)
       __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
           
       /* Clear Configuration Register 2 */
-      __HAL_I2C_RESET_CR2(hi2c);
+      I2C_RESET_CR2(hi2c);
     
       hi2c->XferCount = 0;
     
@@ -3424,7 +3456,7 @@ static void I2C_DMAMasterReceiveCplt(DMA_HandleTypeDef *hdma)
         __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
             
         /* Clear Configuration Register 2 */
-        __HAL_I2C_RESET_CR2(hi2c);
+        I2C_RESET_CR2(hi2c);
       
         hi2c->XferCount = 0;
       
@@ -3459,7 +3491,7 @@ static void I2C_DMAMasterReceiveCplt(DMA_HandleTypeDef *hdma)
     __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
   	
     /* Clear Configuration Register 2 */
-    __HAL_I2C_RESET_CR2(hi2c);
+    I2C_RESET_CR2(hi2c);
   
     /* Disable DMA Request */
     hi2c->Instance->CR1 &= ~I2C_CR1_RXDMAEN; 
@@ -3482,7 +3514,7 @@ static void I2C_DMAMasterReceiveCplt(DMA_HandleTypeDef *hdma)
 
 /**
   * @brief  DMA I2C slave receive process complete callback.
-  * @param  hdma: DMA handle
+  * @param  hdma DMA handle
   * @retval None
   */
 static void I2C_DMASlaveReceiveCplt(DMA_HandleTypeDef *hdma) 
@@ -3534,7 +3566,7 @@ static void I2C_DMASlaveReceiveCplt(DMA_HandleTypeDef *hdma)
 
 /**
   * @brief DMA I2C Memory Write process complete callback 
-  * @param hdma : DMA handle
+  * @param hdma DMA handle
   * @retval None
   */
 static void I2C_DMAMemTransmitCplt(DMA_HandleTypeDef *hdma)   
@@ -3576,7 +3608,7 @@ static void I2C_DMAMemTransmitCplt(DMA_HandleTypeDef *hdma)
       __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
           
       /* Clear Configuration Register 2 */
-      __HAL_I2C_RESET_CR2(hi2c);
+      I2C_RESET_CR2(hi2c);
 
       hi2c->XferCount = 0;
     
@@ -3633,7 +3665,7 @@ static void I2C_DMAMemTransmitCplt(DMA_HandleTypeDef *hdma)
         __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
             
         /* Clear Configuration Register 2 */
-        __HAL_I2C_RESET_CR2(hi2c);
+        I2C_RESET_CR2(hi2c);
 
         hi2c->XferCount = 0;
       
@@ -3667,7 +3699,7 @@ static void I2C_DMAMemTransmitCplt(DMA_HandleTypeDef *hdma)
     __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
   	
     /* Clear Configuration Register 2 */
-    __HAL_I2C_RESET_CR2(hi2c);
+    I2C_RESET_CR2(hi2c);
 
     /* Disable DMA Request */
     hi2c->Instance->CR1 &= ~I2C_CR1_TXDMAEN; 
@@ -3690,7 +3722,7 @@ static void I2C_DMAMemTransmitCplt(DMA_HandleTypeDef *hdma)
 
 /**
   * @brief  DMA I2C Memory Read process complete callback
-  * @param  hdma: DMA handle
+  * @param  hdma DMA handle
   * @retval None
   */
 static void I2C_DMAMemReceiveCplt(DMA_HandleTypeDef *hdma)   
@@ -3732,7 +3764,7 @@ static void I2C_DMAMemReceiveCplt(DMA_HandleTypeDef *hdma)
       __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
           
       /* Clear Configuration Register 2 */
-      __HAL_I2C_RESET_CR2(hi2c);
+      I2C_RESET_CR2(hi2c);
     
       hi2c->XferCount = 0;
     
@@ -3795,7 +3827,7 @@ static void I2C_DMAMemReceiveCplt(DMA_HandleTypeDef *hdma)
         __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
             
         /* Clear Configuration Register 2 */
-        __HAL_I2C_RESET_CR2(hi2c);
+        I2C_RESET_CR2(hi2c);
       
         hi2c->XferCount = 0;
       
@@ -3829,7 +3861,7 @@ static void I2C_DMAMemReceiveCplt(DMA_HandleTypeDef *hdma)
     __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
   	
     /* Clear Configuration Register 2 */
-    __HAL_I2C_RESET_CR2(hi2c);
+    I2C_RESET_CR2(hi2c);
   
     /* Disable DMA Request */
     hi2c->Instance->CR1 &= ~I2C_CR1_RXDMAEN; 
@@ -3852,7 +3884,7 @@ static void I2C_DMAMemReceiveCplt(DMA_HandleTypeDef *hdma)
 
 /**
   * @brief  DMA I2C communication error callback. 
-  * @param hdma : DMA handle
+  * @param hdma DMA handle
   * @retval None
   */
 static void I2C_DMAError(DMA_HandleTypeDef *hdma)   
@@ -3873,11 +3905,11 @@ static void I2C_DMAError(DMA_HandleTypeDef *hdma)
 
 /**
   * @brief  This function handles I2C Communication Timeout.
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  Flag: specifies the I2C flag to check.
-  * @param  Status: The new Flag status (SET or RESET).
-  * @param  Timeout: Timeout duration
+  * @param  Flag Specifies the I2C flag to check.
+  * @param  Status The new Flag status (SET or RESET).
+  * @param  Timeout Timeout duration
   * @retval HAL status
   */
 static HAL_StatusTypeDef I2C_WaitOnFlagUntilTimeout(I2C_HandleTypeDef *hi2c, uint32_t Flag, FlagStatus Status, uint32_t Timeout)  
@@ -3924,9 +3956,9 @@ static HAL_StatusTypeDef I2C_WaitOnFlagUntilTimeout(I2C_HandleTypeDef *hi2c, uin
 
 /**
   * @brief  This function handles I2C Communication Timeout for specific usage of TXIS flag.
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  Timeout: Timeout duration
+  * @param  Timeout Timeout duration
   * @retval HAL status
   */
 static HAL_StatusTypeDef I2C_WaitOnTXISFlagUntilTimeout(I2C_HandleTypeDef *hi2c, uint32_t Timeout)  
@@ -3961,9 +3993,9 @@ static HAL_StatusTypeDef I2C_WaitOnTXISFlagUntilTimeout(I2C_HandleTypeDef *hi2c,
 
 /**
   * @brief  This function handles I2C Communication Timeout for specific usage of STOP flag.
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  Timeout: Timeout duration
+  * @param  Timeout Timeout duration
   * @retval HAL status
   */
 static HAL_StatusTypeDef I2C_WaitOnSTOPFlagUntilTimeout(I2C_HandleTypeDef *hi2c, uint32_t Timeout)
@@ -3996,9 +4028,9 @@ static HAL_StatusTypeDef I2C_WaitOnSTOPFlagUntilTimeout(I2C_HandleTypeDef *hi2c,
 
 /**
   * @brief  This function handles I2C Communication Timeout for specific usage of RXNE flag.
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  Timeout: Timeout duration
+  * @param  Timeout Timeout duration
   * @retval HAL status
   */
 static HAL_StatusTypeDef I2C_WaitOnRXNEFlagUntilTimeout(I2C_HandleTypeDef *hi2c, uint32_t Timeout)
@@ -4008,6 +4040,12 @@ static HAL_StatusTypeDef I2C_WaitOnRXNEFlagUntilTimeout(I2C_HandleTypeDef *hi2c,
   
   while(__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_RXNE) == RESET)
   {
+    /* Check if a NACK is detected */
+    if(I2C_IsAcknowledgeFailed(hi2c, Timeout) != HAL_OK)
+    {
+      return HAL_ERROR;
+    }
+
     /* Check if a STOPF is detected */
     if(__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_STOPF) == SET)
     {
@@ -4015,7 +4053,7 @@ static HAL_StatusTypeDef I2C_WaitOnRXNEFlagUntilTimeout(I2C_HandleTypeDef *hi2c,
       __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
 
       /* Clear Configuration Register 2 */
-      __HAL_I2C_RESET_CR2(hi2c);
+      I2C_RESET_CR2(hi2c);
 
       hi2c->ErrorCode = HAL_I2C_ERROR_NONE;
       hi2c->State= HAL_I2C_STATE_READY;
@@ -4043,9 +4081,9 @@ static HAL_StatusTypeDef I2C_WaitOnRXNEFlagUntilTimeout(I2C_HandleTypeDef *hi2c,
 
 /**
   * @brief  This function handles Acknowledge failed detection during an I2C Communication.
-  * @param  hi2c : Pointer to a I2C_HandleTypeDef structure that contains
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
   *                the configuration information for the specified I2C.
-  * @param  Timeout: Timeout duration
+  * @param  Timeout Timeout duration
   * @retval HAL status
   */
 static HAL_StatusTypeDef I2C_IsAcknowledgeFailed(I2C_HandleTypeDef *hi2c, uint32_t Timeout)
@@ -4055,19 +4093,6 @@ static HAL_StatusTypeDef I2C_IsAcknowledgeFailed(I2C_HandleTypeDef *hi2c, uint32
 
   if(__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_AF) == SET)
   {
-    /* Generate stop if necessary only in case of I2C peripheral in MASTER mode */
-    if((hi2c->State == HAL_I2C_STATE_MASTER_BUSY_TX) || (hi2c->State == HAL_I2C_STATE_MEM_BUSY_TX)
-       || (hi2c->State == HAL_I2C_STATE_MEM_BUSY_RX))
-    {
-      /* No need to generate the STOP condition if AUTOEND mode is enabled */
-      /* Generate the STOP condition only in case of SOFTEND mode is enabled */
-      if((hi2c->Instance->CR2 & I2C_AUTOEND_MODE) != I2C_AUTOEND_MODE)
-      {
-        /* Generate Stop */
-        hi2c->Instance->CR2 |= I2C_CR2_STOP;
-      }
-    }
-		
     /* Wait until STOP Flag is reset */
     /* AutoEnd should be initiate after AF */
     while(__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_STOPF) == RESET)
@@ -4091,8 +4116,14 @@ static HAL_StatusTypeDef I2C_IsAcknowledgeFailed(I2C_HandleTypeDef *hi2c, uint32
     /* Clear STOP Flag */
     __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
 
+    /* Flush TX register if not empty */
+    if(__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_TXE) == RESET)
+    {
+      __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_TXE);
+    }
+
     /* Clear Configuration Register 2 */
-    __HAL_I2C_RESET_CR2(hi2c);
+    I2C_RESET_CR2(hi2c);
 
     hi2c->ErrorCode = HAL_I2C_ERROR_AF;
     hi2c->State= HAL_I2C_STATE_READY;
@@ -4107,21 +4138,21 @@ static HAL_StatusTypeDef I2C_IsAcknowledgeFailed(I2C_HandleTypeDef *hi2c, uint32
 
 /**
   * @brief  Handles I2Cx communication when starting transfer or during transfer (TC or TCR flag are set).
-  * @param  hi2c: I2C handle.
-  * @param  DevAddress: specifies the slave address to be programmed.
-  * @param  Size: specifies the number of bytes to be programmed.
+  * @param  hi2c I2C handle.
+  * @param  DevAddress Specifies the slave address to be programmed.
+  * @param  Size Specifies the number of bytes to be programmed.
   *   This parameter must be a value between 0 and 255.
-  * @param  Mode: new state of the I2C START condition generation.
+  * @param  Mode New state of the I2C START condition generation.
   *   This parameter can be one of the following values:
-  *     @arg I2C_RELOAD_MODE: Enable Reload mode .
-  *     @arg I2C_AUTOEND_MODE: Enable Automatic end mode.
-  *     @arg I2C_SOFTEND_MODE: Enable Software end mode.
-  * @param  Request: new state of the I2C START condition generation.
+  *     @arg @ref I2C_RELOAD_MODE Enable Reload mode .
+  *     @arg @ref I2C_AUTOEND_MODE Enable Automatic end mode.
+  *     @arg @ref I2C_SOFTEND_MODE Enable Software end mode.
+  * @param  Request New state of the I2C START condition generation.
   *   This parameter can be one of the following values:
-  *     @arg I2C_NO_STARTSTOP: Don't Generate stop and start condition.
-  *     @arg I2C_GENERATE_STOP: Generate stop condition (Size should be set to 0).
-  *     @arg I2C_GENERATE_START_READ: Generate Restart for read request.
-  *     @arg I2C_GENERATE_START_WRITE: Generate Restart for write request.
+  *     @arg @ref I2C_NO_STARTSTOP Don't Generate stop and start condition.
+  *     @arg @ref I2C_GENERATE_STOP Generate stop condition (Size should be set to 0).
+  *     @arg @ref I2C_GENERATE_START_READ Generate Restart for read request.
+  *     @arg @ref I2C_GENERATE_START_WRITE Generate Restart for write request.
   * @retval None
   */
 static void I2C_TransferConfig(I2C_HandleTypeDef *hi2c,  uint16_t DevAddress, uint8_t Size, uint32_t Mode, uint32_t Request)

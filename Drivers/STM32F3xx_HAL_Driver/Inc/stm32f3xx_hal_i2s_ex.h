@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f3xx_hal_i2s_ex.h
   * @author  MCD Application Team
-  * @version V1.1.1
-  * @date    19-June-2015
+  * @version V1.2.0
+  * @date    13-November-2015
   * @brief   Header file of I2S HAL Extended module.
   ******************************************************************************
   * @attention
@@ -55,7 +55,7 @@
   * @{
   */
 
-/** @addtogroup I2SEx I2S Extended HAL module driver
+/** @addtogroup I2SEx I2SEx
   * @{
   */ 
 
@@ -141,7 +141,7 @@
 
 #if defined(STM32F302xE) || defined(STM32F303xE) || defined(STM32F398xx) || \
     defined(STM32F302xC) || defined(STM32F303xC) || defined(STM32F358xx)
-/** @addtogroup I2SEx_Exported_Functions_Group1 Extended features functions 
+/** @addtogroup I2SEx_Exported_Functions_Group1 I2S Extended Features Functions 
   * @{
   */
 
@@ -166,7 +166,7 @@ HAL_StatusTypeDef HAL_I2SEx_TransmitReceive_DMA(I2S_HandleTypeDef *hi2s, uint16_
   * @}
   */
 
-/** @addtogroup I2S I2S HAL module driver
+/** @addtogroup I2S I2S
   * @{
   */ 
 
@@ -175,7 +175,7 @@ HAL_StatusTypeDef HAL_I2SEx_TransmitReceive_DMA(I2S_HandleTypeDef *hi2s, uint16_
   */
 #if defined(STM32F302xE) || defined(STM32F303xE) || defined(STM32F398xx) || \
     defined(STM32F302xC) || defined(STM32F303xC) || defined(STM32F358xx)
-/** @addtogroup  I2S_Exported_Functions_Group2 Input and Output operation functions
+/** @addtogroup  I2S_Exported_Functions_Group2 IO operation functions
   * @{
   */
 /* I2S IRQHandler and Callbacks used in non blocking modes (Interrupt and DMA) */

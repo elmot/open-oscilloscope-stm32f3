@@ -46,7 +46,7 @@
   * @{
   */ 
 #define OSCILL_IN_EP                       			0x81  /* EP for Data IN */
-#define OSCILL_OUT_EP                           0x02  /* EP for commands commands */
+#define OSCILL_OUT_EP                           0x02  /* EP for commands */
 
 
 # define USB_OSCILL_CONFIG_DESC_SIZ                32

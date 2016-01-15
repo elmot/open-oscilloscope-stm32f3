@@ -121,7 +121,6 @@ static int8_t OSCILL_Init_FS(void)
   /* Set Application Buffers */
   USBD_OSCILL_SetTxBuffer(hUsbDevice_0, UserTxBufferFS, 0);
   USBD_OSCILL_SetRxBuffer(hUsbDevice_0, UserRxBufferFS);
-	OSCILL_Transmit_FS(OscillConfigData, -2+*((int *)OscillConfigData));
   return (USBD_OK);
   /* USER CODE END 3 */ 
 }

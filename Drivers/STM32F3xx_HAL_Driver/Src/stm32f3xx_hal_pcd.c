@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f3xx_hal_pcd.c
   * @author  MCD Application Team
-  * @version V1.1.1
-  * @date    19-June-2015
+  * @version V1.2.0
+  * @date    13-November-2015
   * @brief   PCD HAL module driver.
   *          This file provides firmware functions to manage the following 
   *          functionalities of the USB Peripheral Controller:
@@ -28,7 +28,7 @@
 
      (#) Initialize the PCD low level resources through the HAL_PCD_MspInit() API:
          (##) Enable the PCD/USB Low Level interface clock using 
-              (+++) __USB_CLK_ENABLE);
+              (+++) __HAL_RCC_USB_CLK_ENABLE();
            
          (##) Initialize the related GPIO clocks
          (##) Configure PCD pin-out
@@ -78,7 +78,7 @@
   * @{
   */
 
-/** @defgroup PCD PCD HAL module driver
+/** @defgroup PCD PCD
   * @brief PCD HAL module driver
   * @{
   */
@@ -111,6 +111,7 @@ static HAL_StatusTypeDef PCD_EP_ISR_Handler(PCD_HandleTypeDef *hpcd);
 /**
   * @}
   */ 
+
 /* Exported functions ---------------------------------------------------------*/
 
 /** @defgroup PCD_Exported_Functions PCD Exported Functions
@@ -151,11 +152,17 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
   /* Check the parameters */
   assert_param(IS_PCD_ALL_INSTANCE(hpcd->Instance));
 
-  hpcd->State = PCD_BUSY;
+  if(hpcd->State == HAL_PCD_STATE_RESET)
+  {  
+    /* Allocate lock resource and initialize it */
+    hpcd->Lock = HAL_UNLOCKED;
   
-  /* Init the low level hardware : GPIO, CLOCK, NVIC... */
-  HAL_PCD_MspInit(hpcd);
+    /* Init the low level hardware : GPIO, CLOCK, NVIC... */
+    HAL_PCD_MspInit(hpcd);
+  }
 
+  hpcd->State = HAL_PCD_STATE_BUSY;
+ 
  /* Init endpoints structures */
  for (i = 0; i < hpcd->Init.dev_endpoints ; i++)
  {
@@ -201,7 +208,7 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
   hpcd->Instance->CNTR = wInterrupt_Mask;
   
   hpcd->USB_Address = 0;
-  hpcd->State= PCD_READY;
+  hpcd->State= HAL_PCD_STATE_READY;
 
  return HAL_OK;
 }
@@ -219,7 +226,7 @@ HAL_StatusTypeDef HAL_PCD_DeInit(PCD_HandleTypeDef *hpcd)
     return HAL_ERROR;
   }
 
-  hpcd->State = PCD_BUSY;
+  hpcd->State = HAL_PCD_STATE_BUSY;
   
   /* Stop Device */
   HAL_PCD_Stop(hpcd);
@@ -227,7 +234,7 @@ HAL_StatusTypeDef HAL_PCD_DeInit(PCD_HandleTypeDef *hpcd)
   /* DeInit the low level hardware */
   HAL_PCD_MspDeInit(hpcd);
   
-  hpcd->State = PCD_READY; 
+  hpcd->State = HAL_PCD_STATE_RESET; 
   
   return HAL_OK;
 }
@@ -239,8 +246,8 @@ HAL_StatusTypeDef HAL_PCD_DeInit(PCD_HandleTypeDef *hpcd)
   */
 __weak void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
-            the HAL_PCD_MspInit could be implenetd in the user file
+  /* NOTE : This function should not be modified, when the callback is needed,
+            the HAL_PCD_MspInit could be implemented in the user file
    */
 }
 
@@ -251,8 +258,8 @@ __weak void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
   */
 __weak void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
-            the HAL_PCD_MspDeInit could be implenetd in the user file
+  /* NOTE : This function should not be modified, when the callback is needed,
+            the HAL_PCD_MspDeInit could be implemented in the user file
    */
 }
 
@@ -260,7 +267,7 @@ __weak void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd)
   * @}
   */
 
-/** @defgroup PCD_Exported_Functions_Group2 Input and Output operation functions 
+/** @defgroup PCD_Exported_Functions_Group2 IO operation functions 
  *  @brief   Data transfers functions 
  *
 @verbatim   
@@ -276,7 +283,7 @@ __weak void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd)
   */
   
 /**
-  * @brief  Start The USB OTG Device.
+  * @brief  Start the USB device.
   * @param  hpcd: PCD handle
   * @retval HAL status
   */
@@ -289,7 +296,7 @@ HAL_StatusTypeDef HAL_PCD_Start(PCD_HandleTypeDef *hpcd)
 }
 
 /**
-  * @brief  Stop The USB OTG Device.
+  * @brief  Stop the USB device.
   * @param  hpcd: PCD handle
   * @retval HAL status
   */
@@ -533,7 +540,7 @@ static HAL_StatusTypeDef PCD_EP_ISR_Handler(PCD_HandleTypeDef *hpcd)
   * @{
   */
 
-/** @defgroup PCD_Exported_Functions_Group2 Input and Output operation functions 
+/** @defgroup PCD_Exported_Functions_Group2 IO operation functions 
  * @{
  */    
  
@@ -560,9 +567,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
     HAL_PCD_SetAddress(hpcd, 0);
   }
 
-  if (__HAL_PCD_GET_FLAG (hpcd, USB_ISTR_PMAOVRM))
+  if (__HAL_PCD_GET_FLAG (hpcd, USB_ISTR_PMAOVR))
   {
-    __HAL_PCD_CLEAR_FLAG(hpcd, USB_ISTR_PMAOVRM);    
+    __HAL_PCD_CLEAR_FLAG(hpcd, USB_ISTR_PMAOVR);    
   }
   if (__HAL_PCD_GET_FLAG (hpcd, USB_ISTR_ERR))
   {
@@ -570,9 +577,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
   }
 
   if (__HAL_PCD_GET_FLAG (hpcd, USB_ISTR_WKUP))
-  {  
-    hpcd->Instance->CNTR &= ~(USB_CNTR_LP_MODE);
-    
+  {
+    hpcd->Instance->CNTR &= ~(USB_CNTR_LPMODE);
+
     /*set wInterrupt_Mask global variable*/
     wInterrupt_Mask = USB_CNTR_CTRM  | USB_CNTR_WKUPM | USB_CNTR_SUSPM | USB_CNTR_ERRM \
       | USB_CNTR_ESOFM | USB_CNTR_RESETM;
@@ -592,7 +599,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
     
     /* Force low-power mode in the macrocell */
     hpcd->Instance->CNTR |= USB_CNTR_FSUSP;
-    hpcd->Instance->CNTR |= USB_CNTR_LP_MODE;
+    hpcd->Instance->CNTR |= USB_CNTR_LPMODE;
     if (__HAL_PCD_GET_FLAG (hpcd, USB_ISTR_WKUP) == 0)
     {
       HAL_PCD_SuspendCallback(hpcd);
@@ -620,7 +627,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
   */
  __weak void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
+  /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_PCD_DataOutStageCallback could be implemented in the user file
    */ 
 }
@@ -633,18 +640,18 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
   */
  __weak void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
+  /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_PCD_DataInStageCallback could be implemented in the user file
    */ 
 }
 /**
   * @brief  Setup stage callback
-  * @param  hpcd: ppp handle
+  * @param  hpcd: PCD handle
   * @retval None
   */
  __weak void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
+  /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_PCD_SetupStageCallback could be implemented in the user file
    */ 
 }
@@ -656,7 +663,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
   */
  __weak void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
+  /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_PCD_SOFCallback could be implemented in the user file
    */ 
 }
@@ -668,7 +675,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
   */
  __weak void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
+  /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_PCD_ResetCallback could be implemented in the user file
    */ 
 }
@@ -680,7 +687,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
   */
  __weak void HAL_PCD_SuspendCallback(PCD_HandleTypeDef *hpcd)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
+  /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_PCD_SuspendCallback could be implemented in the user file
    */ 
 }
@@ -692,7 +699,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
   */
  __weak void HAL_PCD_ResumeCallback(PCD_HandleTypeDef *hpcd)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
+  /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_PCD_ResumeCallback could be implemented in the user file
    */ 
 }
@@ -705,7 +712,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
   */
  __weak void HAL_PCD_ISOOUTIncompleteCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
+  /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_PCD_ISOOUTIncompleteCallback could be implemented in the user file
    */ 
 }
@@ -718,7 +725,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
   */
  __weak void HAL_PCD_ISOINIncompleteCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
+  /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_PCD_ISOINIncompleteCallback could be implemented in the user file
    */ 
 }
@@ -730,19 +737,19 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
   */
  __weak void HAL_PCD_ConnectCallback(PCD_HandleTypeDef *hpcd)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
+  /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_PCD_ConnectCallback could be implemented in the user file
    */ 
 }
 
 /**
   * @brief  Disconnection event callbacks
-  * @param  hpcd: ppp handle
+  * @param  hpcd: PCD handle
   * @retval None
   */
  __weak void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd)
 {
-  /* NOTE : This function Should not be modified, when the callback is needed,
+  /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_PCD_DisconnectCallback could be implemented in the user file
    */ 
 }
@@ -824,7 +831,7 @@ HAL_StatusTypeDef HAL_PCD_SetAddress(PCD_HandleTypeDef *hpcd, uint8_t address)
   * @brief  Open and configure an endpoint
   * @param  hpcd: PCD handle
   * @param  ep_addr: endpoint address
-  * @param  ep_mps: endpoint max packert size
+  * @param  ep_mps: endpoint max packet size
   * @param  ep_type: endpoint type   
   * @retval HAL status
   */
@@ -849,7 +856,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Open(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, uint
   
   __HAL_LOCK(hpcd); 
 
-/* initialize Endpoint */
+  /* initialize Endpoint */
   switch (ep->type)
   {
   case PCD_EP_TYPE_CTRL:
@@ -1106,9 +1113,6 @@ HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, 
   }
   else
   {
-    /*Set the Double buffer counter*/
-    PCD_SET_EP_DBUF1_CNT(hpcd->Instance, ep->num, ep->is_in, len);
-    
     /*Write the data to the USB endpoint*/
     if (PCD_GET_ENDPOINT(hpcd->Instance, ep->num)& USB_EP_DTOG_TX)
     {
@@ -1227,22 +1231,22 @@ HAL_StatusTypeDef HAL_PCD_EP_Flush(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 }
 
 /**
-  * @brief  HAL_PCD_ActiveRemoteWakeup : active remote wakeup signalling
+  * @brief  HAL_PCD_ActivateRemoteWakeup : active remote wakeup signalling
   * @param  hpcd: PCD handle
-  * @retval status
+  * @retval HAL status
   */
-HAL_StatusTypeDef HAL_PCD_ActiveRemoteWakeup(PCD_HandleTypeDef *hpcd)
+HAL_StatusTypeDef HAL_PCD_ActivateRemoteWakeup(PCD_HandleTypeDef *hpcd)
 {
   hpcd->Instance->CNTR |= USB_CNTR_RESUME;
   return HAL_OK;  
 }
 
 /**
-  * @brief  HAL_PCD_DeActiveRemoteWakeup : de-active remote wakeup signalling
+  * @brief  HAL_PCD_DeActivateRemoteWakeup : de-active remote wakeup signalling
   * @param  hpcd: PCD handle
-  * @retval status
+  * @retval HAL status
   */
-HAL_StatusTypeDef HAL_PCD_DeActiveRemoteWakeup(PCD_HandleTypeDef *hpcd)
+HAL_StatusTypeDef HAL_PCD_DeActivateRemoteWakeup(PCD_HandleTypeDef *hpcd)
 {
   hpcd->Instance->CNTR &= ~(USB_CNTR_RESUME);
   return HAL_OK;  
@@ -1260,7 +1264,7 @@ HAL_StatusTypeDef HAL_PCD_DeActiveRemoteWakeup(PCD_HandleTypeDef *hpcd)
                       ##### Peripheral State functions #####
  ===============================================================================  
     [..]
-    This subsection permit to get in run-time the status of the peripheral 
+    This subsection permits to get in run-time the status of the peripheral 
     and the data flow.
 
 @endverbatim

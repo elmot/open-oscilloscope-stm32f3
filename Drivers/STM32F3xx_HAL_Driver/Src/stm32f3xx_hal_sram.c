@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f3xx_hal_sram.c
   * @author  MCD Application Team
-  * @version V1.1.1
-  * @date    19-June-2015
+  * @version V1.2.0
+  * @date    13-November-2015
   * @brief   SRAM HAL module driver.
   *          This file provides a generic firmware to drive SRAM memories  
   *          mounted as external device.
@@ -16,7 +16,7 @@
     This driver is a generic layered driver which contains a set of APIs used to 
     control SRAM memories. It uses the FMC layer functions to interface 
     with SRAM devices.  
-    The following sequence should be followed to configure the FMC/FSMC to interface
+    The following sequence should be followed to configure the FMC to interface
     with SRAM/PSRAM memories: 
       
    (#) Declare a SRAM_HandleTypeDef handle structure, for example:
@@ -98,20 +98,20 @@
   * @{
   */
 
-/** @defgroup SRAM SRAM HAL module driver.
-  * @brief SRAM HAL module driver.
-  * @{
-  */
 #ifdef HAL_SRAM_MODULE_ENABLED
 
 #if defined(STM32F302xE) || defined(STM32F303xE) || defined(STM32F398xx)
 
+/** @defgroup SRAM SRAM
+  * @brief SRAM HAL module driver
+  * @{
+  */
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/    
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-/* Exported functions ---------------------------------------------------------*/
+/* Exported functions --------------------------------------------------------*/
 
 /** @defgroup SRAM_Exported_Functions SRAM Exported Functions
   * @{
@@ -149,6 +149,9 @@ HAL_StatusTypeDef HAL_SRAM_Init(SRAM_HandleTypeDef *hsram, FMC_NORSRAM_TimingTyp
   
   if(hsram->State == HAL_SRAM_STATE_RESET)
   {  
+    /* Allocate lock resource and initialize it */
+    hsram->Lock = HAL_UNLOCKED;
+    
     /* Initialize the low level hardware (MSP) */
     HAL_SRAM_MspInit(hsram);
   }
@@ -511,7 +514,7 @@ HAL_StatusTypeDef HAL_SRAM_Read_DMA(SRAM_HandleTypeDef *hsram, uint32_t *pAddres
   hsram->hdma->XferCpltCallback  = HAL_SRAM_DMA_XferCpltCallback;
   hsram->hdma->XferErrorCallback = HAL_SRAM_DMA_XferErrorCallback;
 
-  /* Enable the DMA Stream */
+  /* Enable the DMA Channel */
   HAL_DMA_Start_IT(hsram->hdma, (uint32_t)pAddress, (uint32_t)pDstBuffer, (uint32_t)BufferSize);
   
   /* Update the SRAM controller state */
@@ -550,7 +553,7 @@ HAL_StatusTypeDef HAL_SRAM_Write_DMA(SRAM_HandleTypeDef *hsram, uint32_t *pAddre
   hsram->hdma->XferCpltCallback  = HAL_SRAM_DMA_XferCpltCallback;
   hsram->hdma->XferErrorCallback = HAL_SRAM_DMA_XferErrorCallback;
 
-  /* Enable the DMA Stream */
+  /* Enable the DMA Channel */
   HAL_DMA_Start_IT(hsram->hdma, (uint32_t)pSrcBuffer, (uint32_t)pAddress, (uint32_t)BufferSize);
   
   /* Update the SRAM controller state */
@@ -667,11 +670,11 @@ HAL_SRAM_StateTypeDef HAL_SRAM_GetState(SRAM_HandleTypeDef *hsram)
 /**
   * @}
   */
-#endif /* STM32F302xE || STM32F303xE || STM32F398xx */
-#endif /* HAL_SRAM_MODULE_ENABLED */
 /**
   * @}
   */
+#endif /* STM32F302xE || STM32F303xE || STM32F398xx */
+#endif /* HAL_SRAM_MODULE_ENABLED */
 
 /**
   * @}

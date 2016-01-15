@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f3xx_hal_i2s_ex.c
   * @author  MCD Application Team
-  * @version V1.1.1
-  * @date    19-June-2015
+  * @version V1.2.0
+  * @date    13-November-2015
   * @brief   I2S Extended HAL module driver.
   *          This file provides firmware functions to manage the following 
   *          functionalities of I2S Extended peripheral:
@@ -132,7 +132,7 @@
 #if defined(STM32F302xE) || defined(STM32F303xE) || defined(STM32F398xx) || \
     defined(STM32F302xC) || defined(STM32F303xC) || defined(STM32F358xx)
 
-/** @defgroup I2SEx I2S Extended HAL module driver
+/** @defgroup I2SEx I2SEx
   * @brief I2S Extended HAL module driver
   * @{
   */
@@ -175,7 +175,7 @@ static HAL_StatusTypeDef I2S_FullDuplexWaitFlagStateUntilTimeout(I2S_HandleTypeD
 
 /* Exported functions ---------------------------------------------------------*/
 
-/** @addtogroup I2S I2S HAL module driver
+/** @addtogroup I2S I2S
   * @{
   */
 
@@ -188,7 +188,7 @@ static HAL_StatusTypeDef I2S_FullDuplexWaitFlagStateUntilTimeout(I2S_HandleTypeD
   *
 @verbatim
  ===============================================================================
-              ##### Initialization/de-initialization functions #####
+              ##### Initialization and de-initialization functions #####
  ===============================================================================
     [..]  This subsection provides a set of functions allowing to initialize and 
           de-initialiaze the I2Sx peripheral in simplex mode:
@@ -411,7 +411,7 @@ HAL_StatusTypeDef HAL_I2S_Init(I2S_HandleTypeDef *hi2s)
 
 #if defined (STM32F302xE) || defined (STM32F303xE) || defined (STM32F398xx) || \
     defined (STM32F302xC) || defined (STM32F303xC) || defined (STM32F358xx)
-/** @addtogroup  I2S_Exported_Functions_Group2 Input and Output operation functions
+/** @addtogroup  I2S_Exported_Functions_Group2 IO operation functions
   * @{
   */
 
@@ -724,7 +724,7 @@ HAL_StatusTypeDef HAL_I2S_DMAStop(I2S_HandleTypeDef *hi2s)
 
 #if defined (STM32F302xE) || defined (STM32F303xE) || defined (STM32F398xx) || \
     defined (STM32F302xC) || defined (STM32F303xC) || defined (STM32F358xx)
-/** @addtogroup I2SEx I2S Extended HAL module driver
+/** @addtogroup I2SEx
   * @brief I2S Extended HAL module driver
   * @{
   */
@@ -733,7 +733,7 @@ HAL_StatusTypeDef HAL_I2S_DMAStop(I2S_HandleTypeDef *hi2s)
   * @{
   */
 
-/** @defgroup I2SEx_Exported_Functions_Group1 Extended features functions 
+/** @defgroup I2SEx_Exported_Functions_Group1 I2S Extended Features Functions 
   *  @brief   Extended features functions
   *
 @verbatim   
@@ -1494,38 +1494,86 @@ static HAL_StatusTypeDef I2S_FullDuplexWaitFlagStateUntilTimeout(I2S_HandleTypeD
      
   if(i2sUsed == I2S_USE_I2S)
   {
-    while((__HAL_I2S_GET_FLAG(hi2s, Flag)) != State)
-    {
-      if(Timeout != HAL_MAX_DELAY)
+    if(State == RESET)
+    {    
+      /* Wait until flag is reset */
+      while((__HAL_I2S_GET_FLAG(hi2s, Flag)) != RESET)
       {
-        if((Timeout == 0) || ((HAL_GetTick()-tickstart) > Timeout))
+        if(Timeout != HAL_MAX_DELAY)
         {
-          /* Set the I2S State ready */
-          hi2s->State= HAL_I2S_STATE_READY;
-    
-          /* Process Unlocked */
-          __HAL_UNLOCK(hi2s);
-      
-          return HAL_TIMEOUT;
+          if((Timeout == 0) || ((HAL_GetTick()-tickstart) > Timeout))
+          {
+            /* Set the I2S State ready */
+            hi2s->State= HAL_I2S_STATE_READY;
+            
+            /* Process Unlocked */
+            __HAL_UNLOCK(hi2s);
+            
+            return HAL_TIMEOUT;
+          }
+        }
+      }
+    }
+    else /* State == SET */
+    {
+      /* Wait until flag is set */
+      while((__HAL_I2S_GET_FLAG(hi2s, Flag)) != SET)
+      {
+        if(Timeout != HAL_MAX_DELAY)
+        {
+          if((Timeout == 0) || ((HAL_GetTick()-tickstart) > Timeout))
+          {
+            /* Set the I2S State ready */
+            hi2s->State= HAL_I2S_STATE_READY;
+            
+            /* Process Unlocked */
+            __HAL_UNLOCK(hi2s);
+            
+            return HAL_TIMEOUT;
+          }
         }
       }
     }
   }
-  else
+  else /* i2sUsed == I2S_USE_I2SEXT */
   {
-    while((__HAL_I2SEXT_GET_FLAG(hi2s, Flag)) != State)
-    {
-      if(Timeout != HAL_MAX_DELAY)
+    if(State == RESET)
+    {    
+      /* Wait until flag is reset */
+      while((__HAL_I2SEXT_GET_FLAG(hi2s, Flag)) != RESET)
       {
-        if((Timeout == 0) || ((HAL_GetTick()-tickstart) > Timeout))
+        if(Timeout != HAL_MAX_DELAY)
         {
-          /* Set the I2S State ready */
-          hi2s->State= HAL_I2S_STATE_READY;
-    
-          /* Process Unlocked */
-          __HAL_UNLOCK(hi2s);
-      
-          return HAL_TIMEOUT;
+          if((Timeout == 0) || ((HAL_GetTick()-tickstart) > Timeout))
+          {
+            /* Set the I2S State ready */
+            hi2s->State= HAL_I2S_STATE_READY;
+            
+            /* Process Unlocked */
+            __HAL_UNLOCK(hi2s);
+            
+            return HAL_TIMEOUT;
+          }
+        }
+      }
+    }
+    else /* State == SET */
+    {
+      /* Wait until flag is set */
+      while((__HAL_I2SEXT_GET_FLAG(hi2s, Flag)) != SET)
+      {
+        if(Timeout != HAL_MAX_DELAY)
+        {
+          if((Timeout == 0) || ((HAL_GetTick()-tickstart) > Timeout))
+          {
+            /* Set the I2S State ready */
+            hi2s->State= HAL_I2S_STATE_READY;
+            
+            /* Process Unlocked */
+            __HAL_UNLOCK(hi2s);
+            
+            return HAL_TIMEOUT;
+          }
         }
       }
     }

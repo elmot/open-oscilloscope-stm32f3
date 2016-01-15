@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f3xx.h
   * @author  MCD Application Team
-  * @version $VERSION$
-  * @date    12-Sept-2014
+  * @version V2.2.0
+  * @date    13-November-2015
   * @brief   CMSIS STM32F3xx Device Peripheral Access Layer Header File.           
   *            
   *          The file is the unique include file that the application programmer
@@ -18,7 +18,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2014 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2015 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -64,6 +64,13 @@
   * @{
   */
 
+/**
+  * @brief STM32 Family
+  */
+#if !defined (STM32F3)
+#define STM32F3
+#endif /* STM32F3 */
+
 /* Uncomment the line below according to the target STM32 device used in your
    application 
   */
@@ -78,15 +85,21 @@
                                    STM32F301R6 and STM32F301R8 Devices */
   /* #define STM32F302x8 */   /*!< STM32F302K6, STM32F302K8, STM32F302C6, STM32F302C8,
                                    STM32F302R6 and STM32F302R8 Devices */
-  /* #define STM32F302xC */   /*!< STM32F302CB, STM32F302CC, STM32F302RB, STM32F302RC, STM32F302VB and STM32F302VC Devices */
-  /* #define STM32F302xE */   /*!< STM32F302CE, STM32F302RE, and STM32F302VE Devices */
+  /* #define STM32F302xC */   /*!< STM32F302CB, STM32F302CC, STM32F302RB, STM32F302RC,
+                                   STM32F302VB and STM32F302VC Devices */
+  /* #define STM32F302xE */   /*!< STM32F302RE, STM32F302VE, STM32F302ZE, STM32F302RD,
+                                   STM32F302VD and STM32F302ZD Devices */
   /* #define STM32F303x8 */   /*!< STM32F303K6, STM32F303K8, STM32F303C6, STM32F303C8, 
                                    STM32F303R6 and STM32F303R8 Devices */
-  /* #define STM32F303xC */   /*!< STM32F303CB, STM32F303CC, STM32F303RB, STM32F303RC, STM32F303VB and STM32F303VC Devices */
-  /* #define STM32F303xE */   /*!< STM32F303RE, STM32F303VE and STM32F303ZE Devices */
-  /* #define STM32F373xC */   /*!< STM32F373C8, STM32F373CB, STM32F373CC, STM32F373R8, STM32F373RB, STM32F373RC,
+  /* #define STM32F303xC */   /*!< STM32F303CB, STM32F303CC, STM32F303RB, STM32F303RC,
+                                   STM32F303VB and STM32F303VC Devices */
+  /* #define STM32F303xE */   /*!< STM32F303RE, STM32F303VE, STM32F303ZE, STM32F303RD,
+                                   STM32F303VD and STM32F303ZD Devices */
+  /* #define STM32F373xC */   /*!< STM32F373C8, STM32F373CB, STM32F373CC,
+                                   STM32F373R8, STM32F373RB, STM32F373RC,
                                    STM32F373V8, STM32F373VB and STM32F373VC Devices */
-  /* #define STM32F334x8 */   /*!< STM32F334C4, STM32F334C6, STM32F334C8, STM32F334R4, STM32F334R6 and STM32F334R8 Devices */
+  /* #define STM32F334x8 */   /*!< STM32F334C4, STM32F334C6, STM32F334C8,
+                                   STM32F334R4, STM32F334R6 and STM32F334R8 Devices */
   /* #define STM32F318xx */   /*!< STM32F318K8, STM32F318C8: STM32F301x8 with regulator off: STM32F318xx Devices */
   /* #define STM32F328xx */   /*!< STM32F328C8, STM32F328R8: STM32F334x8 with regulator off: STM32F328xx Devices */
   /* #define STM32F358xx */   /*!< STM32F358CC, STM32F358RC, STM32F358VC: STM32F303xC with regulator off: STM32F358xx Devices */
@@ -107,10 +120,10 @@
 #endif /* USE_HAL_DRIVER */
 
 /**
-  * @brief CMSIS Device version number $VERSION$
+  * @brief CMSIS Device version number V2.2.0
   */
 #define __STM32F3xx_CMSIS_DEVICE_VERSION_MAIN   (0x02) /*!< [31:24] main version */                                  
-#define __STM32F3xx_CMSIS_DEVICE_VERSION_SUB1   (0x01) /*!< [23:16] sub1 version */
+#define __STM32F3xx_CMSIS_DEVICE_VERSION_SUB1   (0x02) /*!< [23:16] sub1 version */
 #define __STM32F3xx_CMSIS_DEVICE_VERSION_SUB2   (0x00) /*!< [15:8]  sub2 version */
 #define __STM32F3xx_CMSIS_DEVICE_VERSION_RC     (0x00) /*!< [7:0]  release candidate */
 #define __STM32F3xx_CMSIS_DEVICE_VERSION        ((__CMSIS_DEVICE_VERSION_MAIN     << 24)\

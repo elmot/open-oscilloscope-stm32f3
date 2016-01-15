@@ -1,8 +1,8 @@
-;/******************** (C) COPYRIGHT 2014 STMicroelectronics ********************
+;/******************** (C) COPYRIGHT 2015 STMicroelectronics ********************
 ;* File Name          : startup_stm32f302xe.s
 ;* Author             : MCD Application Team
-;* Version            : $VERSION$
-;* Date               : 12-Sept-2014
+;* Version            : V2.2.0
+;* Date               : 13-November-2015
 ;* Description        : STM32F302RE/STM32F302VE/STM32F302ZE devices vector table 
 ;*                      for EWARM toolchain.
 ;*                      This module performs:
@@ -16,7 +16,7 @@
 ;*                      priority is Privileged, and the Stack is set to Main.
 ;********************************************************************************
 ;*
-;* <h2><center>&copy; COPYRIGHT(c) 2014 STMicroelectronics</center></h2>
+;* <h2><center>&copy; COPYRIGHT(c) 2015 STMicroelectronics</center></h2>
 ;*
 ;* Redistribution and use in source and binary forms, with or without modification,
 ;* are permitted provided that the following conditions are met:
@@ -167,10 +167,10 @@ __vector_table
         DCD     USB_HP_IRQHandler                 ; 74: USB High Priority remap
         DCD     USB_LP_IRQHandler                 ; 75: USB Low Priority remap
         DCD     USBWakeUp_RMP_IRQHandler          ; 76: USB Wakeup remap through EXTI
-        DCD     0                                 ; 77: Reserved
-        DCD     0                                 ; 78: Reserved
-        DCD     0                                 ; 79: Reserved
-        DCD     0                                 ; 80: Reserved
+        DCD     TIM20_BRK_IRQHandler              ; 77: TIM20 Break
+        DCD     TIM20_UP_IRQHandler               ; 78: TIM20 Update
+        DCD     TIM20_TRG_COM_IRQHandler          ; 79: TIM20 Trigger and Commutation
+        DCD     TIM20_CC_IRQHandler               ; 80: TIM20 Capture Compare
         DCD     FPU_IRQHandler                    ; 81: FPU
         DCD     0                                 ; 82: Reserved
         DCD     0                                 ; 83: Reserved
@@ -534,6 +534,26 @@ USB_LP_IRQHandler
         SECTION .text:CODE:NOROOT:REORDER(1)
 USBWakeUp_RMP_IRQHandler
         B USBWakeUp_RMP_IRQHandler
+
+        PUBWEAK TIM20_BRK_IRQHandler
+        SECTION .text:CODE:NOROOT:REORDER(1)
+TIM20_BRK_IRQHandler
+        B TIM20_BRK_IRQHandler
+
+        PUBWEAK TIM20_UP_IRQHandler
+        SECTION .text:CODE:NOROOT:REORDER(1)
+TIM20_UP_IRQHandler
+        B TIM20_UP_IRQHandler
+
+        PUBWEAK TIM20_TRG_COM_IRQHandler
+        SECTION .text:CODE:NOROOT:REORDER(1)
+TIM20_TRG_COM_IRQHandler
+        B TIM20_TRG_COM_IRQHandler
+
+        PUBWEAK TIM20_CC_IRQHandler
+        SECTION .text:CODE:NOROOT:REORDER(1)
+TIM20_CC_IRQHandler
+        B TIM20_CC_IRQHandler
 
         PUBWEAK FPU_IRQHandler
         SECTION .text:CODE:NOROOT:REORDER(1)

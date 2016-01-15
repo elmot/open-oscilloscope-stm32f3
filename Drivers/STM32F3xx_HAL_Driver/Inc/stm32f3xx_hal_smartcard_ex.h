@@ -2,9 +2,9 @@
   ******************************************************************************
   * @file    stm32f3xx_hal_smartcard_ex.h
   * @author  MCD Application Team
-  * @version V1.1.1
-  * @date    19-June-2015
-  * @brief   Header file of SMARTCARD HAL module.
+  * @version V1.2.0
+  * @date    13-November-2015
+  * @brief   Header file of SMARTCARD HAL Extended module.
   ******************************************************************************
   * @attention
   *
@@ -32,7 +32,7 @@
   * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
-  ******************************************************************************  
+  ******************************************************************************
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
@@ -50,15 +50,15 @@
   * @{
   */
 
-/** @addtogroup SMARTCARDEx SMARTCARD Extended HAL module driver
+/** @addtogroup SMARTCARDEx
   * @{
-  */ 
+  */
 
-/* Exported types ------------------------------------------------------------*/ 
-/* Exported constants --------------------------------------------------------*/    
+/* Exported types ------------------------------------------------------------*/  
+/* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 
-/** @defgroup SMARTCARDEx_Exported_Macros SMARTCARD Extended Exported Macros
+/** @defgroup SMARTCARD_Extended_Exported_Macros SMARTCARDEx Exported Macros
   * @{
   */
 
@@ -67,8 +67,9 @@
   * @param  __CLOCKSOURCE__ : output variable   
   * @retval the SMARTCARD clocking source, written in __CLOCKSOURCE__.
   */
-#if defined(STM32F334x8) || defined(STM32F303x8) || defined(STM32F328xx)
-#define __HAL_SMARTCARD_GETCLOCKSOURCE(__HANDLE__,__CLOCKSOURCE__) \
+#if defined(STM32F303x8) || defined(STM32F334x8) || defined(STM32F328xx) || \
+    defined(STM32F301x8) || defined(STM32F302x8) || defined(STM32F318xx)
+#define SMARTCARD_GETCLOCKSOURCE(__HANDLE__,__CLOCKSOURCE__) \
   do {                                                         \
     if((__HANDLE__)->Instance == USART1)                       \
     {                                                          \
@@ -125,8 +126,8 @@
        }                                                       \
     }                                                          \
   } while(0)
-#else  
-#define __HAL_SMARTCARD_GETCLOCKSOURCE(__HANDLE__,__CLOCKSOURCE__) \
+#else
+#define SMARTCARD_GETCLOCKSOURCE(__HANDLE__,__CLOCKSOURCE__) \
   do {                                                         \
     if((__HANDLE__)->Instance == USART1)                       \
     {                                                          \
@@ -187,22 +188,22 @@
 
 /**
   * @}
-  */ 
-
+  */
 
 /* Exported functions --------------------------------------------------------*/
-/** @addtogroup SMARTCARDEx_Exported_Functions SMARTCARD Extended Exported Functions
+/** @addtogroup SMARTCARDEx_Exported_Functions
   * @{
   */
 
 /* Initialization and de-initialization functions  ****************************/
 /* IO operation functions *****************************************************/
-/* Peripheral Control functions ***********************************************/
 /** @addtogroup SMARTCARDEx_Exported_Functions_Group1 Extended Peripheral Control functions
   * @{
   */
-void HAL_SMARTCARDEx_BlockLength_Config(SMARTCARD_HandleTypeDef *hsmartcard, uint8_t BlockLength);
-void HAL_SMARTCARDEx_TimeOut_Config(SMARTCARD_HandleTypeDef *hsmartcard, uint32_t TimeOutValue);
+
+/* Peripheral Control functions ***********************************************/
+void              HAL_SMARTCARDEx_BlockLength_Config(SMARTCARD_HandleTypeDef *hsmartcard, uint8_t BlockLength);
+void              HAL_SMARTCARDEx_TimeOut_Config(SMARTCARD_HandleTypeDef *hsmartcard, uint32_t TimeOutValue);
 HAL_StatusTypeDef HAL_SMARTCARDEx_EnableReceiverTimeOut(SMARTCARD_HandleTypeDef *hsmartcard);
 HAL_StatusTypeDef HAL_SMARTCARDEx_DisableReceiverTimeOut(SMARTCARD_HandleTypeDef *hsmartcard);
 
@@ -210,15 +211,15 @@ HAL_StatusTypeDef HAL_SMARTCARDEx_DisableReceiverTimeOut(SMARTCARD_HandleTypeDef
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}

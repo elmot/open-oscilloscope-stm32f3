@@ -60,6 +60,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_oscill.h"
+#include "usbd_oscill_if.h"
 #include "usbd_desc.h"
 #include "usbd_ctlreq.h"
 
@@ -359,6 +360,7 @@ static uint8_t  USBD_OSCILL_DataIn (USBD_HandleTypeDef *pdev, uint8_t epnum)
   }
 }
 
+extern uint16_t buffer[2048];
 /**
   * @brief  USBD_OSCILL_DataOut
   *         Data received on non-control Out endpoint
@@ -373,6 +375,8 @@ static uint8_t  USBD_OSCILL_DataOut (USBD_HandleTypeDef *pdev, uint8_t epnum)
   /* Get the received data length */
   hoscill->RxLength = USBD_LL_GetRxDataSize (pdev, epnum);
   
+	printf("Received: %i\n\r", hoscill->RxLength);
+	OSCILL_Transmit_FS((uint8_t*)buffer,4096);
   /* USB data will be immediately processed, this allow next USB traffic being 
   NAKed till the end of the application Xfer */
   if(pdev->pClassData != NULL)

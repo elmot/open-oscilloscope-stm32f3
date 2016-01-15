@@ -8,3 +8,6 @@
 *.o
 *.sct
 *.d
+*.class
+.idea
+*.iml

@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file      startup_stm32f303xc.s
   * @author    MCD Application Team
-  * @version   $VERSION$
-  * @date      12-Sept-2014
+  * @version   V2.2.0
+  * @date      13-November-2015
   * @brief     STM32F303xB/STM32F303xC devices vector table for Atollic 
   *            TrueSTUDIO toolchain.
   *            This module performs:
@@ -18,7 +18,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT 2014 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT 2015 STMicroelectronics</center></h2>
   *
   * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
   * You may not use this file except in compliance with the License.

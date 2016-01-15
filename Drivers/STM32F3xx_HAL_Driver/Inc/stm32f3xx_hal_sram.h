@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f3xx_hal_sram.h
   * @author  MCD Application Team
-  * @version V1.1.1
-  * @date    19-June-2015
+  * @version V1.2.0
+  * @date    13-November-2015
   * @brief   Header file of SRAM HAL module.
   ******************************************************************************
   * @attention

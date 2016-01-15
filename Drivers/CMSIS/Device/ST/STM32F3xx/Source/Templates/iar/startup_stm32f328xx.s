@@ -1,8 +1,8 @@
-;/******************** (C) COPYRIGHT 2014 STMicroelectronics ********************
+;/******************** (C) COPYRIGHT 2015 STMicroelectronics ********************
 ;* File Name          : startup_stm32f328xx.s
 ;* Author             : MCD Application Team
-;* Version            : $VERSION$
-;* Date               : 12-Sept-2014
+;* Version            : V2.2.0
+;* Date               : 13-November-2015
 ;* Description        : STM32F328xx devices vector table for EWARM toolchain.
 ;*                      This module performs:
 ;*                      - Set the initial SP
@@ -15,7 +15,7 @@
 ;*                      priority is Privileged, and the Stack is set to Main.
 ;********************************************************************************
 ;*
-;* <h2><center>&copy; COPYRIGHT(c) 2014 STMicroelectronics</center></h2>
+;* <h2><center>&copy; COPYRIGHT(c) 2015 STMicroelectronics</center></h2>
 ;*
 ;* Redistribution and use in source and binary forms, with or without modification,
 ;* are permitted provided that the following conditions are met:

@@ -4,7 +4,7 @@
   * Description        : Main program body
   ******************************************************************************
   *
-  * COPYRIGHT(c) 2015 STMicroelectronics
+  * COPYRIGHT(c) 2016 STMicroelectronics
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -86,7 +86,7 @@ static void MX_USB_PCD_Init(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-
+uint16_t buffer[2048];
 /* USER CODE END 0 */
 
 int main(void)
@@ -123,6 +123,8 @@ int main(void)
 	fputc('Z',stdout);
 	fputs("\n\r test\n\r",stdout);
 	printf("Printf test %02x\n\r", 200);
+	
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)buffer, 2048);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -418,8 +420,8 @@ void MX_USB_PCD_Init(void)
 void MX_DMA_Init(void) 
 {
   /* DMA controller clock enable */
-  __DMA1_CLK_ENABLE();
   __DMA2_CLK_ENABLE();
+  __DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
   HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);

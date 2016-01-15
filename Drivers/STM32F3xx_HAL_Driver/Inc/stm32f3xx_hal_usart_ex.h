@@ -2,12 +2,12 @@
   ******************************************************************************
   * @file    stm32f3xx_hal_usart_ex.h
   * @author  MCD Application Team
-  * @version V1.1.1
-  * @date    19-June-2015
-  * @brief   Header file of USART HAL Extended module.
+  * @version V1.2.0
+  * @date    13-November-2015
+  * @brief   Header file of USART HAL Extension module.
   ******************************************************************************
   * @attention
-  *                               
+  *
   * <h2><center>&copy; COPYRIGHT(c) 2015 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
@@ -32,7 +32,7 @@
   * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
-  ******************************************************************************  
+  ******************************************************************************
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
@@ -50,33 +50,28 @@
   * @{
   */
 
-/** @defgroup USARTEx USART Extended HAL module driver
+/** @defgroup USARTEx USARTEx 
   * @{
   */ 
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
-/** @defgroup USARTEx_Exported_Constants USART Extended Exported Constants
+/** @defgroup USARTEx_Exported_Constants USARTEx Exported Constants
   * @{
   */
-  
-/** @defgroup USARTEx_Word_Length USART Extended Word Length
+
+/** @defgroup USARTEx_Word_Length USARTEx Word Length
   * @{
   */
 #if defined(STM32F302xE) || defined(STM32F303xE) || defined(STM32F398xx) || \
     defined(STM32F334x8)                                                 || \
     defined(STM32F301x8) || defined(STM32F302x8) || defined(STM32F318xx)
-#define USART_WORDLENGTH_7B                  ((uint32_t)USART_CR1_M1)
-#define USART_WORDLENGTH_8B                  ((uint32_t)0x00000000)
-#define USART_WORDLENGTH_9B                  ((uint32_t)USART_CR1_M0)
-#define IS_USART_WORD_LENGTH(LENGTH) (((LENGTH) == USART_WORDLENGTH_7B) || \
-                                      ((LENGTH) == USART_WORDLENGTH_8B) || \
-                                      ((LENGTH) == USART_WORDLENGTH_9B))
+#define USART_WORDLENGTH_7B                  ((uint32_t)USART_CR1_M1)   /*!< 7-bit long USART frame */ 
+#define USART_WORDLENGTH_8B                  ((uint32_t)0x00000000)     /*!< 8-bit long USART frame */ 
+#define USART_WORDLENGTH_9B                  ((uint32_t)USART_CR1_M0)   /*!< 9-bit long USART frame */ 
 #else
-#define USART_WORDLENGTH_8B                  ((uint32_t)0x00000000)
-#define USART_WORDLENGTH_9B                  ((uint32_t)USART_CR1_M)
-#define IS_USART_WORD_LENGTH(LENGTH) (((LENGTH) == USART_WORDLENGTH_8B) || \
-                                      ((LENGTH) == USART_WORDLENGTH_9B))
+#define USART_WORDLENGTH_8B                  ((uint32_t)0x00000000)     /*!< 8-bit long USART frame */ 
+#define USART_WORDLENGTH_9B                  ((uint32_t)USART_CR1_M)    /*!< 9-bit long USART frame */ 
 #endif /* STM32F302xE || STM32F303xE || STM32F398xx || */
        /* STM32F334x8                               || */
        /* STM32F301x8 || STM32F302x8 || STM32F318xx    */
@@ -85,26 +80,23 @@
   */
 
 
-  
-  
 /**
   * @}
-  */  
-  
-/* Exported macro ------------------------------------------------------------*/
+  */
 
-/** @defgroup USARTEx_Exported_Macros USART Extended Exported Macros
+/* Private macros ------------------------------------------------------------*/
+/** @defgroup USARTEx_Private_Macros USARTEx Private Macros
   * @{
   */
-  
-  
+
 /** @brief  Reports the USART clock source.
   * @param  __HANDLE__: specifies the USART Handle
   * @param  __CLOCKSOURCE__ : output variable   
   * @retval the USART clocking source, written in __CLOCKSOURCE__.
   */
-#if defined(STM32F303x8) || defined(STM32F334x8) || defined(STM32F328xx)
-#define __HAL_USART_GETCLOCKSOURCE(__HANDLE__,__CLOCKSOURCE__) \
+#if defined(STM32F303x8) || defined(STM32F334x8) || defined(STM32F328xx) || \
+    defined(STM32F301x8) || defined(STM32F302x8) || defined(STM32F318xx)
+#define USART_GETCLOCKSOURCE(__HANDLE__,__CLOCKSOURCE__) \
   do {                                                         \
     if((__HANDLE__)->Instance == USART1)                       \
     {                                                          \
@@ -160,9 +152,9 @@
           break;                                               \
        }                                                       \
     }                                                          \
-  } while(0)  
+  } while(0)
 #else 
-#define __HAL_USART_GETCLOCKSOURCE(__HANDLE__,__CLOCKSOURCE__) \
+#define USART_GETCLOCKSOURCE(__HANDLE__,__CLOCKSOURCE__) \
   do {                                                         \
     if((__HANDLE__)->Instance == USART1)                       \
     {                                                          \
@@ -221,19 +213,19 @@
   } while(0)  
 #endif /* STM32F303x8 || STM32F334x8 || STM32F328xx */
 
-/** @brief  Computes the USART mask to apply to retrieve the received data
+/** @brief  Compute the USART mask to apply to retrieve the received data
   *         according to the word length and to the parity bits activation.
-  *         If PCE = 1, the parity bit is not included in the data extracted
+  * @note   If PCE = 1, the parity bit is not included in the data extracted
   *         by the reception API().
   *         This masking operation is not carried out in the case of
-  *         DMA transfers.    
-  * @param  __HANDLE__: specifies the USART Handle
-  * @retval none
-  */  
+  *         DMA transfers.
+  * @param  __HANDLE__: specifies the USART Handle.
+  * @retval None, the mask to apply to USART RDR register is stored in (__HANDLE__)->Mask field.
+  */
 #if defined(STM32F302xE) || defined(STM32F303xE) || defined(STM32F398xx) || \
     defined(STM32F334x8)                                                 || \
     defined(STM32F301x8) || defined(STM32F302x8) || defined(STM32F318xx)
-#define __HAL_USART_MASK_COMPUTATION(__HANDLE__)                      \
+#define USART_MASK_COMPUTATION(__HANDLE__)                            \
   do {                                                                \
   if ((__HANDLE__)->Init.WordLength == USART_WORDLENGTH_9B)           \
   {                                                                   \
@@ -268,9 +260,9 @@
         (__HANDLE__)->Mask = 0x003F ;                                 \
      }                                                                \
   }                                                                   \
-} while(0) 
+} while(0)
 #else
-#define __HAL_USART_MASK_COMPUTATION(__HANDLE__)                      \
+#define USART_MASK_COMPUTATION(__HANDLE__)                            \
   do {                                                                \
   if ((__HANDLE__)->Init.WordLength == USART_WORDLENGTH_9B)           \
   {                                                                   \
@@ -294,7 +286,26 @@
         (__HANDLE__)->Mask = 0x007F ;                                 \
      }                                                                \
   }                                                                   \
-} while(0) 
+} while(0)
+#endif /* STM32F302xE || STM32F303xE || STM32F398xx || */
+       /* STM32F334x8                               || */
+       /* STM32F301x8 || STM32F302x8 || STM32F318xx    */
+
+
+/**
+  * @brief Ensure that USART frame length is valid.
+  * @param __LENGTH__: USART frame length. 
+  * @retval SET (__LENGTH__ is valid) or RESET (__LENGTH__ is invalid)
+  */
+#if defined(STM32F302xE) || defined(STM32F303xE) || defined(STM32F398xx) || \
+    defined(STM32F334x8)                                                 || \
+    defined(STM32F301x8) || defined(STM32F302x8) || defined(STM32F318xx)
+#define IS_USART_WORD_LENGTH(__LENGTH__) (((__LENGTH__) == USART_WORDLENGTH_7B) || \
+                                          ((__LENGTH__) == USART_WORDLENGTH_8B) || \
+                                          ((__LENGTH__) == USART_WORDLENGTH_9B))
+#else
+#define IS_USART_WORD_LENGTH(__LENGTH__) (((__LENGTH__) == USART_WORDLENGTH_8B) || \
+                                          ((__LENGTH__) == USART_WORDLENGTH_9B))
 #endif /* STM32F302xE || STM32F303xE || STM32F398xx || */
        /* STM32F334x8                               || */
        /* STM32F301x8 || STM32F302x8 || STM32F318xx    */
@@ -311,12 +322,12 @@
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}
-  */ 
-  
+  */
+
 #ifdef __cplusplus
 }
 #endif
@@ -324,3 +335,4 @@
 #endif /* __STM32F3xx_HAL_USART_EX_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+
