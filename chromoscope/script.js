@@ -52,16 +52,11 @@ function runFrame () {
             console.error(chrome.runtime.lastError);
             return;
         }
-        chrome.usb.listInterfaces(usbConnection, function (e) {
-            console.log(e);
-        });
         chrome.usb.bulkTransfer(usbConnection, {
             "direction": "out",
             "endpoint": 2,
-            //"length":64,
             "data": new Uint8Array([4, 8, 15, 16]).buffer
         }, function (transferResult) {
-            //console.log("Send data", transferResult);
             chrome.usb.bulkTransfer(usbConnection, {
                 "direction": "in",
                 "endpoint": 129,
