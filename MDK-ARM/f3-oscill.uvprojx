@@ -441,6 +441,11 @@
               <FileType>2</FileType>
               <FilePath>.\oscill_config.s</FilePath>
             </File>
+            <File>
+              <FileName>exampleConfig.txt</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Src\exampleConfig.txt</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

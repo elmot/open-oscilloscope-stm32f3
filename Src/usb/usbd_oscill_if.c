@@ -65,6 +65,8 @@
   */ 
   /* USER CODE BEGIN 2 */ 
 extern uint8_t OscillConfigData[];
+extern OPAMP_HandleTypeDef hopamp1;
+
   /* USER CODE END 2 */
 /**
   * @}
@@ -178,6 +180,22 @@ static int8_t OSCILL_Control_FS  (uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t OSCILL_Receive_FS (uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
+	if(memcmp(Buf,"FRAME",5) == 0)
+	{
+		OSCILL_Transmit_FS((uint8_t*)buffer,4096);
+	}
+	if(memcmp(Buf,"f.a.gain",8) == 0)
+	{
+		char gain = Buf[9];
+		switch(gain) {
+			case '1': hopamp1.Init.PgaGain = OPAMP_PGA_GAIN_4; break;
+			case '2': hopamp1.Init.PgaGain = OPAMP_PGA_GAIN_8; break;
+			case '3': hopamp1.Init.PgaGain = OPAMP_PGA_GAIN_16; break;
+			default: hopamp1.Init.PgaGain = OPAMP_PGA_GAIN_2; break;
+		}
+		HAL_OPAMP_Init(&hopamp1);
+		HAL_OPAMP_Start(&hopamp1);
+	}
   return (USBD_OK);
   /* USER CODE END 6 */ 
 }

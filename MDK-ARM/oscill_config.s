@@ -3,6 +3,6 @@
 OscillConfigData
     DCD OscillConfigDataExt_End - OscillConfigDataExt
 OscillConfigDataExt
-	INCBIN ../oscill-gui/src/main/resources/xyz/elmot/oscill/exampleConfig.json
+	INCBIN ../Src/exampleConfig.txt
 OscillConfigDataExt_End		
 	END

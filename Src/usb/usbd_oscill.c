@@ -208,7 +208,6 @@ __ALIGN_BEGIN uint8_t USBD_OSCILL_CfgFSDesc[USB_OSCILL_CONFIG_DESC_SIZ] __ALIGN_
 /** @defgroup USBD_OSCILL_Private_Functions
   * @{
   */ 
-static uint8_t cmdBuffer[ USB_FS_MAX_PACKET_SIZE];
 /**
   * @brief  USBD_OSCILL_Init
   *         Initilaize the OSCILL interface
@@ -219,28 +218,12 @@ static uint8_t cmdBuffer[ USB_FS_MAX_PACKET_SIZE];
 static uint8_t  USBD_OSCILL_Init (USBD_HandleTypeDef *pdev, 
                                uint8_t cfgidx)
 {
-  uint8_t ret = 0;
-  
-  /* Open OUT EP */
-  USBD_LL_OpenEP(pdev,
-                 OSCILL_OUT_EP,
-                 USBD_EP_TYPE_BULK,
-                 USB_FS_MAX_PACKET_SIZE);
-  
-  USBD_LL_PrepareReceive(pdev, OSCILL_OUT_EP, cmdBuffer, USB_FS_MAX_PACKET_SIZE);  
-  
-	/* Open EP IN */
-	USBD_LL_OpenEP(pdev,
-								 OSCILL_IN_EP,
-								 USBD_EP_TYPE_BULK,
-								 USB_FS_MAX_PACKET_SIZE);
-	
 	pdev->pClassData = USBD_malloc(sizeof (USBD_OSCILL_HandleTypeDef));
   
 
 	if(pdev->pClassData == NULL)
   {
-    ret = 1; 
+    return 1; 
   }
   else
   {
@@ -251,7 +234,21 @@ static uint8_t  USBD_OSCILL_Init (USBD_HandleTypeDef *pdev,
     /* Init Xfer states */
        
   }
-  return ret;
+  /* Open OUT EP */
+  USBD_LL_OpenEP(pdev,
+                 OSCILL_OUT_EP,
+                 USBD_EP_TYPE_BULK,
+                 USB_FS_MAX_PACKET_SIZE);
+  USBD_OSCILL_HandleTypeDef   *hoscill = pdev->pClassData;
+  USBD_LL_PrepareReceive(pdev, OSCILL_OUT_EP, hoscill->RxBuffer, USB_FS_MAX_PACKET_SIZE);  
+  
+	/* Open EP IN */
+	USBD_LL_OpenEP(pdev,
+								 OSCILL_IN_EP,
+								 USBD_EP_TYPE_BULK,
+								 USB_FS_MAX_PACKET_SIZE);
+	
+  return 0;
 }
 
 /**
@@ -346,7 +343,7 @@ static uint8_t  USBD_OSCILL_Setup (USBD_HandleTypeDef *pdev,
   */
 static uint8_t  USBD_OSCILL_DataIn (USBD_HandleTypeDef *pdev, uint8_t epnum)
 {
-  USBD_OSCILL_HandleTypeDef   *hoscill = pdev->pClassData;
+//  USBD_OSCILL_HandleTypeDef   *hoscill = pdev->pClassData;
   
   if(pdev->pClassData != NULL)
   {
@@ -360,7 +357,6 @@ static uint8_t  USBD_OSCILL_DataIn (USBD_HandleTypeDef *pdev, uint8_t epnum)
   }
 }
 
-extern uint16_t buffer[2048];
 /**
   * @brief  USBD_OSCILL_DataOut
   *         Data received on non-control Out endpoint
@@ -375,14 +371,12 @@ static uint8_t  USBD_OSCILL_DataOut (USBD_HandleTypeDef *pdev, uint8_t epnum)
   /* Get the received data length */
   hoscill->RxLength = USBD_LL_GetRxDataSize (pdev, epnum);
   
-	printf("Received: %i\n\r", hoscill->RxLength);
-	OSCILL_Transmit_FS((uint8_t*)buffer,4096);
   /* USB data will be immediately processed, this allow next USB traffic being 
   NAKed till the end of the application Xfer */
   if(pdev->pClassData != NULL)
   {
     ((USBD_OSCILL_ItfTypeDef *)pdev->pUserData)->Receive(hoscill->RxBuffer, &hoscill->RxLength);
-		USBD_LL_PrepareReceive(pdev, OSCILL_OUT_EP, cmdBuffer, USB_FS_MAX_PACKET_SIZE);  
+		USBD_LL_PrepareReceive(pdev, OSCILL_OUT_EP, hoscill->RxBuffer, USB_FS_MAX_PACKET_SIZE);  
     return USBD_OK;
   }
   else
@@ -495,8 +489,6 @@ uint8_t  USBD_OSCILL_TransmitPacket(USBD_HandleTypeDef *pdev)
   
   if(pdev->pClassData != NULL)
   {
-//    if(hoscill->TxState == 0)
-//    {
       
       /* Transmit next packet */
       USBD_LL_Transmit(pdev,
@@ -505,13 +497,7 @@ uint8_t  USBD_OSCILL_TransmitPacket(USBD_HandleTypeDef *pdev)
                        hoscill->TxLength);
       
       /* Tx Transfer in progress */
-//      hoscill->TxState = 1;
-      return USBD_OK;
-//    }
-//    else
-    {
-      return USBD_BUSY;
-    }
+			return USBD_OK;
   }
   else
   {
