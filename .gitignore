@@ -2,6 +2,7 @@
 *.crf
 *.dep
 *.htm
+*.iex
 *.lnp
 *.lst
 *.map
