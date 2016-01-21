@@ -10,13 +10,43 @@
     <em>No device selected.</em>
 </span>
 
-    <canvas id="canvas"></canvas>
-<div id="gain" class="flex-control">
-    <div class="control-title">Gain ch.A</div>
-    <label><input type="radio" name="f.a.gain" value="0" class="paramInput">2</label>
-    <label><input type="radio" name="f.a.gain" value="1" class="paramInput">4</label>
-    <label><input type="radio" name="f.a.gain" value="2" class="paramInput">8</label>
-    <label><input type="radio" name="f.a.gain" value="3" class="paramInput">16</label>
+<canvas id="canvas"></canvas>
+<div id="controls">
+    <div id="div:f.a.range" class="flex-control">
+        <label for="f.a.range" class="control-title">Range A</label>
+        <select name="f.a.range" id="f.a.range" class="paramInput">
+            <option value="3/0">180mV</option>
+            <option value="2/0">350mV</option>
+            <option value="1/0">750mV</option>
+            <option value="0/0">1.5V</option>
+            <option value="0/1">3V</option>
+            <option value="0/2">15V</option>
+            <option value="0/3">45V</option>
+        </select>
+    </div>
+    <div id="div:t" class="flex-control">
+        <label for="t" class="control-title">Sampling rate</label>
+
+        <select id="t" name="t"  class="paramInput">
+            <option value="a">1.7MHz</option>
+            <option value="b">1MHz</option>
+            <option value="c">500kHz</option>
+            <option value="d">200kHz</option>
+            <option value="e">100kHz</option>
+            <option value="f">50kHz</option>
+            <option value="g">20kHz</option>
+            <option value="h">10kHz</option>
+            <option value="i">5kHz</option>
+            <option value="j">2kHz</option>
+            <option value="k">1kHz</option>
+            <option value="l">500Hz</option>
+            <option value="m">200Hz</option>
+            <option value="n">100Hz</option>
+            <option value="o">50Hz</option>
+            <option value="p">20Hz</option>
+            <option value="q">10Hz</option>
+        </select>
+    </div>
 </div>
 <script src="script.js"></script>
 </body>
