@@ -66,6 +66,7 @@
   /* USER CODE BEGIN 2 */ 
 extern uint8_t OscillConfigData[];
 extern OPAMP_HandleTypeDef hopamp1;
+extern TIM_HandleTypeDef htim1;
 
   /* USER CODE END 2 */
 /**
@@ -180,21 +181,120 @@ static int8_t OSCILL_Control_FS  (uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t OSCILL_Receive_FS (uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
-	if(memcmp(Buf,"FRAME",5) == 0)
+	if(*Len == 5 && memcmp(Buf,"FRAME",5) == 0)
 	{
 		OSCILL_Transmit_FS((uint8_t*)buffer,4096);
-	}
-	if(memcmp(Buf,"f.a.gain",8) == 0)
+	} else 
+	if(*Len ==13 && memcmp (Buf,"f.a.range=",10) == 0)
 	{
-		char gain = Buf[9];
+		char gain = Buf[10];
+		char div = Buf[12];
 		switch(gain) {
 			case '1': hopamp1.Init.PgaGain = OPAMP_PGA_GAIN_4; break;
 			case '2': hopamp1.Init.PgaGain = OPAMP_PGA_GAIN_8; break;
 			case '3': hopamp1.Init.PgaGain = OPAMP_PGA_GAIN_16; break;
 			default: hopamp1.Init.PgaGain = OPAMP_PGA_GAIN_2; break;
 		}
+		switch(div) {
+			case '1':
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_SET);
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET);
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);
+				break;
+
+			case '2':
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_SET);
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);
+				break;
+
+			case '3': 
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET);
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);
+				break;
+			default: 
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_SET);
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);
+				break;
+		}
 		HAL_OPAMP_Init(&hopamp1);
 		HAL_OPAMP_Start(&hopamp1);
+	} else if(*Len ==3 && memcmp (Buf,"t=",2) == 0) {
+		
+		switch(Buf[2]) {
+			case 'b'://1Mhz
+				htim1.Instance->PSC = 0;
+				__HAL_TIM_SET_AUTORELOAD( &htim1, 72 );
+				break;
+			case 'c'://500kHz
+				htim1.Instance->PSC = 0;
+				__HAL_TIM_SET_AUTORELOAD( &htim1, 144 );
+				break;
+			case 'd'://200kHz
+				htim1.Instance->PSC = 0;
+				__HAL_TIM_SET_AUTORELOAD( &htim1, 360 );
+				break;
+			case 'e'://100kHz
+				htim1.Instance->PSC = 0;
+				__HAL_TIM_SET_AUTORELOAD( &htim1, 720 );
+				break;
+			case 'f'://50kHz
+				htim1.Instance->PSC = 0;
+				__HAL_TIM_SET_AUTORELOAD( &htim1, 1440 );
+				break;
+			case 'g'://20kHz
+				htim1.Instance->PSC = 0;
+				__HAL_TIM_SET_AUTORELOAD( &htim1, 3600 );
+				break;
+			case 'h'://10kHz
+				htim1.Instance->PSC = 0;
+				__HAL_TIM_SET_AUTORELOAD( &htim1, 7200 );
+				break;
+			case 'i'://5kHz
+				htim1.Instance->PSC = 0;
+				__HAL_TIM_SET_AUTORELOAD( &htim1, 14400 );
+				break;
+			case 'j'://2kHz
+				htim1.Instance->PSC = 0;
+				__HAL_TIM_SET_AUTORELOAD( &htim1, 36000 );
+				break;
+			case 'k'://1kHz
+				htim1.Instance->PSC = 720 - 1;
+				__HAL_TIM_SET_AUTORELOAD( &htim1, 100 );
+				break;
+			case 'l'://500Hz
+				htim1.Instance->PSC = 720 - 1;
+				__HAL_TIM_SET_AUTORELOAD( &htim1, 200 );
+				break;
+			case 'm'://200Hz
+				htim1.Instance->PSC = 720 - 1;
+				__HAL_TIM_SET_AUTORELOAD( &htim1, 500 );
+				break;
+			case 'n'://100Hz
+				htim1.Instance->PSC = 720 - 1;
+				__HAL_TIM_SET_AUTORELOAD( &htim1, 1000 );
+				break;
+			case 'o'://50Hz
+				htim1.Instance->PSC = 720 - 1;
+				__HAL_TIM_SET_AUTORELOAD( &htim1, 2000 );
+				break;
+			case 'p'://20Hz
+				htim1.Instance->PSC = 720 - 1;
+				__HAL_TIM_SET_AUTORELOAD( &htim1, 5000 );
+				break;
+			case 'q'://10Hz
+				htim1.Instance->PSC = 720 - 1;
+				__HAL_TIM_SET_AUTORELOAD( &htim1, 10000 );
+				break;
+
+			default: //case 'a':
+				htim1.Instance->PSC = 0;
+				__HAL_TIM_SET_AUTORELOAD ( &htim1, 42);
+				break;
+		}
+		__HAL_TIM_SET_COUNTER(&htim1, 0x0);
 	}
   return (USBD_OK);
   /* USER CODE END 6 */ 
