@@ -9,21 +9,33 @@ The main idea is to build PC-oscilloscope. Hardware is ST Microelectronics devel
 ###License:
 [MIT](license.txt)
 
-###Features:
+###Hardware variants
+* Naked Discovery(Nucleo)
+ * _No overvoltage protection_
+ * Input voltage: 0..3V uni-polar
+* Shield board + Discovery(Nucleo)
+ * Overvoltage protection
+ * Input voltage: 0..45V uni-polar
+ * Input impedance ~1MOhm
+
+###Features(Milestone 1):
 * PC connectivity - USB
-* Chrome App, platform independent
-* Input voltage: 0..80V uni-polar
-* Input impedance ~1MOhm
-* Signal generator
-* External/internal SYNC
+* Platform independent desktop(Chrome App)
+* Minimal voltage resolution 46uV
+* Internal SYNC
+* Simple signal generator(triangle, meander, sine wave, white noise)
 * 12-bit sampling
 * Channel GAIN up to x16
-* Single channel mode:
- * One channel
- * Up to 3.5M samples/sec
 * Multi-channel mode
  * Three channels
- * Up to 1.7M samples/sec
+ * Up to 5M samples/sec
+
+###Features(Milestone 2):
+* Nucleo-F303RE board support
+* External SYNC
+* Single channel mode:
+ * One channel
+ * Up to 10M samples/sec
  
 ###Add-on board:
 ![Schematics](shematic_v1.png)
