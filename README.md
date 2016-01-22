@@ -21,7 +21,7 @@ The main idea is to build PC-oscilloscope. Hardware is ST Microelectronics devel
 ###Features(Milestone 1):
 * PC connectivity - USB
 * Platform independent desktop(Chrome App)
-* Minimal voltage resolution 46uV
+* Minimal voltage resolution 46&mu;V
 * Internal SYNC
 * Simple signal generator(triangle, meander, sine wave, white noise)
 * 12-bit sampling
