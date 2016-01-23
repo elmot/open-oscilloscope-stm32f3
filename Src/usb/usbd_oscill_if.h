@@ -44,7 +44,7 @@
 /* Exported constants --------------------------------------------------------*/
 /* Exported cariables --------------------------------------------------------*/
 extern USBD_OSCILL_ItfTypeDef  USBD_Interface_fops_FS;
-extern uint16_t buffer[2048];
+extern uint16_t buffer[6144];
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */

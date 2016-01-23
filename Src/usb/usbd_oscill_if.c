@@ -66,6 +66,8 @@
   /* USER CODE BEGIN 2 */ 
 extern uint8_t OscillConfigData[];
 extern OPAMP_HandleTypeDef hopamp1;
+extern OPAMP_HandleTypeDef hopamp3;
+extern OPAMP_HandleTypeDef hopamp4;
 extern TIM_HandleTypeDef htim1;
 
   /* USER CODE END 2 */
@@ -163,6 +165,111 @@ static int8_t OSCILL_Control_FS  (uint8_t cmd, uint8_t* pbuf, uint16_t length)
   /* USER CODE END 5 */
 }
 
+typedef struct {
+	__IO int32_t * div2;
+	__IO int32_t * div10;
+	__IO int32_t * div30;
+} VoltDivBits;
+
+#define BB_ADDR(port,bit) ((int32_t*)(PERIPH_BB_BASE + ((-PERIPH_BASE +(uint32_t)&(port->ODR)) * 32) + (bit * 4)))
+
+static const VoltDivBits divBits[3] = {
+{
+	BB_ADDR(GPIOC,0), BB_ADDR(GPIOC,2), BB_ADDR(GPIOC,1)
+},
+{
+	BB_ADDR(GPIOB,2), BB_ADDR(GPIOC,4), BB_ADDR(GPIOC,5)
+},
+{
+	BB_ADDR(GPIOB,14), BB_ADDR(GPIOB,15), BB_ADDR(GPIOB,13)
+}
+
+};
+
+void setDiv(char channel_letter, char d) {
+	int chIdx = channel_letter - 'a';
+	if(chIdx >=0 && chIdx < 4) {
+		switch(d) {
+			case 0:
+				* divBits[chIdx].div2 = -1;
+				* divBits[chIdx].div10 = -1;
+				* divBits[chIdx].div30 = -1;
+				break;
+			case 1:
+				* divBits[chIdx].div2 = 0;
+				* divBits[chIdx].div10 = -1;
+				* divBits[chIdx].div30 = -1;
+				break;
+			case 2:
+				* divBits[chIdx].div2 = -1;
+				* divBits[chIdx].div10 = 0;
+				* divBits[chIdx].div30 = -1;
+				break;
+			case 3:
+				* divBits[chIdx].div2 = -1;
+				* divBits[chIdx].div10 = -1;
+				* divBits[chIdx].div30 = 0;
+				break;
+		}
+	}
+}
+void setGain(char opamp_letter, char g) {
+	uint32_t gainBits;
+	switch(g) {
+			case '1': gainBits = OPAMP_PGA_GAIN_4; break;
+			case '2': gainBits = OPAMP_PGA_GAIN_8; break;
+			case '3': gainBits = OPAMP_PGA_GAIN_16; break;
+			default: gainBits = OPAMP_PGA_GAIN_2; break;
+	}
+	OPAMP_TypeDef * opamp;
+	switch(opamp_letter) {
+		case	'a': opamp = hopamp1.Instance; break;
+		case	'b': opamp = hopamp3.Instance; break;
+		case	'c': opamp = hopamp4.Instance; break;
+		default: return;
+	}
+	opamp->CSR = (opamp->CSR & ~OPAMP_CSR_PGGAIN) | gainBits;
+}
+
+typedef struct {
+	uint16_t prescaler;
+	uint16_t arr;
+	uint16_t samplingTime;
+} TimeCoeff;
+
+static const size_t timing_count = 18;
+static const TimeCoeff timing[timing_count] =
+{
+{999, 7200, ADC_SAMPLETIME_601CYCLES_5},  // A => 10Hz
+{99, 36000, ADC_SAMPLETIME_601CYCLES_5},  // B => 20Hz
+{99, 14400, ADC_SAMPLETIME_601CYCLES_5},  // C => 50Hz
+{99, 7200, ADC_SAMPLETIME_601CYCLES_5},   // D => 100Hz
+{99, 3600, ADC_SAMPLETIME_601CYCLES_5},   // E => 200Hz
+{99, 1440, ADC_SAMPLETIME_601CYCLES_5},   // F => 500Hz
+{99, 720, ADC_SAMPLETIME_601CYCLES_5},    // G => 1kHz
+{0, 36000, ADC_SAMPLETIME_601CYCLES_5},   // H => 2kHz
+{0, 14400, ADC_SAMPLETIME_601CYCLES_5},   // I => 5kHz
+{0, 7200, ADC_SAMPLETIME_601CYCLES_5},    // J => 10kHz
+{0, 3600, ADC_SAMPLETIME_601CYCLES_5},    // K => 20kHz
+{0, 1440, ADC_SAMPLETIME_601CYCLES_5},    // L => 50kHz
+{0, 720, ADC_SAMPLETIME_601CYCLES_5},     // M => 100kHz
+{0, 360, ADC_SAMPLETIME_181CYCLES_5},     // N => 200kHz
+{0, 144, ADC_SAMPLETIME_19CYCLES_5},      // O => 500kHz
+{0, 72, ADC_SAMPLETIME_19CYCLES_5},       // P => 1MHz
+{0, 36, ADC_SAMPLETIME_19CYCLES_5},       // Q => 2MHz
+{0, 14, ADC_SAMPLETIME_1CYCLE_5}          // R => 5MHz
+};	
+
+void setTiming(int t){
+	t -= 'A';
+	if(t <0) t = 0; else 
+	if(t >= timing_count) t = timing_count - 1;
+	htim1.Instance->PSC = timing[t].prescaler;
+	htim1.Instance->ARR = timing[t].arr;
+	htim1.Instance->CNT = 0;
+	//TODO ADC SAMPLING TIME
+}
+	
 /**
   * @brief  OSCILL_Receive_FS
   *         Data received over USB OUT endpoint are sent over CDC interface 
@@ -184,123 +291,22 @@ static int8_t OSCILL_Receive_FS (uint8_t* Buf, uint32_t *Len)
 	if(*Len == 5 && memcmp(Buf,"FRAME",5) == 0)
 	{
 		OSCILL_Transmit_FS((uint8_t*)buffer,4096);
-	} else 
-	if(*Len ==13 && memcmp (Buf,"f.a.range=",10) == 0)
-	{
+	} else if(*Len ==13 && Buf[0]=='s' && Buf[1] =='.' &&
+		memcmp (&Buf[3],".range=",7) == 0)
+	{ //s.[channel].range=[0..3/0..3]
+		char channel = Buf[2];
 		char gain = Buf[10];
 		char div = Buf[12];
-		switch(gain) {
-			case '1': hopamp1.Init.PgaGain = OPAMP_PGA_GAIN_4; break;
-			case '2': hopamp1.Init.PgaGain = OPAMP_PGA_GAIN_8; break;
-			case '3': hopamp1.Init.PgaGain = OPAMP_PGA_GAIN_16; break;
-			default: hopamp1.Init.PgaGain = OPAMP_PGA_GAIN_2; break;
-		}
-		switch(div) {
-			case '1':
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_SET);
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET);
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);
-				break;
-
-			case '2':
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_SET);
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);
-				break;
-
-			case '3': 
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET);
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);
-				break;
-			default: 
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_SET);
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);
-				break;
-		}
-		HAL_OPAMP_Init(&hopamp1);
-		HAL_OPAMP_Start(&hopamp1);
+		setGain(channel,gain);
+		setDiv(channel, div);
 	} else if(*Len ==3 && memcmp (Buf,"t=",2) == 0) {
-		
-		switch(Buf[2]) {
-			case 'b'://1Mhz
-				htim1.Instance->PSC = 0;
-				__HAL_TIM_SET_AUTORELOAD( &htim1, 72 );
-				break;
-			case 'c'://500kHz
-				htim1.Instance->PSC = 0;
-				__HAL_TIM_SET_AUTORELOAD( &htim1, 144 );
-				break;
-			case 'd'://200kHz
-				htim1.Instance->PSC = 0;
-				__HAL_TIM_SET_AUTORELOAD( &htim1, 360 );
-				break;
-			case 'e'://100kHz
-				htim1.Instance->PSC = 0;
-				__HAL_TIM_SET_AUTORELOAD( &htim1, 720 );
-				break;
-			case 'f'://50kHz
-				htim1.Instance->PSC = 0;
-				__HAL_TIM_SET_AUTORELOAD( &htim1, 1440 );
-				break;
-			case 'g'://20kHz
-				htim1.Instance->PSC = 0;
-				__HAL_TIM_SET_AUTORELOAD( &htim1, 3600 );
-				break;
-			case 'h'://10kHz
-				htim1.Instance->PSC = 0;
-				__HAL_TIM_SET_AUTORELOAD( &htim1, 7200 );
-				break;
-			case 'i'://5kHz
-				htim1.Instance->PSC = 0;
-				__HAL_TIM_SET_AUTORELOAD( &htim1, 14400 );
-				break;
-			case 'j'://2kHz
-				htim1.Instance->PSC = 0;
-				__HAL_TIM_SET_AUTORELOAD( &htim1, 36000 );
-				break;
-			case 'k'://1kHz
-				htim1.Instance->PSC = 720 - 1;
-				__HAL_TIM_SET_AUTORELOAD( &htim1, 100 );
-				break;
-			case 'l'://500Hz
-				htim1.Instance->PSC = 720 - 1;
-				__HAL_TIM_SET_AUTORELOAD( &htim1, 200 );
-				break;
-			case 'm'://200Hz
-				htim1.Instance->PSC = 720 - 1;
-				__HAL_TIM_SET_AUTORELOAD( &htim1, 500 );
-				break;
-			case 'n'://100Hz
-				htim1.Instance->PSC = 720 - 1;
-				__HAL_TIM_SET_AUTORELOAD( &htim1, 1000 );
-				break;
-			case 'o'://50Hz
-				htim1.Instance->PSC = 720 - 1;
-				__HAL_TIM_SET_AUTORELOAD( &htim1, 2000 );
-				break;
-			case 'p'://20Hz
-				htim1.Instance->PSC = 720 - 1;
-				__HAL_TIM_SET_AUTORELOAD( &htim1, 5000 );
-				break;
-			case 'q'://10Hz
-				htim1.Instance->PSC = 720 - 1;
-				__HAL_TIM_SET_AUTORELOAD( &htim1, 10000 );
-				break;
-
-			default: //case 'a':
-				htim1.Instance->PSC = 0;
-				__HAL_TIM_SET_AUTORELOAD ( &htim1, 42);
-				break;
-		}
-		__HAL_TIM_SET_COUNTER(&htim1, 0x0);
+		setTiming(Buf[2]);
 	}
   return (USBD_OK);
   /* USER CODE END 6 */ 
 }
 
-/** TODO remove
+/** 
   * @brief  OSCILL_Transmit_FS
   *         Data send over USB IN endpoint are sent over CDC interface 
   *         through this function.           
