@@ -88,7 +88,7 @@ static void MX_USB_PCD_Init(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-uint16_t buffer[2048];
+uint16_t buffer[6144];
 /* USER CODE END 0 */
 
 int main(void)
@@ -124,10 +124,14 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)buffer, 2048);
+	HAL_ADC_Start_DMA(&hadc3, (uint32_t*)&buffer[2048], 2048);
+	HAL_ADC_Start_DMA(&hadc4, (uint32_t*)&buffer[4096], 2048);
 	HAL_TIM_Base_Start(&htim1);
 	HAL_TIM_Base_Start(&htim2);
 	HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
 	HAL_OPAMP_Start(&hopamp1);
+	HAL_OPAMP_Start(&hopamp3);
+	HAL_OPAMP_Start(&hopamp4);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -445,8 +449,8 @@ void MX_USB_PCD_Init(void)
 void MX_DMA_Init(void) 
 {
   /* DMA controller clock enable */
-  __DMA1_CLK_ENABLE();
   __DMA2_CLK_ENABLE();
+  __DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
   HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
@@ -505,10 +509,10 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : OSCILLOSCOPE_A10_Pin OSCILLOSCOPE_A100_Pin OSCILLOSCOPE_A2_Pin OSCILLOSCOPE_B10_Pin 
-                           OSCILLOSCOPE_B100_Pin */
-  GPIO_InitStruct.Pin = OSCILLOSCOPE_A10_Pin|OSCILLOSCOPE_A100_Pin|OSCILLOSCOPE_A2_Pin|OSCILLOSCOPE_B10_Pin 
-                          |OSCILLOSCOPE_B100_Pin;
+  /*Configure GPIO pins : OSCILLOSCOPE_A2_Pin OSCILLOSCOPE_A30_Pin OSCILLOSCOPE_A10_Pin OSCILLOSCOPE_B10_Pin 
+                           OSCILLOSCOPE_B30_Pin */
+  GPIO_InitStruct.Pin = OSCILLOSCOPE_A2_Pin|OSCILLOSCOPE_A30_Pin|OSCILLOSCOPE_A10_Pin|OSCILLOSCOPE_B10_Pin 
+                          |OSCILLOSCOPE_B30_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
@@ -528,8 +532,8 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : OSCILLOSCOPE_B2_Pin OSCILLOSCOPE_C100_Pin OSCILLOSCOPE_C2_Pin OSCILLOSCOPE_C10_Pin */
-  GPIO_InitStruct.Pin = OSCILLOSCOPE_B2_Pin|OSCILLOSCOPE_C100_Pin|OSCILLOSCOPE_C2_Pin|OSCILLOSCOPE_C10_Pin;
+  /*Configure GPIO pins : OSCILLOSCOPE_B2_Pin OSCILLOSCOPE_C30_Pin OSCILLOSCOPE_C2_Pin OSCILLOSCOPE_C10_Pin */
+  GPIO_InitStruct.Pin = OSCILLOSCOPE_B2_Pin|OSCILLOSCOPE_C30_Pin|OSCILLOSCOPE_C2_Pin|OSCILLOSCOPE_C10_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
