@@ -295,9 +295,14 @@ void setTiming(int t){
 static int8_t OSCILL_Receive_FS (uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
-	if(*Len == 5 && memcmp(Buf,"FRAME",5) == 0)
+	if(*Len == 6 && memcmp(Buf,"FRAME",5) == 0)
 	{
-		OSCILL_Transmit_FS((uint8_t*)buffer,4096);
+		switch(Buf[5]) {
+			case 'B': OSCILL_Transmit_FS((uint8_t*)bufferB,4096); break;
+			case 'C': OSCILL_Transmit_FS((uint8_t*)bufferC,4096); break;
+			default: OSCILL_Transmit_FS((uint8_t*)bufferA,4096); break;
+		}
+		
 	} else if(*Len ==13 && Buf[0]=='s' && Buf[1] =='.' &&
 		memcmp (&Buf[3],".range=",7) == 0)
 	{ //s.[channel].range=[0..3/0..3]
