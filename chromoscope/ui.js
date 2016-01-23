@@ -1,4 +1,5 @@
 var encoder = new TextEncoder();
+var colors = ["#44FF44", "#4444FF", "#FFFF44", "#44FF44", "#4444FF", "#FFFF44" ];
 /**
  @type {CanvasRenderingContext2D}
  */
@@ -8,21 +9,22 @@ function showStatus(text) {
     deviceInfo.innerHTML = text;
 }
 
-function drawData(data, colors) {
+function drawData(data) {
     canvasCtx.fillStyle = "#000000";
     canvasCtx.fillRect(0, 0, canvasCtx.canvas.width, canvasCtx.canvas.height);
-    canvasCtx.lineWidth = 1.4;
     for (var j = 0; j < data.length; j++) {
         var array = data[j];
+        if(array == null) continue;
+        canvasCtx.strokeStyle = colors[j];
         canvasCtx.beginPath();
         var zx = canvasCtx.canvas.width / array.length;
         var zy = canvasCtx.canvas.height / 4096;
         //var zx = zy = 1;
-        canvasCtx.moveTo(0, zy * array[0]);
-        for (var i = 1; i < array.length; i++) {
+        canvasCtx.moveTo(0, zy * array[1]);
+        for (var i = 2; i < array.length; i++) {
             canvasCtx.lineTo(i * zx, array[i] * zy);
         }
-        canvasCtx.strokeStyle = colors[j];
+        canvasCtx.lineWidth = array[0] > 0x777 ? 3 : 1.4;
         canvasCtx.stroke();
     }
 }

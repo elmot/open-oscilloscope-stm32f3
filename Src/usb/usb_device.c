@@ -38,6 +38,7 @@
 #include "usbd_core.h"
 #include "usbd_desc.h"
 #include "usbd_oscill.h"
+#include "usbd_oscill.h"
 #include "usbd_oscill_if.h"
 
 /* USB Device Core handle declaration */

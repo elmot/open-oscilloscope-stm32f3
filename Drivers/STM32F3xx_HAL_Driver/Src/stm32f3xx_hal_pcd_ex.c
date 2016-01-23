@@ -154,7 +154,6 @@ HAL_StatusTypeDef  HAL_PCDEx_PMAConfig(PCD_HandleTypeDef *hpcd,
     defined(STM32F373xC) || defined(STM32F378xx) || \
     defined(STM32F302xC)
      
-
 /**
   * @brief Copy a buffer from user memory area to packet memory area (PMA)
   * @param   USBx: USB peripheral instance register address.

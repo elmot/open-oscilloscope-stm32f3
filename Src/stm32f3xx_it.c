@@ -36,14 +36,16 @@
 #include "stm32f3xx_it.h"
 
 /* USER CODE BEGIN 0 */
-
+void channelTrigger(void);
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_adc1;
 extern DMA_HandleTypeDef hdma_adc3;
 extern DMA_HandleTypeDef hdma_adc4;
+extern ADC_HandleTypeDef hadc1;
 extern DMA_HandleTypeDef hdma_dac_ch1;
+extern TIM_HandleTypeDef htim3;
 extern PCD_HandleTypeDef hpcd_USB_FS;
 
 /******************************************************************************/
@@ -87,6 +89,20 @@ void DMA1_Channel1_IRQHandler(void)
 }
 
 /**
+* @brief This function handles ADC1 and ADC2 interrupts.
+*/
+void ADC1_2_IRQHandler(void)
+{
+  /* USER CODE BEGIN ADC1_2_IRQn 0 */
+
+  /* USER CODE END ADC1_2_IRQn 0 */
+  HAL_ADC_IRQHandler(&hadc1);
+  /* USER CODE BEGIN ADC1_2_IRQn 1 */
+
+  /* USER CODE END ADC1_2_IRQn 1 */
+}
+
+/**
 * @brief This function handles USB low priority or CAN_RX0 interrupts.
 */
 void USB_LP_CAN_RX0_IRQHandler(void)
@@ -98,6 +114,22 @@ void USB_LP_CAN_RX0_IRQHandler(void)
   /* USER CODE BEGIN USB_LP_CAN_RX0_IRQn 1 */
 
   /* USER CODE END USB_LP_CAN_RX0_IRQn 1 */
+}
+
+/**
+* @brief This function handles TIM3 global interrupt.
+*/
+void TIM3_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM3_IRQn 0 */
+  __HAL_TIM_CLEAR_IT(&htim3, TIM_IT_UPDATE);
+	channelTrigger();
+#ifdef ___SKIPPIECEOFCODE___	
+  /* USER CODE END TIM3_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim3);
+  /* USER CODE BEGIN TIM3_IRQn 1 */
+#endif
+  /* USER CODE END TIM3_IRQn 1 */
 }
 
 /**

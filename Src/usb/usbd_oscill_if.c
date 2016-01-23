@@ -32,6 +32,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_oscill_if.h"
+#include "oscill.h"
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
   * @{
@@ -64,11 +65,6 @@
   * @{
   */ 
   /* USER CODE BEGIN 2 */ 
-extern uint8_t OscillConfigData[];
-extern OPAMP_HandleTypeDef hopamp1;
-extern OPAMP_HandleTypeDef hopamp3;
-extern OPAMP_HandleTypeDef hopamp4;
-extern TIM_HandleTypeDef htim1;
 
   /* USER CODE END 2 */
 /**
@@ -297,11 +293,34 @@ static int8_t OSCILL_Receive_FS (uint8_t* Buf, uint32_t *Len)
   /* USER CODE BEGIN 6 */
 	if(*Len == 6 && memcmp(Buf,"FRAME",5) == 0)
 	{
+		uint8_t* buffer;
 		switch(Buf[5]) {
-			case 'B': OSCILL_Transmit_FS((uint8_t*)bufferB,4096); break;
-			case 'C': OSCILL_Transmit_FS((uint8_t*)bufferC,4096); break;
-			default: OSCILL_Transmit_FS((uint8_t*)bufferA,4096); break;
+			case 'B': 
+				if(bufferBT[0] & FLAG_NEW) {
+					bufferBT[0] &= ~FLAG_NEW;
+					buffer = (uint8_t*)bufferBT;
+				} else {
+					buffer = (uint8_t*)bufferB; 
+				}
+				break;
+			case 'C': 
+				if(bufferCT[0] & FLAG_NEW) {
+					bufferCT[0] &= ~FLAG_NEW;
+					buffer = (uint8_t*)bufferCT;
+				} else {
+					buffer = (uint8_t*)bufferC; 
+				}
+				break;
+			default: 
+				if(bufferAT[0] & FLAG_NEW) {
+					bufferAT[0] &= ~FLAG_NEW;
+					buffer = (uint8_t*)bufferAT;
+				} else {
+					buffer = (uint8_t*)bufferA; 
+				}
+				break;
 		}
+		OSCILL_Transmit_FS(buffer,4098); 
 		
 	} else if(*Len ==13 && Buf[0]=='s' && Buf[1] =='.' &&
 		memcmp (&Buf[3],".range=",7) == 0)

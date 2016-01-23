@@ -32,10 +32,9 @@ function onDeviceFound(devices) {
         showStatus("Permission denied.");
     }
 }
+var data = [null,null,null,null,null,null];
 
 function runFrame() {
-    var data = [];
-    var colors = ["#44FF44", "#4444FF", "#FFFF44"];
 
     function startAllFrameTransfer() {
         startFrameTransfer(0);
@@ -52,15 +51,17 @@ function runFrame() {
                 "endpoint": 129,
                 "length": 4096
             }, function (transferResult) {
-                if (index < colors.length) {
-                    data.push(new Uint16Array(transferResult.data));
+                if (index < 3) {
+                    var array = new Uint16Array(transferResult.data);
+                    var idx = index + (array[0] > 0x7777 ? 3 : 0);
+                    data[idx] = array;
                     startFrameTransfer(index + 1);
                 } else {
                     chrome.usb.releaseInterface(usbConnection, 0, function () {
                         if (chrome.runtime.lastError)
                             console.warn(chrome.runtime.lastError);
                     });
-                    drawData(data, colors);
+                    drawData(data);
 
                     frameHandler = window.setTimeout(runFrame, 15);
                 }

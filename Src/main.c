@@ -36,6 +36,7 @@
 /* USER CODE BEGIN Includes */
 #include "usb_device.h"
 #include "usbd_oscill_if.h"
+#include "oscill.h"
 
 /* USER CODE END Includes */
 
@@ -56,6 +57,7 @@ OPAMP_HandleTypeDef hopamp4;
 
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim3;
 
 UART_HandleTypeDef huart2;
 
@@ -63,7 +65,6 @@ PCD_HandleTypeDef hpcd_USB_FS;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-extern uint8_t OscillConfigData[];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -79,6 +80,7 @@ static void MX_OPAMP3_Init(void);
 static void MX_OPAMP4_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM2_Init(void);
+static void MX_TIM3_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USB_PCD_Init(void);
 
@@ -88,9 +90,38 @@ static void MX_USB_PCD_Init(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-uint16_t bufferA[2048];
-uint16_t bufferB[2048];
-uint16_t bufferC[2048];
+
+uint16_t bufferA[2049];
+uint16_t bufferB[2049];
+uint16_t bufferC[2049];
+uint16_t bufferAT[2049];
+uint16_t bufferBT[2049];
+uint16_t bufferCT[2049];
+
+void channelTrigger() {
+	HAL_TIM_Base_Stop(&htim1);
+	HAL_TIM_Base_Stop(&htim3);
+	int counter = hadc1.DMA_Handle->Instance->CNDTR;
+	memcpy(&bufferAT[1],&bufferA[2048 - counter + 1], counter * 2);
+	memcpy(&bufferAT[counter + 1],&bufferA[1], 4096 - counter * 2);
+	memcpy(&bufferBT[1],&bufferB[2048 - counter + 1], counter * 2);
+	memcpy(&bufferBT[counter + 1],&bufferB[1], 4096 - counter * 2);
+	memcpy(&bufferCT[1],&bufferC[2048 - counter + 1], counter * 2);
+	memcpy(&bufferCT[counter + 1],&bufferC[1], 4096 - counter * 2);
+	bufferAT[0] |= FLAG_NEW;
+	bufferBT[0] |= FLAG_NEW;
+	bufferCT[0] |= FLAG_NEW;
+	HAL_TIM_Base_Start(&htim1);
+	hadc1.Instance->CFGR |= ADC_CFGR_AWD1EN;//TODO which adc?
+}
+
+void HAL_ADC_LevelOutOfWindowCallback(ADC_HandleTypeDef* hadc)
+{
+	
+	HAL_TIM_Base_Start(&htim3);
+	hadc->Instance->CFGR &= ~ADC_CFGR_AWD1EN;
+}
+
 /* USER CODE END 0 */
 
 int main(void)
@@ -121,6 +152,7 @@ int main(void)
   MX_OPAMP4_Init();
   MX_TIM1_Init();
   MX_TIM2_Init();
+  MX_TIM3_Init();
   MX_USART2_UART_Init();
   MX_USB_PCD_Init();
 
@@ -130,15 +162,21 @@ int main(void)
 		hopamp4.Init.NonInvertingInput = OPAMP_NONINVERTINGINPUT_VP3;
 		HAL_OPAMP_Init(&hopamp4);
 	}
-	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)bufferA, 2048);
-	HAL_ADC_Start_DMA(&hadc3, (uint32_t*)&bufferB, 2048);
-	HAL_ADC_Start_DMA(&hadc4, (uint32_t*)&bufferC, 2048);
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)&bufferA[1], 2048);
+	HAL_ADC_Start_DMA(&hadc3, (uint32_t*)&bufferB[1], 2048);
+	HAL_ADC_Start_DMA(&hadc4, (uint32_t*)&bufferC[1], 2048);
 	HAL_TIM_Base_Start(&htim1);
 	HAL_TIM_Base_Start(&htim2);
 	HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
 	HAL_OPAMP_Start(&hopamp1);
 	HAL_OPAMP_Start(&hopamp3);
 	HAL_OPAMP_Start(&hopamp4);
+	
+	__HAL_TIM_ENABLE_IT(&htim3, TIM_IT_UPDATE);
+	
+	bufferAT[0] = FLAG_TRIGGERED;
+	bufferBT[0] = FLAG_TRIGGERED;
+	bufferCT[0] = FLAG_TRIGGERED;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -201,6 +239,7 @@ void SystemClock_Config(void)
 void MX_ADC1_Init(void)
 {
 
+  ADC_AnalogWDGConfTypeDef AnalogWDGConfig;
   ADC_ChannelConfTypeDef sConfig;
 
     /**Common config 
@@ -220,6 +259,16 @@ void MX_ADC1_Init(void)
   hadc1.Init.LowPowerAutoWait = DISABLE;
   hadc1.Init.Overrun = OVR_DATA_OVERWRITTEN;
   HAL_ADC_Init(&hadc1);
+
+    /**Configure Analog WatchDog 1 
+    */
+  AnalogWDGConfig.WatchdogNumber = ADC_ANALOGWATCHDOG_1;
+  AnalogWDGConfig.WatchdogMode = ADC_ANALOGWATCHDOG_SINGLE_REG;
+  AnalogWDGConfig.HighThreshold = 1280;
+  AnalogWDGConfig.LowThreshold = 0;
+  AnalogWDGConfig.Channel = ADC_CHANNEL_3;
+  AnalogWDGConfig.ITMode = ENABLE;
+  HAL_ADC_AnalogWDGConfig(&hadc1, &AnalogWDGConfig);
 
     /**Configure Regular Channel 
     */
@@ -418,6 +467,30 @@ void MX_TIM2_Init(void)
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig);
+
+}
+
+/* TIM3 init function */
+void MX_TIM3_Init(void)
+{
+
+  TIM_SlaveConfigTypeDef sSlaveConfig;
+  TIM_MasterConfigTypeDef sMasterConfig;
+
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 0;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 2095;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  HAL_TIM_Base_Init(&htim3);
+
+  sSlaveConfig.SlaveMode = TIM_SLAVEMODE_EXTERNAL1;
+  sSlaveConfig.InputTrigger = TIM_TS_ITR0;
+  HAL_TIM_SlaveConfigSynchronization(&htim3, &sSlaveConfig);
+
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig);
 
 }
 
