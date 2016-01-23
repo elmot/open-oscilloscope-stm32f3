@@ -166,22 +166,29 @@ static int8_t OSCILL_Control_FS  (uint8_t cmd, uint8_t* pbuf, uint16_t length)
 }
 
 typedef struct {
-	__IO int32_t * div2;
-	__IO int32_t * div10;
-	__IO int32_t * div30;
+	__IO uint32_t * div2ODR;
+	uint32_t div2mask;
+	__IO uint32_t * div10ODR;
+	uint32_t div10mask;
+	__IO uint32_t * div30ODR;
+	uint32_t div30mask;
 } VoltDivBits;
-
-#define BB_ADDR(port,bit) ((int32_t*)(PERIPH_BB_BASE + ((-PERIPH_BASE +(uint32_t)&(port->ODR)) * 32) + (bit * 4)))
 
 static const VoltDivBits divBits[3] = {
 {
-	BB_ADDR(GPIOC,0), BB_ADDR(GPIOC,2), BB_ADDR(GPIOC,1)
+	&OSCILLOSCOPE_A2_GPIO_Port->ODR , OSCILLOSCOPE_A2_Pin, 
+	&OSCILLOSCOPE_A10_GPIO_Port->ODR, OSCILLOSCOPE_A10_Pin, 
+	&OSCILLOSCOPE_A30_GPIO_Port->ODR, OSCILLOSCOPE_A30_Pin
 },
 {
-	BB_ADDR(GPIOB,2), BB_ADDR(GPIOC,4), BB_ADDR(GPIOC,5)
+	&OSCILLOSCOPE_B2_GPIO_Port->ODR , OSCILLOSCOPE_B2_Pin, 
+	&OSCILLOSCOPE_B10_GPIO_Port->ODR, OSCILLOSCOPE_B10_Pin, 
+	&OSCILLOSCOPE_B30_GPIO_Port->ODR, OSCILLOSCOPE_B30_Pin
 },
 {
-	BB_ADDR(GPIOB,14), BB_ADDR(GPIOB,15), BB_ADDR(GPIOB,13)
+	&OSCILLOSCOPE_C2_GPIO_Port->ODR, OSCILLOSCOPE_C2_Pin, 
+	&OSCILLOSCOPE_C10_GPIO_Port->ODR, OSCILLOSCOPE_C10_Pin, 
+	&OSCILLOSCOPE_C30_GPIO_Port->ODR, OSCILLOSCOPE_C30_Pin
 }
 
 };
@@ -190,25 +197,25 @@ void setDiv(char channel_letter, char d) {
 	int chIdx = channel_letter - 'a';
 	if(chIdx >=0 && chIdx < 4) {
 		switch(d) {
-			case 0:
-				* divBits[chIdx].div2 = -1;
-				* divBits[chIdx].div10 = -1;
-				* divBits[chIdx].div30 = -1;
+			case '0':
+				* divBits[chIdx].div2ODR  |= divBits[chIdx].div2mask;
+				* divBits[chIdx].div10ODR |= divBits[chIdx].div10mask;
+				* divBits[chIdx].div30ODR |= divBits[chIdx].div30mask;
 				break;
-			case 1:
-				* divBits[chIdx].div2 = 0;
-				* divBits[chIdx].div10 = -1;
-				* divBits[chIdx].div30 = -1;
+			case '1':
+				* divBits[chIdx].div2ODR  &= ~divBits[chIdx].div2mask;;
+				* divBits[chIdx].div10ODR |= divBits[chIdx].div10mask;
+				* divBits[chIdx].div30ODR |= divBits[chIdx].div30mask;
 				break;
-			case 2:
-				* divBits[chIdx].div2 = -1;
-				* divBits[chIdx].div10 = 0;
-				* divBits[chIdx].div30 = -1;
+			case '2':
+				* divBits[chIdx].div2ODR  |= divBits[chIdx].div2mask;
+				* divBits[chIdx].div10ODR &= ~divBits[chIdx].div10mask;
+				* divBits[chIdx].div30ODR |= divBits[chIdx].div30mask;
 				break;
-			case 3:
-				* divBits[chIdx].div2 = -1;
-				* divBits[chIdx].div10 = -1;
-				* divBits[chIdx].div30 = 0;
+			case '3':
+				* divBits[chIdx].div2ODR  |= divBits[chIdx].div2mask;
+				* divBits[chIdx].div10ODR |= divBits[chIdx].div10mask;
+				* divBits[chIdx].div30ODR &= ~divBits[chIdx].div30mask;
 				break;
 		}
 	}
