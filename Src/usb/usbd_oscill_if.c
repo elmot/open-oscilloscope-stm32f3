@@ -340,6 +340,30 @@ uint8_t OSCILL_Transmit_FS(uint8_t* Buf, uint16_t Len)
 }
 
 /**
+  * @brief Copy a buffer from user memory area to packet memory area (PMA)
+  * @param   USBx: USB peripheral instance register address.
+  * @param   pbUsrBuf: pointer to user memory area.
+  * @param   wPMABufAddr: address into PMA.
+  * @param   wNBytes: no. of bytes to be copied.
+  * @retval None
+	*
+	* @!!! NOTE This is optimized version instead of standard one in Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_pcd_ex.c
+  * @!!! NOTE Standard version should be removed after every CubeMX regeneration
+	*
+  */
+void PCD_WritePMA(USB_TypeDef  *USBx, uint8_t *pbUsrBuf, uint16_t wPMABufAddr, uint16_t wNBytes)
+{
+  int n = (wNBytes + 1) >> 1;   // n = (wNBytes + 1) / 2 
+  __IO uint32_t *pdwVal = (uint32_t *)(wPMABufAddr * 2 + (uint32_t)USBx + 0x400);
+	uint16_t * pwUsrBuf = (uint16_t *) pbUsrBuf;
+  for (; n != 0; n--)
+  {
+		*pdwVal = * pwUsrBuf;
+		pwUsrBuf++;
+		pdwVal++;
+  }
+}
+/**
   * @}
   */ 
 
