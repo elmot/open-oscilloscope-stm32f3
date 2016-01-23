@@ -12,9 +12,9 @@
 
 <canvas id="canvas"></canvas>
 <div id="controls">
-    <div id="div:s.a.range" class="flex-control">
+    <div id="div:s.a.range" class="flex-control channelA">
         <label for="s.a.range" class="control-title">Range A</label>
-        <select name="s.a.range" id="s.a.range" class="paramInput">
+        <select name="s.a.range" id="s.a.range" class="paramInput scrollSelect">
             <option value="3/0">180mV</option>
             <option value="2/0">350mV</option>
             <option value="1/0">750mV</option>
@@ -24,9 +24,9 @@
             <option value="0/3">45V</option>
         </select>
     </div>
-    <div id="div:s.b.range" class="flex-control">
+    <div id="div:s.b.range" class="flex-control channelB">
         <label for="s.b.range" class="control-title">Range B</label>
-        <select name="s.b.range" id="s.b.range" class="paramInput">
+        <select name="s.b.range" id="s.b.range" class="paramInput scrollSelect">
             <option value="3/0">180mV</option>
             <option value="2/0">350mV</option>
             <option value="1/0">750mV</option>
@@ -36,9 +36,9 @@
             <option value="0/3">45V</option>
         </select>
     </div>
-    <div id="div:s.c.range" class="flex-control">
+    <div id="div:s.c.range" class="flex-control channelC">
         <label for="s.c.range" class="control-title">Range C</label>
-        <select name="s.c.range" id="s.c.range" class="paramInput">
+        <select name="s.c.range" id="s.c.range" class="paramInput scrollSelect">
             <option value="3/0">180mV</option>
             <option value="2/0">350mV</option>
             <option value="1/0">750mV</option>
@@ -48,10 +48,10 @@
             <option value="0/3">45V</option>
         </select>
     </div>
-    <div id="div:t" class="flex-control">
+    <div id="div:t" class="flex-control sampling">
         <label for="t" class="control-title">Sampling rate</label>
 
-        <select id="t" name="t"  class="paramInput">
+        <select id="t" name="t"  class="paramInput scrollSelect">
             <option value="R">5MHz</option>
             <option value="Q">2MHz</option>
             <option value="P">1MHz</option>
@@ -73,6 +73,7 @@
         </select>
     </div>
 </div>
-<script src="script.js"></script>
+<script src="hw.js"></script>
+<script src="ui.js"></script>
 </body>
 </html>

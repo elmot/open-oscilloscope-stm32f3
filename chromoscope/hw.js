@@ -1,16 +1,12 @@
 var usbConnection = null;
 var openDevice = null;
 var cmdQueue = [];
-var encoder = new TextEncoder();
 /**
  @type {CanvasRenderingContext2D}
  */
-var canvasCtx = document.getElementById("canvas").getContext("2d");
 
 var deviceInfo = document.getElementById("device-info");
-function showStatus(text) {
-    deviceInfo.innerHTML = text;
-}
+
 function registerDevice(device) {
     if (openDevice != null) return;
     chrome.usb.openDevice(device, function (connection) {
@@ -18,6 +14,7 @@ function registerDevice(device) {
             openDevice = device;
             usbConnection = connection;
             showStatus("Device opened: " + openDevice.productName + "(" + openDevice.manufacturerName + ") #" + openDevice.serialNumber);
+            scanControls();
             runFrame();
         } else {
             showStatus("Device failed to open.");
@@ -35,25 +32,6 @@ function onDeviceFound(devices) {
         showStatus("Permission denied.");
     }
 }
-function drawData(data, colors) {
-    canvasCtx.fillStyle = "#000000";
-    canvasCtx.fillRect(0, 0, canvasCtx.canvas.width, canvasCtx.canvas.height);
-    for(var j = 0; j <data.length;j++)
-    {
-        var array = data[j];
-        canvasCtx.beginPath();
-        var zx = canvasCtx.canvas.width / array.length;
-        var zy = canvasCtx.canvas.height / 4096;
-        //var zx = zy = 1;
-        canvasCtx.moveTo(0, zy * array[0]);
-        for (var i = 1; i < array.length; i++) {
-            canvasCtx.lineTo(i * zx, array[i] * zy);
-        }
-        canvasCtx.strokeStyle = colors[j];
-        canvasCtx.stroke();
-    }
-}
-
 
 function runFrame() {
     var data = [];
@@ -119,7 +97,6 @@ function setParamFromInput(event) {
     setParam(elm.name, elm.value)
 }
 function setParam(name, value) {
-    console.log(name + ": " + value)
     cmdQueue.push(name + "=" + value)
 }
 
@@ -134,13 +111,9 @@ chrome.usb.onDeviceRemoved.addListener(function (device) {
 
 chrome.usb.onDeviceAdded.addListener(registerDevice);
 
-chrome.usb.getDevices({"vendorId": 57664, "productId": 57136}, onDeviceFound);
+function initialDeviceDetect() {
+    chrome.usb.getDevices({"vendorId": 57664, "productId": 57136}, onDeviceFound);
+}
 
 
-document.addEventListener('DOMContentLoaded', function () {
-    var nodeList = document.querySelectorAll(".paramInput");
-    for (var i = 0; i < nodeList.length; i++) {
-        nodeList[i].addEventListener("click", setParamFromInput);
-    }
-});
 
