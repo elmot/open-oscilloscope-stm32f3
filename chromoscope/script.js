@@ -35,43 +35,58 @@ function onDeviceFound(devices) {
         showStatus("Permission denied.");
     }
 }
-function drawData(array) {
-    canvasCtx.beginPath();
-    var zx = canvasCtx.canvas.width / array.length;
-    var zy = canvasCtx.canvas.height / 4096;
-    //var zx = zy = 1;
-    canvasCtx.moveTo(0, zy * array[0]);
-    for (var i = 1; i < array.length; i++) {
-        canvasCtx.lineTo(i * zx, array[i] * zy);
-    }
-    canvasCtx.strokeStyle = "#FFFFFF";
+function drawData(data, colors) {
     canvasCtx.fillStyle = "#000000";
     canvasCtx.fillRect(0, 0, canvasCtx.canvas.width, canvasCtx.canvas.height);
-    canvasCtx.stroke();
-
+    for(var j = 0; j <data.length;j++)
+    {
+        var array = data[j];
+        canvasCtx.beginPath();
+        var zx = canvasCtx.canvas.width / array.length;
+        var zy = canvasCtx.canvas.height / 4096;
+        //var zx = zy = 1;
+        canvasCtx.moveTo(0, zy * array[0]);
+        for (var i = 1; i < array.length; i++) {
+            canvasCtx.lineTo(i * zx, array[i] * zy);
+        }
+        canvasCtx.strokeStyle = colors[j];
+        canvasCtx.stroke();
+    }
 }
 
 
 function runFrame() {
-    function startFrameTransfer() {
+    var data = [];
+    var colors = ["#44FF44", "#4444FF", "#FFFF44"];
+
+    function startAllFrameTransfer() {
+        startFrameTransfer(0);
+    }
+
+    function startFrameTransfer(index) {
         chrome.usb.bulkTransfer(usbConnection, {
             "direction": "out",
             "endpoint": 2,
-            "data": new Uint8Array(encoder.encode("FRAME").buffer).buffer
+            "data": new Uint8Array(encoder.encode("FRAME" + String.fromCharCode(index + 65)).buffer).buffer
         }, function (transferResult) {//todo check transfer result for errors.
             chrome.usb.bulkTransfer(usbConnection, {
                 "direction": "in",
                 "endpoint": 129,
                 "length": 4096
             }, function (transferResult) {
-                chrome.usb.releaseInterface(usbConnection, 0, function () {
-                    if (chrome.runtime.lastError)
-                        console.warn(chrome.runtime.lastError);
-                });
-                drawData(new Uint16Array(transferResult.data));
-                frameHandler = window.setTimeout(runFrame, 15);
-            });
+                if (index < colors.length) {
+                    data.push(new Uint16Array(transferResult.data));
+                    startFrameTransfer(index + 1);
+                } else {
+                    chrome.usb.releaseInterface(usbConnection, 0, function () {
+                        if (chrome.runtime.lastError)
+                            console.warn(chrome.runtime.lastError);
+                    });
+                    drawData(data, colors);
 
+                    frameHandler = window.setTimeout(runFrame, 15);
+                }
+            });
         });
     }
 
@@ -83,7 +98,7 @@ function runFrame() {
                 "data": encoder.encode(cmdQueue.pop()).buffer
             }, commandTransfer);
         } else {
-            startFrameTransfer();
+            startAllFrameTransfer();
         }
     }
 
