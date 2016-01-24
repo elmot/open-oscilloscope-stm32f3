@@ -1,6 +1,6 @@
 {
   "name": "USB Oscilloscope",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Stm32F3-Discovery based Oscilloscope",
   "manifest_version": 2,
   "minimum_chrome_version": "43",
