@@ -217,7 +217,7 @@ void MX_ADC1_Init(void)
     */
   AnalogWDGConfig.WatchdogNumber = ADC_ANALOGWATCHDOG_1;
   AnalogWDGConfig.WatchdogMode = ADC_ANALOGWATCHDOG_SINGLE_REG;
-  AnalogWDGConfig.HighThreshold = 1095;
+  AnalogWDGConfig.HighThreshold = 4095;
   AnalogWDGConfig.LowThreshold = 0;
   AnalogWDGConfig.Channel = ADC_CHANNEL_3;
   AnalogWDGConfig.ITMode = ENABLE;
@@ -267,7 +267,7 @@ void MX_ADC3_Init(void)
   AnalogWDGConfig.HighThreshold = 4095;
   AnalogWDGConfig.LowThreshold = 0;
   AnalogWDGConfig.Channel = ADC_CHANNEL_1;
-  AnalogWDGConfig.ITMode = DISABLE;
+  AnalogWDGConfig.ITMode = ENABLE;
   HAL_ADC_AnalogWDGConfig(&hadc3, &AnalogWDGConfig);
 
     /**Configure Regular Channel 
@@ -314,7 +314,7 @@ void MX_ADC4_Init(void)
   AnalogWDGConfig.HighThreshold = 4095;
   AnalogWDGConfig.LowThreshold = 0;
   AnalogWDGConfig.Channel = ADC_CHANNEL_3;
-  AnalogWDGConfig.ITMode = DISABLE;
+  AnalogWDGConfig.ITMode = ENABLE;
   HAL_ADC_AnalogWDGConfig(&hadc4, &AnalogWDGConfig);
 
     /**Configure Regular Channel 

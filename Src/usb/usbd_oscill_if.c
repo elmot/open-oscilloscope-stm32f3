@@ -193,7 +193,16 @@ static int8_t OSCILL_Receive_FS (uint8_t* Buf, uint32_t *Len)
 		setDiv(channel, div);
 	} else if(*Len ==3 && memcmp (Buf,"t=",2) == 0) {
 		setTiming(Buf[2]);
+	} else if(*Len == 11 && memcmp (Buf,"trig.type=",10) == 0) {
+		setTriggerType(Buf[10]);
+	} else if(*Len == 9 && memcmp (Buf,"trig.ch=",8) == 0) {
+		setTriggerChannel(Buf[8]);
+	} else if(*Len > 11 && memcmp (Buf,"trig.level=",11) == 0) {
+		setTriggerLevel((char*)&Buf[11],*Len - 11 );
+	} else if(*Len > 10 && memcmp (Buf,"trig.time=",10) == 0) {
+		setTriggerTimeShift((char*)&Buf[10],*Len - 10 );
 	}
+
   return (USBD_OK);
   /* USER CODE END 6 */ 
 }
