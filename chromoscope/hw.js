@@ -54,8 +54,12 @@ function runFrame() {
             }, function (transferResult) {
                 if (index < 3) {
                     var array = new Uint16Array(transferResult.data);
-                    var idx = index + (array[0] > 0x7777 ? 3 : 0);
-                    data[idx] = array;
+                    if(array[0] > 0x7777 ) {
+                        data[index] = null;
+                        data[index + 3] = array;
+                    } else {
+                        data[index] = array;
+                    }
                     startFrameTransfer(index + 1);
                 } else {
                     chrome.usb.releaseInterface(usbConnection, 0, function () {
