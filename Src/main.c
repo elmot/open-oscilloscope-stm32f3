@@ -63,6 +63,9 @@ UART_HandleTypeDef huart2;
 
 PCD_HandleTypeDef hpcd_USB_FS;
 
+DMA_HandleTypeDef hdma_memtomem_dma1_channel2;
+DMA_HandleTypeDef hdma_memtomem_dma1_channel3;
+
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE END PV */
@@ -90,37 +93,6 @@ static void MX_USB_PCD_Init(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-
-uint16_t bufferA[2049];
-uint16_t bufferB[2049];
-uint16_t bufferC[2049];
-uint16_t bufferAT[2049];
-uint16_t bufferBT[2049];
-uint16_t bufferCT[2049];
-
-void channelTrigger() {
-	HAL_TIM_Base_Stop(&htim1);
-	HAL_TIM_Base_Stop(&htim3);
-	int counter = hadc1.DMA_Handle->Instance->CNDTR;
-	memcpy(&bufferAT[1],&bufferA[2048 - counter + 1], counter * 2);
-	memcpy(&bufferAT[counter + 1],&bufferA[1], 4096 - counter * 2);
-	memcpy(&bufferBT[1],&bufferB[2048 - counter + 1], counter * 2);
-	memcpy(&bufferBT[counter + 1],&bufferB[1], 4096 - counter * 2);
-	memcpy(&bufferCT[1],&bufferC[2048 - counter + 1], counter * 2);
-	memcpy(&bufferCT[counter + 1],&bufferC[1], 4096 - counter * 2);
-	bufferAT[0] |= FLAG_NEW;
-	bufferBT[0] |= FLAG_NEW;
-	bufferCT[0] |= FLAG_NEW;
-	HAL_TIM_Base_Start(&htim1);
-	hadc1.Instance->CFGR |= ADC_CFGR_AWD1EN;//TODO which adc?
-}
-
-void HAL_ADC_LevelOutOfWindowCallback(ADC_HandleTypeDef* hadc)
-{
-	
-	HAL_TIM_Base_Start(&htim3);
-	hadc->Instance->CFGR &= ~ADC_CFGR_AWD1EN;
-}
 
 /* USER CODE END 0 */
 
@@ -157,26 +129,7 @@ int main(void)
   MX_USB_PCD_Init();
 
   /* USER CODE BEGIN 2 */
-	
-	{/*Fix cubeMX bug */
-		hopamp4.Init.NonInvertingInput = OPAMP_NONINVERTINGINPUT_VP3;
-		HAL_OPAMP_Init(&hopamp4);
-	}
-	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)&bufferA[1], 2048);
-	HAL_ADC_Start_DMA(&hadc3, (uint32_t*)&bufferB[1], 2048);
-	HAL_ADC_Start_DMA(&hadc4, (uint32_t*)&bufferC[1], 2048);
-	HAL_TIM_Base_Start(&htim1);
-	HAL_TIM_Base_Start(&htim2);
-	HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
-	HAL_OPAMP_Start(&hopamp1);
-	HAL_OPAMP_Start(&hopamp3);
-	HAL_OPAMP_Start(&hopamp4);
-	
-	__HAL_TIM_ENABLE_IT(&htim3, TIM_IT_UPDATE);
-	
-	bufferAT[0] = FLAG_TRIGGERED;
-	bufferBT[0] = FLAG_TRIGGERED;
-	bufferCT[0] = FLAG_TRIGGERED;
+	initOscill();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -264,7 +217,7 @@ void MX_ADC1_Init(void)
     */
   AnalogWDGConfig.WatchdogNumber = ADC_ANALOGWATCHDOG_1;
   AnalogWDGConfig.WatchdogMode = ADC_ANALOGWATCHDOG_SINGLE_REG;
-  AnalogWDGConfig.HighThreshold = 1280;
+  AnalogWDGConfig.HighThreshold = 1095;
   AnalogWDGConfig.LowThreshold = 0;
   AnalogWDGConfig.Channel = ADC_CHANNEL_3;
   AnalogWDGConfig.ITMode = ENABLE;
@@ -286,6 +239,7 @@ void MX_ADC1_Init(void)
 void MX_ADC3_Init(void)
 {
 
+  ADC_AnalogWDGConfTypeDef AnalogWDGConfig;
   ADC_ChannelConfTypeDef sConfig;
 
     /**Common config 
@@ -306,6 +260,16 @@ void MX_ADC3_Init(void)
   hadc3.Init.Overrun = OVR_DATA_OVERWRITTEN;
   HAL_ADC_Init(&hadc3);
 
+    /**Configure Analog WatchDog 1 
+    */
+  AnalogWDGConfig.WatchdogNumber = ADC_ANALOGWATCHDOG_1;
+  AnalogWDGConfig.WatchdogMode = ADC_ANALOGWATCHDOG_SINGLE_REG;
+  AnalogWDGConfig.HighThreshold = 4095;
+  AnalogWDGConfig.LowThreshold = 0;
+  AnalogWDGConfig.Channel = ADC_CHANNEL_1;
+  AnalogWDGConfig.ITMode = DISABLE;
+  HAL_ADC_AnalogWDGConfig(&hadc3, &AnalogWDGConfig);
+
     /**Configure Regular Channel 
     */
   sConfig.Channel = ADC_CHANNEL_1;
@@ -322,6 +286,7 @@ void MX_ADC3_Init(void)
 void MX_ADC4_Init(void)
 {
 
+  ADC_AnalogWDGConfTypeDef AnalogWDGConfig;
   ADC_ChannelConfTypeDef sConfig;
 
     /**Common config 
@@ -341,6 +306,16 @@ void MX_ADC4_Init(void)
   hadc4.Init.LowPowerAutoWait = DISABLE;
   hadc4.Init.Overrun = OVR_DATA_OVERWRITTEN;
   HAL_ADC_Init(&hadc4);
+
+    /**Configure Analog WatchDog 1 
+    */
+  AnalogWDGConfig.WatchdogNumber = ADC_ANALOGWATCHDOG_1;
+  AnalogWDGConfig.WatchdogMode = ADC_ANALOGWATCHDOG_SINGLE_REG;
+  AnalogWDGConfig.HighThreshold = 4095;
+  AnalogWDGConfig.LowThreshold = 0;
+  AnalogWDGConfig.Channel = ADC_CHANNEL_3;
+  AnalogWDGConfig.ITMode = DISABLE;
+  HAL_ADC_AnalogWDGConfig(&hadc4, &AnalogWDGConfig);
 
     /**Configure Regular Channel 
     */
@@ -529,12 +504,37 @@ void MX_USB_PCD_Init(void)
 
 /** 
   * Enable DMA controller clock
+  * Configure DMA for memory to memory transfers
+  *   hdma_memtomem_dma1_channel2
+  *   hdma_memtomem_dma1_channel3
   */
 void MX_DMA_Init(void) 
 {
   /* DMA controller clock enable */
   __DMA2_CLK_ENABLE();
   __DMA1_CLK_ENABLE();
+
+  /* Configure DMA request hdma_memtomem_dma1_channel2 on DMA1_Channel2 */
+  hdma_memtomem_dma1_channel2.Instance = DMA1_Channel2;
+  hdma_memtomem_dma1_channel2.Init.Direction = DMA_MEMORY_TO_MEMORY;
+  hdma_memtomem_dma1_channel2.Init.PeriphInc = DMA_PINC_ENABLE;
+  hdma_memtomem_dma1_channel2.Init.MemInc = DMA_MINC_ENABLE;
+  hdma_memtomem_dma1_channel2.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+  hdma_memtomem_dma1_channel2.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+  hdma_memtomem_dma1_channel2.Init.Mode = DMA_NORMAL;
+  hdma_memtomem_dma1_channel2.Init.Priority = DMA_PRIORITY_LOW;
+  HAL_DMA_Init(&hdma_memtomem_dma1_channel2);
+
+  /* Configure DMA request hdma_memtomem_dma1_channel3 on DMA1_Channel3 */
+  hdma_memtomem_dma1_channel3.Instance = DMA1_Channel3;
+  hdma_memtomem_dma1_channel3.Init.Direction = DMA_MEMORY_TO_MEMORY;
+  hdma_memtomem_dma1_channel3.Init.PeriphInc = DMA_PINC_ENABLE;
+  hdma_memtomem_dma1_channel3.Init.MemInc = DMA_MINC_ENABLE;
+  hdma_memtomem_dma1_channel3.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+  hdma_memtomem_dma1_channel3.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+  hdma_memtomem_dma1_channel3.Init.Mode = DMA_NORMAL;
+  hdma_memtomem_dma1_channel3.Init.Priority = DMA_PRIORITY_LOW;
+  HAL_DMA_Init(&hdma_memtomem_dma1_channel3);
 
   /* DMA interrupt init */
   HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
