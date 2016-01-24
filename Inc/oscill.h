@@ -36,9 +36,6 @@ extern DMA_HandleTypeDef hdma_dac_ch1;
 
 extern UART_HandleTypeDef huart2;
 
-extern DMA_HandleTypeDef hdma_memtomem_dma1_channel2;
-extern DMA_HandleTypeDef hdma_memtomem_dma1_channel3;
-
 void initOscill(void);
 void sendBuffer(char channel_letter);
 

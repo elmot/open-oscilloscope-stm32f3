@@ -12,21 +12,9 @@ uint16_t bufferCT[FRAME_SIZE + 1];
 
 volatile bool ongoingFrameClear = false;
 /* TODO
-trig.type
-            <option value="R" selected="selected">&#x2b0f;</option>
-            <option value="F">&#x2b0e;</option>
 trig.ch
-            <option value="Z">Auto</option>
-            <option value="A" selected="selected" class="channelA">A</option>
-            <option value="B" class="channelB">B</option>
-            <option value="C" class="channelC">C</option>
             <!--<option value="E" DISABLED>Ext</option>-->
-trig.level
-trigger.time
 Empty frames after param change
-Key all frames for automatic trigger
-No all Key frames for normal trigger
-? No very first frame capture
 */
 char triggerType = 'R';
 char triggerChannel = 'Z';
@@ -105,30 +93,8 @@ void channelTrigger() {
 	HAL_TIM_Base_Stop(&htim3);
 	int counter = hadc1.DMA_Handle->Instance->CNDTR;
 
-/*	HAL_DMA_Start(&hdma_memtomem_dma1_channel2,
-		(uint32_t)&bufferA[FRAME_SIZE - counter + 1], (uint32_t)&bufferAT[1], counter);
-
-	HAL_DMA_Start(&hdma_memtomem_dma1_channel3,
-		(uint32_t)&bufferA[1], (uint32_t)&bufferAT[counter + 1], FRAME_SIZE - counter);
-
-	HAL_DMA_PollForTransfer(&hdma_memtomem_dma1_channel3, HAL_DMA_FULL_TRANSFER, 20000);
-	HAL_DMA_Start(&hdma_memtomem_dma1_channel3,
-		(uint32_t)&bufferB[FRAME_SIZE - counter + 1], (uint32_t)bufferBT[1], counter );
-
-	HAL_DMA_PollForTransfer(&hdma_memtomem_dma1_channel2, HAL_DMA_FULL_TRANSFER, 20000);
-	HAL_DMA_Start(&hdma_memtomem_dma1_channel2,
-		(uint32_t)&bufferB[1], (uint32_t)&bufferBT[counter + 1], FRAME_SIZE - counter);
-
-	HAL_DMA_PollForTransfer(&hdma_memtomem_dma1_channel3, HAL_DMA_FULL_TRANSFER, 20000);
-	HAL_DMA_Start(&hdma_memtomem_dma1_channel3,
-		(uint32_t)&bufferC[FRAME_SIZE - counter + 1], (uint32_t)&bufferCT[1], counter);
-
-	HAL_DMA_PollForTransfer(&hdma_memtomem_dma1_channel2, HAL_DMA_FULL_TRANSFER, 20000);
-	HAL_DMA_Start(&hdma_memtomem_dma1_channel2,
-		(uint32_t)&bufferCT[counter + 1], (uint32_t)&bufferC[1], FRAME_SIZE - counter);
-	*/
 	memcpy(&bufferAT[1],&bufferA[FRAME_SIZE - counter + 1], counter * 2);
-	memcpy(&bufferAT[counter + 1],&bufferA[1], 4096 - counter * 2);
+	memcpy(&bufferAT[counter + 1],&bufferA[1], (FRAME_SIZE - counter) * 2);
 	memcpy(&bufferBT[1],&bufferB[FRAME_SIZE - counter + 1], counter * 2);
 	memcpy(&bufferBT[counter + 1],&bufferB[1], (FRAME_SIZE - counter) * 2);
 	memcpy(&bufferCT[1],&bufferC[FRAME_SIZE - counter + 1], counter * 2);
@@ -141,8 +107,6 @@ void channelTrigger() {
 		bufferBT[0] |= FLAG_CLEAR;
 		bufferCT[0] |= FLAG_CLEAR;
 	}
-//	HAL_DMA_PollForTransfer(&hdma_memtomem_dma1_channel2, HAL_DMA_FULL_TRANSFER, 20000);
-//	HAL_DMA_PollForTransfer(&hdma_memtomem_dma1_channel3, HAL_DMA_FULL_TRANSFER, 20000);
 	HAL_TIM_Base_Start(&htim1);
 	
 	setupTrigger();
@@ -301,33 +265,36 @@ void setTiming(char t){
 }
 
 void sendBuffer(char channel) {
-		uint8_t* buffer;
+		uint16_t* buffer;
 		switch(channel) {
 			case 'B': 
 				if(bufferBT[0] & FLAG_NEW) {
 					bufferBT[0] &= ~FLAG_NEW;
-					buffer = (uint8_t*)bufferBT;
+					buffer = bufferBT;
 				} else {
-					buffer = (uint8_t*)bufferB; 
+					buffer = bufferB; 
 				}
 				break;
 			case 'C': 
 				if(bufferCT[0] & FLAG_NEW) {
 					bufferCT[0] &= ~FLAG_NEW;
-					buffer = (uint8_t*)bufferCT;
+					buffer = bufferCT;
 				} else {
-					buffer = (uint8_t*)bufferC; 
+					buffer = bufferC; 
 				}
 				break;
 			default: 
 				if(bufferAT[0] & FLAG_NEW) {
 					bufferAT[0] &= ~FLAG_NEW;
-					buffer = (uint8_t*)bufferAT;
+					buffer = bufferAT;
 				} else {
-					buffer = (uint8_t*)bufferA; 
+					buffer = bufferA; 
 				}
 				break;
 		}
-		int size = (buffer[0] & FLAG_CLEAR) ? 2 : (FRAME_SIZE * 2 + 2);
-		OSCILL_Transmit_FS(buffer, size); 
+		if(buffer[0] & FLAG_CLEAR) {
+			OSCILL_Transmit_FS((uint8_t*)buffer, 2); 
+		} else {
+			OSCILL_Transmit_FS((uint8_t*)buffer, (FRAME_SIZE + 1) * 2); 
+		}
 	}
