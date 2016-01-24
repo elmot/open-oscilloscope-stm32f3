@@ -1,62 +1,63 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>USB Device Info</title>
+    <title>STM32F3 Oscilloscope</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<!--<button id="test-device">Test Transfer</button>-->
 <span id="device-info">
     <em>No device selected.</em>
 </span>
 
-<canvas id="canvas"></canvas>
+<div id="screen">
+    <canvas id="canvas"></canvas>
+</div>
 <div id="controls">
-    <div id="div:s.a.range" class="flex-control channelA">
+    <div id="div--s.a.range" class="flex-control channelA">
         <label for="s.a.range" class="control-title">Range A</label>
-        <select name="s.a.range" id="s.a.range" class="paramInput scrollSelect">
-            <option value="3/0">180mV</option>
-            <option value="2/0">350mV</option>
-            <option value="1/0">750mV</option>
-            <option value="0/0">1.5V</option>
-            <option value="0/1">3V</option>
-            <option value="0/2">15V</option>
+        <select name="s.a.range" id="s.a.range" class="paramInput wheelSelect">
             <option value="0/3">45V</option>
+            <option value="0/2">15V</option>
+            <option value="0/1">3V</option>
+            <option value="0/0" selected="selected">1.5V</option>
+            <option value="1/0">750mV</option>
+            <option value="2/0">350mV</option>
+            <option value="3/0">180mV</option>
         </select>
     </div>
-    <div id="div:s.b.range" class="flex-control channelB">
+    <div id="div--s.b.range" class="flex-control channelB">
         <label for="s.b.range" class="control-title">Range B</label>
-        <select name="s.b.range" id="s.b.range" class="paramInput scrollSelect">
-            <option value="3/0">180mV</option>
-            <option value="2/0">350mV</option>
-            <option value="1/0">750mV</option>
-            <option value="0/0">1.5V</option>
-            <option value="0/1">3V</option>
-            <option value="0/2">15V</option>
+        <select name="s.b.range" id="s.b.range" class="paramInput wheelSelect">
             <option value="0/3">45V</option>
+            <option value="0/2">15V</option>
+            <option value="0/1">3V</option>
+            <option value="0/0" selected="selected">1.5V</option>
+            <option value="1/0">750mV</option>
+            <option value="2/0">350mV</option>
+            <option value="3/0">180mV</option>
         </select>
     </div>
-    <div id="div:s.c.range" class="flex-control channelC">
+    <div id="div--s.c.range" class="flex-control channelC">
         <label for="s.c.range" class="control-title">Range C</label>
-        <select name="s.c.range" id="s.c.range" class="paramInput scrollSelect">
-            <option value="3/0">180mV</option>
-            <option value="2/0">350mV</option>
-            <option value="1/0">750mV</option>
-            <option value="0/0">1.5V</option>
-            <option value="0/1">3V</option>
-            <option value="0/2">15V</option>
+        <select name="s.c.range" id="s.c.range" class="paramInput wheelSelect">
             <option value="0/3">45V</option>
+            <option value="0/2">15V</option>
+            <option value="0/1">3V</option>
+            <option value="0/0" selected="selected">1.5V</option>
+            <option value="1/0">750mV</option>
+            <option value="2/0">350mV</option>
+            <option value="3/0">180mV</option>
         </select>
     </div>
-    <div id="div:t" class="flex-control sampling">
+    <div id="div--t" class="flex-control sampling">
         <label for="t" class="control-title">Sampling rate</label>
 
-        <select id="t" name="t"  class="paramInput scrollSelect">
+        <select id="t" name="t" class="paramInput wheelSelect">
             <option value="R">5MHz</option>
             <option value="Q">2MHz</option>
             <option value="P">1MHz</option>
             <option value="O">500kHz</option>
-            <option value="N">200kHz</option>
+            <option value="N" selected="selected">200kHz</option>
             <option value="M">100kHz</option>
             <option value="L">50kHz</option>
             <option value="K">20kHz</option>
@@ -71,6 +72,88 @@
             <option value="B">20Hz</option>
             <option value="A">10Hz</option>
         </select>
+    </div>
+    <div id="div--trig" class="flex-control trigger">
+        <label for="trig.type" class="control-title">Trigger</label>
+
+        <select id="trig.type" name="trig.type" class="paramInput wheelSelect">
+            <option value="R" selected="selected">&#x2b0f;</option>
+            <option value="F">&#x2b0e;</option>
+        </select>
+        <select id="trig.ch" name="trig.ch" class="paramInput wheelSelect">
+            <option value="Z">Auto</option>
+            <option value="A" selected="selected" class="channelA">A</option>
+            <option value="B" class="channelB">B</option>
+            <option value="C" class="channelC">C</option>
+            <!--<option value="E" DISABLED>Ext</option>-->
+        </select>
+        <button name="trig.level" class="vertical-picker">&#x2B32;Pick</button>
+        <br>
+
+        <div class="flex-sub-control">
+            <label class="control-title" for="trigger.time">Time shift: </label><span class="input-value rightw5"
+                                                                                      for="trigger.time">0</span>
+            <button class="inputReset floating-right" for="trigger.time" value="0">&#x21ae;</button>
+            <br>
+            <input type="range" min="-2095" max="4000" name="trigger.time" id="trigger.time"
+                   class="paramInput wheelChange full-width" value="0" style="display: inline-block;background-color: blue;">
+        </div>
+    </div>
+    <div id="screen-control" class="flex-control screen">
+        <div class="control-title">Screen</div>
+        <label for="x.zoom" >Time</label>
+        <select name="x.zoom" id="x.zoom" class="paramScreen wheelSelect">
+            <option value="0.05">1/20</option>
+            <option value="0.1">1/10</option>
+            <option value="0.2">1/5</option>
+            <option value="0.5">1/2</option>
+            <option value="1" selected="selected">1:1</option>
+            <option value="2">2</option>
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+        </select>
+
+        <label for="x.zoom" >Ampl.</label>
+        <select name="y.zoom" id="y.zoom" class="paramScreen wheelSelect">
+            <option value="0.05">1/20</option>
+            <option value="0.1">1/10</option>
+            <option value="0.2">1/5</option>
+            <option value="0.5">1/2</option>
+            <option value="1" selected="selected">1:1</option>
+            <option value="2">2</option>
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+        </select>
+
+        <table>
+            <tr>
+                <th>Ch</th>
+                <th>Pan</th>
+                <th>V1</th>
+                <th>V2</th>
+                <th>dV</th>
+            </tr>
+            <tr>
+                <td>A</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>B</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>C</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
     </div>
 </div>
 <script src="hw.js"></script>

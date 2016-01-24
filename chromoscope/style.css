@@ -14,10 +14,22 @@ body {
     position: absolute;
 }
 
-#canvas {
+canvas {
+    background-color: aquamarine;
+    height: 3000px;
+    width: 3000px;
+}
+#screen {
     background-color: pink;
-    flex:  10 1;
+    flex: 10 1;
+    overflow: scroll;
     /*height: 100%;*/
+}
+.screen{
+    background-color: lightgoldenrodyellow;
+}
+.floating-right {
+    float: right
 }
 
 .flex-control {
@@ -29,11 +41,13 @@ body {
     font-size: 1.5em;
 }
 
-.flex-control select{
-    background-color: rgba(255,255,255,0.6);
-    font-size: 1.5em;
+.flex-control select, .flex-control button {
+    background-color: rgba(255, 255, 255, 0.6);
+    font-size: 1em;
+    height: 1.5em;
 }
-.flex-control .control-title {
+
+.flex-control>.control-title {
     display: block;
     font-size: 1em;
     padding: 0 3px;
@@ -41,12 +55,49 @@ body {
     background-color: inherit;
     border: solid 1px #a52a2a;
     border-radius: 0.3em;
-
-
 }
 
+.flex-sub-control {
+    margin-top: 0.2em;
+    border: solid 1px #a52a2a;
+    border-radius: 0.3em;
+    padding: 0.2em;
+}
 
-.channelA { background-color: #80F080}
-.channelB { background-color: #8080D0}
-.channelC { background-color: #F0F080}
-.sampling { background-color: #E0E0E0}
+button {
+    height: 1em;
+    font-size: 0.3em
+}
+
+.aiming {
+    cursor: crosshair
+}
+
+.pressed {
+    border-style: inset
+}
+
+.full-width {
+    width: 95%;
+}
+
+.rightw5 {
+    width: 5em;
+    display: inline-block;
+    text-align: right;
+}
+.channelA {
+    background-color: #80F080
+}
+
+.channelB {
+    background-color: #8080D0
+}
+
+.channelC {
+    background-color: #F0F080
+}
+
+.sampling, .trigger {
+    background-color: #E0E0E0
+}
