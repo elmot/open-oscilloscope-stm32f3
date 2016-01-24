@@ -10,7 +10,7 @@
 </span>
 
 <div id="screen">
-    <canvas id="canvas"></canvas>
+    <canvas id="canvas" height="500" width="1000"></canvas>
 </div>
 <div id="controls">
     <div id="div--s.a.range" class="flex-control channelA">
@@ -87,16 +87,16 @@
             <option value="C" class="channelC">C</option>
             <!--<option value="E" DISABLED>Ext</option>-->
         </select>
-        <button name="trig.level" class="vertical-picker">&#x2B32;Pick</button>
+        <button name="trig.level" id="trig.level" class="vertical-picker paramInput">&#x2B32;Pick</button>
         <br>
 
         <div class="flex-sub-control">
-            <label class="control-title" for="trigger.time">Time shift: </label><span class="input-value rightw5"
-                                                                                      for="trigger.time">0</span>
-            <button class="inputReset floating-right" for="trigger.time" value="0">&#x21ae;</button>
+            <label class="control-title" for="trig.time">Time shift: </label>
+            <span class="input-value rightw5" for="trig.time">0</span>
+            <button class="inputReset floating-right" for="trig.time" value="0">&#x21ae;</button>
             <br>
-            <input type="range" min="-2095" max="4000" name="trigger.time" id="trigger.time"
-                   class="paramInput wheelChange full-width" value="0" style="display: inline-block;background-color: blue;">
+            <input type="range" min="-2095" max="4000" name="trig.time" id="trig.time"
+                   class="paramInput wheelChange full-width" value="0">
         </div>
     </div>
     <div id="screen-control" class="flex-control screen">

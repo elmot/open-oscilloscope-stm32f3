@@ -1,6 +1,7 @@
 var usbConnection = null;
 var openDevice = null;
 var cmdQueue = [];
+var frameParam = {w:2047,h:4096};
 /**
  @type {CanvasRenderingContext2D}
  */
@@ -76,6 +77,9 @@ function runFrame() {
                 "endpoint": 2,
                 "data": encoder.encode(cmdQueue.pop()).buffer
             }, commandTransfer);
+            for (var i = 0; i < data.length; i++) {
+                data[i] = null;
+            }
         } else {
             startAllFrameTransfer();
         }

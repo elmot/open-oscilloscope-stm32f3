@@ -16,8 +16,9 @@ body {
 
 canvas {
     background-color: aquamarine;
-    height: 3000px;
-    width: 3000px;
+    margin: 10px 20px;
+    height: 500px;
+    width: 1000px;
 }
 #screen {
     background-color: pink;
@@ -73,7 +74,7 @@ button {
     cursor: crosshair
 }
 
-.pressed {
+.activated {
     border-style: inset
 }
 

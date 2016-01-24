@@ -18,11 +18,11 @@ function drawData(data) {
         canvasCtx.strokeStyle = colors[j];
         canvasCtx.beginPath();
         var zx = canvasCtx.canvas.width / array.length;
-        var zy = canvasCtx.canvas.height / 4096;
+        var zy = canvasCtx.canvas.height / frameParam.h;
         //var zx = zy = 1;
-        canvasCtx.moveTo(0, zy * array[1]);
+        canvasCtx.moveTo(0, zy * (frameParam.h - array[1]));
         for (var i = 2; i < array.length; i++) {
-            canvasCtx.lineTo(i * zx, array[i] * zy);
+            canvasCtx.lineTo(i * zx, (frameParam.h - array[i]) * zy);
         }
         canvasCtx.lineWidth = array[0] > 0x777 ? 3 : 1.4;
         canvasCtx.stroke();
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function setParamFromInput(event) {
         var elm = event.srcElement;
         console.log(elm.name + ":" +  elm.value);//todo remove
-        var nodeList = document.querySelectorAll(".input-value[for='" + elm.name + "']")
+        var nodeList = document.querySelectorAll(".input-value[for='" + elm.name + "']");
         for(var i = 0; i < nodeList.length; i++) nodeList[i].innerHTML = elm.value
         setParam(elm.name, elm.value)
     }
@@ -80,20 +80,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function verticalPickClick(event) {
             cancelPick();
+            var value = frameParam.h * (1.0 - event.offsetY / event.srcElement.offsetHeight);
+            value = Math.floor(value);
+            var elm = document.getElementById("trig.level");
+            elm.value = value;
+            elm.dispatchEvent(new Event("change"));
             console.log(event)
         }
 
         function cancelPick() {
-            elm.classList.remove("pressed");
+            elm.classList.remove("activated");
             canvasCtx.canvas.classList.remove("aiming");
             canvasCtx.canvas.removeEventListener("click", verticalPickClick)
         }
 
 
-        if (elm.classList.contains("pressed")) {
+        if (elm.classList.contains("activated")) {
             cancelPick();
         } else {
-            elm.classList.add("pressed");
+            elm.classList.add("activated");
             canvasCtx.canvas.classList.add("aiming");
             canvasCtx.canvas.addEventListener("click", verticalPickClick)
         }
