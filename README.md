@@ -23,20 +23,17 @@ The main idea is to build PC-oscilloscope. Hardware is ST Microelectronics devel
 * Platform independent desktop(Chrome App)
 * Minimal voltage resolution 46&mu;V
 * Internal SYNC
-* Simple signal generator(triangle, meander, sine wave, white noise)
+* Simple signal generator (triangle, white noise)
 * 12-bit sampling
 * Channel GAIN up to x16
-* Multi-channel mode
- * Three channels
- * Up to 5M samples/sec
+* Three channels
+* Up to 5M samples/sec
 
 ###Features(Milestone 2):
+* Extended signal generator(meander, sine wave, custom shape)
 * Nucleo-F303RE board support
 * External SYNC
-* Single channel mode:
- * One channel
- * Up to 10M samples/sec
- 
+
 ###Add-on board:
 ![Schematics](shematic_v1.png)
 ![Board](board_v1.png)
