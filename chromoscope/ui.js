@@ -1,5 +1,5 @@
 var encoder = new TextEncoder();
-var colors = ["#44FF44", "#4444FF", "#FFFF44", "#44FF44", "#4444FF", "#FFFF44" ];
+var colors = ["#228822", "#222288", "#888822", "#44FF44", "#4444FF", "#FFFF44" ];
 /**
  @type {CanvasRenderingContext2D}
  */
@@ -24,7 +24,7 @@ function drawData(data) {
         for (var i = 2; i < array.length; i++) {
             canvasCtx.lineTo(i * zx, (frameParam.h - array[i]) * zy);
         }
-        canvasCtx.lineWidth = array[0] > 0x777 ? 3 : 1.4;
+        canvasCtx.lineWidth = 2;
         canvasCtx.stroke();
     }
 }
