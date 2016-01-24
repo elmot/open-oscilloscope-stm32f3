@@ -127,6 +127,9 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
 
     __HAL_LINKDMA(hadc,DMA_Handle,hdma_adc3);
 
+  /* Peripheral interrupt init*/
+    HAL_NVIC_SetPriority(ADC3_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(ADC3_IRQn);
   /* USER CODE BEGIN ADC3_MspInit 1 */
 
   /* USER CODE END ADC3_MspInit 1 */
@@ -158,6 +161,9 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
 
     __HAL_LINKDMA(hadc,DMA_Handle,hdma_adc4);
 
+  /* Peripheral interrupt init*/
+    HAL_NVIC_SetPriority(ADC4_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(ADC4_IRQn);
   /* USER CODE BEGIN ADC4_MspInit 1 */
 
   /* USER CODE END ADC4_MspInit 1 */
@@ -199,6 +205,10 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
 
     /* Peripheral DMA DeInit*/
     HAL_DMA_DeInit(hadc->DMA_Handle);
+
+    /* Peripheral interrupt DeInit*/
+    HAL_NVIC_DisableIRQ(ADC3_IRQn);
+
   /* USER CODE BEGIN ADC3_MspDeInit 1 */
 
   /* USER CODE END ADC3_MspDeInit 1 */
@@ -216,6 +226,10 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
 
     /* Peripheral DMA DeInit*/
     HAL_DMA_DeInit(hadc->DMA_Handle);
+
+    /* Peripheral interrupt DeInit*/
+    HAL_NVIC_DisableIRQ(ADC4_IRQn);
+
   /* USER CODE BEGIN ADC4_MspDeInit 1 */
 
   /* USER CODE END ADC4_MspDeInit 1 */

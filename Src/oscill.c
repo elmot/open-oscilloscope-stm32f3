@@ -1,33 +1,155 @@
 #include "string.h"
+#include "stdbool.h"
 #include "oscill.h"
 #include "usbd_oscill_if.h"
 
-uint16_t bufferA[2049];
-uint16_t bufferB[2049];
-uint16_t bufferC[2049];
-uint16_t bufferAT[2049];
-uint16_t bufferBT[2049];
-uint16_t bufferCT[2049];
+uint16_t bufferA[FRAME_SIZE + 1];
+uint16_t bufferB[FRAME_SIZE + 1];
+uint16_t bufferC[FRAME_SIZE + 1];
+uint16_t bufferAT[FRAME_SIZE + 1];
+uint16_t bufferBT[FRAME_SIZE + 1];
+uint16_t bufferCT[FRAME_SIZE + 1];
+
+volatile bool ongoingFrameClear = false;
+/* TODO
+trig.type
+            <option value="R" selected="selected">&#x2b0f;</option>
+            <option value="F">&#x2b0e;</option>
+trig.ch
+            <option value="Z">Auto</option>
+            <option value="A" selected="selected" class="channelA">A</option>
+            <option value="B" class="channelB">B</option>
+            <option value="C" class="channelC">C</option>
+            <!--<option value="E" DISABLED>Ext</option>-->
+trig.level
+trigger.time
+Empty frames after param change
+Key all frames for automatic trigger
+No all Key frames for normal trigger
+? No very first frame capture
+*/
+char triggerType = 'R';
+char triggerChannel = 'Z';
+int triggerTimeShift = 0;
+int triggerLevel = 0;
+
+ADC_HandleTypeDef * getTriggerADC(){
+	switch(triggerChannel) {
+		case 'B': return &hadc3;
+		case 'C': return &hadc4;
+	}
+	return &hadc1;
+}
+static void setupTrigger() {
+	hadc1.Instance->CFGR &= ~ADC_CFGR_AWD1EN;
+	hadc3.Instance->CFGR &= ~ADC_CFGR_AWD1EN;
+	hadc4.Instance->CFGR &= ~ADC_CFGR_AWD1EN;
+	if(triggerChannel == 'Z') {
+			bufferA[0] |= FLAG_TRIGGERED;
+			bufferB[0] |= FLAG_TRIGGERED;
+			bufferC[0] |= FLAG_TRIGGERED;
+	} else {
+		bufferA[0] &= ~FLAG_TRIGGERED;
+		bufferB[0] &= ~FLAG_TRIGGERED;
+		bufferC[0] &= ~FLAG_TRIGGERED;
+		__HAL_TIM_SetAutoreload(&htim3, FRAME_SIZE + triggerTimeShift);
+		__HAL_TIM_SetCounter(&htim3, 0);
+		ADC_HandleTypeDef * hadc = getTriggerADC();
+		if(triggerType == 'R') {
+			hadc->Instance->TR1 = __HAL_ADC_TRX_HIGHTHRESHOLD(triggerLevel);
+		} else {
+			hadc->Instance->TR1 = __HAL_ADC_TRX_HIGHTHRESHOLD(0xFFF) | triggerLevel;
+		}
+		hadc->Instance->CFGR |= ADC_CFGR_AWD1EN;
+	}
+}
+
+void setTriggerType(char sign) {
+	triggerType = sign;
+	setupTrigger();
+}
+
+void setTriggerChannel(char sign) {
+	triggerChannel = sign;
+	setupTrigger();
+}
+
+int parseDecimal(char* buf, size_t len) {
+	bool minus = false;
+	int val = 0;
+	for(int i = 0; i < len; i++) {
+	  if(buf[i]  == '-') {
+			minus = true; 
+		} else if(buf[i]  >= '0' && buf[i]  <= '9' ) {
+			val = val*10 + buf[i] -'0';
+		} else break;
+	}
+	return minus ? -val : val;
+}
+
+void setTriggerLevel(char *value, size_t length) {
+	triggerLevel = parseDecimal(value,length);
+	setupTrigger();
+}
+
+void setTriggerTimeShift(char *value, size_t length) {
+	triggerTimeShift = parseDecimal(value,length);
+	setupTrigger();
+}
+
+
+
 
 void channelTrigger() {
 	HAL_TIM_Base_Stop(&htim1);
 	HAL_TIM_Base_Stop(&htim3);
 	int counter = hadc1.DMA_Handle->Instance->CNDTR;
-	memcpy(&bufferAT[1],&bufferA[2048 - counter + 1], counter * 2);
+
+/*	HAL_DMA_Start(&hdma_memtomem_dma1_channel2,
+		(uint32_t)&bufferA[FRAME_SIZE - counter + 1], (uint32_t)&bufferAT[1], counter);
+
+	HAL_DMA_Start(&hdma_memtomem_dma1_channel3,
+		(uint32_t)&bufferA[1], (uint32_t)&bufferAT[counter + 1], FRAME_SIZE - counter);
+
+	HAL_DMA_PollForTransfer(&hdma_memtomem_dma1_channel3, HAL_DMA_FULL_TRANSFER, 20000);
+	HAL_DMA_Start(&hdma_memtomem_dma1_channel3,
+		(uint32_t)&bufferB[FRAME_SIZE - counter + 1], (uint32_t)bufferBT[1], counter );
+
+	HAL_DMA_PollForTransfer(&hdma_memtomem_dma1_channel2, HAL_DMA_FULL_TRANSFER, 20000);
+	HAL_DMA_Start(&hdma_memtomem_dma1_channel2,
+		(uint32_t)&bufferB[1], (uint32_t)&bufferBT[counter + 1], FRAME_SIZE - counter);
+
+	HAL_DMA_PollForTransfer(&hdma_memtomem_dma1_channel3, HAL_DMA_FULL_TRANSFER, 20000);
+	HAL_DMA_Start(&hdma_memtomem_dma1_channel3,
+		(uint32_t)&bufferC[FRAME_SIZE - counter + 1], (uint32_t)&bufferCT[1], counter);
+
+	HAL_DMA_PollForTransfer(&hdma_memtomem_dma1_channel2, HAL_DMA_FULL_TRANSFER, 20000);
+	HAL_DMA_Start(&hdma_memtomem_dma1_channel2,
+		(uint32_t)&bufferCT[counter + 1], (uint32_t)&bufferC[1], FRAME_SIZE - counter);
+	*/
+	memcpy(&bufferAT[1],&bufferA[FRAME_SIZE - counter + 1], counter * 2);
 	memcpy(&bufferAT[counter + 1],&bufferA[1], 4096 - counter * 2);
-	memcpy(&bufferBT[1],&bufferB[2048 - counter + 1], counter * 2);
-	memcpy(&bufferBT[counter + 1],&bufferB[1], 4096 - counter * 2);
-	memcpy(&bufferCT[1],&bufferC[2048 - counter + 1], counter * 2);
-	memcpy(&bufferCT[counter + 1],&bufferC[1], 4096 - counter * 2);
-	bufferAT[0] |= FLAG_NEW;
-	bufferBT[0] |= FLAG_NEW;
-	bufferCT[0] |= FLAG_NEW;
+	memcpy(&bufferBT[1],&bufferB[FRAME_SIZE - counter + 1], counter * 2);
+	memcpy(&bufferBT[counter + 1],&bufferB[1], (FRAME_SIZE - counter) * 2);
+	memcpy(&bufferCT[1],&bufferC[FRAME_SIZE - counter + 1], counter * 2);
+	memcpy(&bufferCT[counter + 1],&bufferC[1], (FRAME_SIZE - counter) * 2);
+	bufferAT[0] = FLAG_NEW | FLAG_TRIGGERED;
+	bufferBT[0] = FLAG_NEW | FLAG_TRIGGERED;
+	bufferCT[0] = FLAG_NEW | FLAG_TRIGGERED;
+  if( ongoingFrameClear) {
+		bufferAT[0] |= FLAG_CLEAR;
+		bufferBT[0] |= FLAG_CLEAR;
+		bufferCT[0] |= FLAG_CLEAR;
+	}
+//	HAL_DMA_PollForTransfer(&hdma_memtomem_dma1_channel2, HAL_DMA_FULL_TRANSFER, 20000);
+//	HAL_DMA_PollForTransfer(&hdma_memtomem_dma1_channel3, HAL_DMA_FULL_TRANSFER, 20000);
 	HAL_TIM_Base_Start(&htim1);
-	hadc1.Instance->CFGR |= ADC_CFGR_AWD1EN;//TODO which adc?
+	
+	setupTrigger();
 }
 
 void HAL_ADC_LevelOutOfWindowCallback(ADC_HandleTypeDef* hadc) {
-	
+	ongoingFrameClear = false;
 	HAL_TIM_Base_Start(&htim3);
 	hadc->Instance->CFGR &= ~ADC_CFGR_AWD1EN;
 }
@@ -37,24 +159,32 @@ void initOscill() {
 		hopamp4.Init.NonInvertingInput = OPAMP_NONINVERTINGINPUT_VP3;
 		HAL_OPAMP_Init(&hopamp4);
 	}
-	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)&bufferA[1], 2048);
-	HAL_ADC_Start_DMA(&hadc3, (uint32_t*)&bufferB[1], 2048);
-	HAL_ADC_Start_DMA(&hadc4, (uint32_t*)&bufferC[1], 2048);
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)&bufferA[1], FRAME_SIZE);
+	HAL_ADC_Start_DMA(&hadc3, (uint32_t*)&bufferB[1], FRAME_SIZE);
+	HAL_ADC_Start_DMA(&hadc4, (uint32_t*)&bufferC[1], FRAME_SIZE);
 	HAL_TIM_Base_Start(&htim1);
 	HAL_TIM_Base_Start(&htim2);
 	HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
 	HAL_OPAMP_Start(&hopamp1);
 	HAL_OPAMP_Start(&hopamp3);
 	HAL_OPAMP_Start(&hopamp4);
-	
+
+  __HAL_TIM_CLEAR_IT(&htim3, TIM_IT_UPDATE);
 	__HAL_TIM_ENABLE_IT(&htim3, TIM_IT_UPDATE);
 	
-	bufferAT[0] = FLAG_TRIGGERED;
-	bufferBT[0] = FLAG_TRIGGERED;
-	bufferCT[0] = FLAG_TRIGGERED;
-
+	bufferAT[0] = FLAG_TRIGGERED | FLAG_CLEAR;
+	bufferBT[0] = FLAG_TRIGGERED | FLAG_CLEAR;
+	bufferCT[0] = FLAG_TRIGGERED | FLAG_CLEAR;
+	setupTrigger();
 }
 
+static void clearKeyFrames()
+{
+	bufferAT[0] |= FLAG_CLEAR | FLAG_NEW;
+	bufferBT[0] |= FLAG_CLEAR | FLAG_NEW;
+	bufferCT[0] |= FLAG_CLEAR | FLAG_NEW;
+	ongoingFrameClear = true;
+}
 typedef struct {
 	__IO uint32_t * div2ODR;
 	uint32_t div2mask;
@@ -109,6 +239,7 @@ void setDiv(char channel_letter, char d) {
 				break;
 		}
 	}
+	clearKeyFrames();
 }
 
 void setGain(char opamp_letter, char g) {
@@ -127,6 +258,7 @@ void setGain(char opamp_letter, char g) {
 		default: return;
 	}
 	opamp->CSR = (opamp->CSR & ~OPAMP_CSR_PGGAIN) | gainBits;
+	clearKeyFrames();
 }
 
 typedef struct {
@@ -164,6 +296,7 @@ void setTiming(char t){
 	htim1.Instance->PSC = timing[t].prescaler;
 	htim1.Instance->ARR = timing[t].arr;
 	htim1.Instance->CNT = 0;
+	clearKeyFrames();
 	//TODO ADC SAMPLING TIME
 }
 
@@ -195,5 +328,6 @@ void sendBuffer(char channel) {
 				}
 				break;
 		}
-		OSCILL_Transmit_FS(buffer,4098); 
+		int size = (buffer[0] & FLAG_CLEAR) ? 2 : (FRAME_SIZE * 2 + 2);
+		OSCILL_Transmit_FS(buffer, size); 
 	}

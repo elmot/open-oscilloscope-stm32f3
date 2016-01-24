@@ -5,14 +5,17 @@
 
 #define FLAG_TRIGGERED 0x8000
 #define FLAG_NEW 0x4000
+#define FLAG_CLEAR 0x2000
+
+#define FRAME_SIZE 2047
 
 extern uint8_t OscillConfigData[];
-extern uint16_t bufferA[2049];
-extern uint16_t bufferB[2049];
-extern uint16_t bufferC[2049];
-extern uint16_t bufferAT[2049];
-extern uint16_t bufferBT[2049];
-extern uint16_t bufferCT[2049];
+extern uint16_t bufferA[FRAME_SIZE + 1];
+extern uint16_t bufferB[FRAME_SIZE + 1];
+extern uint16_t bufferC[FRAME_SIZE + 1];
+extern uint16_t bufferAT[FRAME_SIZE + 1];
+extern uint16_t bufferBT[FRAME_SIZE + 1];
+extern uint16_t bufferCT[FRAME_SIZE + 1];
 
 extern OPAMP_HandleTypeDef hopamp1;
 extern OPAMP_HandleTypeDef hopamp3;
@@ -43,5 +46,9 @@ void setGain(char opamp_letter, char g);
 void setTiming(char t);
 void setDiv(char channel_letter, char d);
 
+void setTriggerType(char sign);
+void setTriggerChannel(char sign);
+void setTriggerLevel(char *value, size_t length);
+void setTriggerTimeShift(char *value, size_t length);
 #endif
 

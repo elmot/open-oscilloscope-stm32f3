@@ -65,6 +65,7 @@ PCD_HandleTypeDef hpcd_USB_FS;
 
 DMA_HandleTypeDef hdma_memtomem_dma1_channel2;
 DMA_HandleTypeDef hdma_memtomem_dma1_channel3;
+DMA_HandleTypeDef hdma_memtomem_dma1_channel4;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
@@ -507,20 +508,21 @@ void MX_USB_PCD_Init(void)
   * Configure DMA for memory to memory transfers
   *   hdma_memtomem_dma1_channel2
   *   hdma_memtomem_dma1_channel3
+  *   hdma_memtomem_dma1_channel4
   */
 void MX_DMA_Init(void) 
 {
   /* DMA controller clock enable */
-  __DMA2_CLK_ENABLE();
   __DMA1_CLK_ENABLE();
+  __DMA2_CLK_ENABLE();
 
   /* Configure DMA request hdma_memtomem_dma1_channel2 on DMA1_Channel2 */
   hdma_memtomem_dma1_channel2.Instance = DMA1_Channel2;
   hdma_memtomem_dma1_channel2.Init.Direction = DMA_MEMORY_TO_MEMORY;
   hdma_memtomem_dma1_channel2.Init.PeriphInc = DMA_PINC_ENABLE;
   hdma_memtomem_dma1_channel2.Init.MemInc = DMA_MINC_ENABLE;
-  hdma_memtomem_dma1_channel2.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
-  hdma_memtomem_dma1_channel2.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+  hdma_memtomem_dma1_channel2.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+  hdma_memtomem_dma1_channel2.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
   hdma_memtomem_dma1_channel2.Init.Mode = DMA_NORMAL;
   hdma_memtomem_dma1_channel2.Init.Priority = DMA_PRIORITY_LOW;
   HAL_DMA_Init(&hdma_memtomem_dma1_channel2);
@@ -530,11 +532,22 @@ void MX_DMA_Init(void)
   hdma_memtomem_dma1_channel3.Init.Direction = DMA_MEMORY_TO_MEMORY;
   hdma_memtomem_dma1_channel3.Init.PeriphInc = DMA_PINC_ENABLE;
   hdma_memtomem_dma1_channel3.Init.MemInc = DMA_MINC_ENABLE;
-  hdma_memtomem_dma1_channel3.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
-  hdma_memtomem_dma1_channel3.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+  hdma_memtomem_dma1_channel3.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+  hdma_memtomem_dma1_channel3.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
   hdma_memtomem_dma1_channel3.Init.Mode = DMA_NORMAL;
   hdma_memtomem_dma1_channel3.Init.Priority = DMA_PRIORITY_LOW;
   HAL_DMA_Init(&hdma_memtomem_dma1_channel3);
+
+  /* Configure DMA request hdma_memtomem_dma1_channel4 on DMA1_Channel4 */
+  hdma_memtomem_dma1_channel4.Instance = DMA1_Channel4;
+  hdma_memtomem_dma1_channel4.Init.Direction = DMA_MEMORY_TO_MEMORY;
+  hdma_memtomem_dma1_channel4.Init.PeriphInc = DMA_PINC_ENABLE;
+  hdma_memtomem_dma1_channel4.Init.MemInc = DMA_MINC_ENABLE;
+  hdma_memtomem_dma1_channel4.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+  hdma_memtomem_dma1_channel4.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
+  hdma_memtomem_dma1_channel4.Init.Mode = DMA_NORMAL;
+  hdma_memtomem_dma1_channel4.Init.Priority = DMA_PRIORITY_LOW;
+  HAL_DMA_Init(&hdma_memtomem_dma1_channel4);
 
   /* DMA interrupt init */
   HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);

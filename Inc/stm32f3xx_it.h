@@ -50,9 +50,11 @@ void DMA1_Channel1_IRQHandler(void);
 void ADC1_2_IRQHandler(void);
 void USB_LP_CAN_RX0_IRQHandler(void);
 void TIM3_IRQHandler(void);
+void ADC3_IRQHandler(void);
 void DMA2_Channel3_IRQHandler(void);
 void DMA2_Channel4_IRQHandler(void);
 void DMA2_Channel5_IRQHandler(void);
+void ADC4_IRQHandler(void);
 
 #ifdef __cplusplus
 }
