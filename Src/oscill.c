@@ -10,6 +10,8 @@ uint16_t bufferAT[FRAME_SIZE + 1];
 uint16_t bufferBT[FRAME_SIZE + 1];
 uint16_t bufferCT[FRAME_SIZE + 1];
 
+uint16_t bufferD[FRAME_SIZE + 1];
+
 volatile bool ongoingFrameClear = false;
 /* TODO
 trig.ch
@@ -20,6 +22,7 @@ char triggerType = 'R';
 char triggerChannel = 'Z';
 int triggerTimeShift = 0;
 int triggerLevel = 0;
+volatile uint32_t triggerLevelReg2 = 0xFFFFFFFF;
 
 ADC_HandleTypeDef * getTriggerADC(){
 	switch(triggerChannel) {
@@ -44,9 +47,11 @@ static void setupTrigger() {
 		__HAL_TIM_SetCounter(&htim3, 0);
 		ADC_HandleTypeDef * hadc = getTriggerADC();
 		if(triggerType == 'R') {
-			hadc->Instance->TR1 = __HAL_ADC_TRX_HIGHTHRESHOLD(triggerLevel);
-		} else {
 			hadc->Instance->TR1 = __HAL_ADC_TRX_HIGHTHRESHOLD(0xFFF) | triggerLevel;
+			triggerLevelReg2 = __HAL_ADC_TRX_HIGHTHRESHOLD(triggerLevel);
+		} else {
+			hadc->Instance->TR1 = __HAL_ADC_TRX_HIGHTHRESHOLD(triggerLevel);
+			triggerLevelReg2 = __HAL_ADC_TRX_HIGHTHRESHOLD(0xFFF) | triggerLevel;
 		}
 		hadc->Instance->CFGR |= ADC_CFGR_AWD1EN;
 	}
@@ -113,9 +118,14 @@ void channelTrigger() {
 }
 
 void HAL_ADC_LevelOutOfWindowCallback(ADC_HandleTypeDef* hadc) {
-	ongoingFrameClear = false;
-	HAL_TIM_Base_Start(&htim3);
-	hadc->Instance->CFGR &= ~ADC_CFGR_AWD1EN;
+	if(triggerLevelReg2 == 0xFFFFFFFF) {
+		ongoingFrameClear = false;
+		HAL_TIM_Base_Start(&htim3);
+		hadc->Instance->CFGR &= ~ADC_CFGR_AWD1EN;
+	} else {
+		hadc->Instance->TR1 = triggerLevelReg2;
+		triggerLevelReg2 = 0xFFFFFFFF;
+	}
 }
 
 void initOscill() {
@@ -266,35 +276,34 @@ void setTiming(char t){
 
 void sendBuffer(char channel) {
 		uint16_t* buffer;
+		uint16_t* bufferKey;
+//__IO uint32_t *counter;
 		switch(channel) {
-			case 'B': 
-				if(bufferBT[0] & FLAG_NEW) {
-					bufferBT[0] &= ~FLAG_NEW;
-					buffer = bufferBT;
-				} else {
-					buffer = bufferB; 
-				}
+			case 'B':
+				buffer = bufferB;
+				bufferKey = bufferBT;
+//				counter = &hadc1.DMA_Handle->Instance->CNDTR;
 				break;
 			case 'C': 
-				if(bufferCT[0] & FLAG_NEW) {
-					bufferCT[0] &= ~FLAG_NEW;
-					buffer = bufferCT;
-				} else {
-					buffer = bufferC; 
-				}
+				buffer = bufferC;
+				bufferKey = bufferCT;
+//				counter = &hadc3.DMA_Handle->Instance->CNDTR;
 				break;
 			default: 
-				if(bufferAT[0] & FLAG_NEW) {
-					bufferAT[0] &= ~FLAG_NEW;
-					buffer = bufferAT;
-				} else {
-					buffer = bufferA; 
-				}
-				break;
+				buffer = bufferA;
+				bufferKey = bufferAT;
+//				counter = &hadc4.DMA_Handle->Instance->CNDTR;
+		}
+		if(bufferKey[0] & FLAG_NEW) {
+			bufferKey[0] &= ~FLAG_NEW;
+			buffer = bufferKey;
+//			counter = NULL;
 		}
 		if(buffer[0] & FLAG_CLEAR) {
 			OSCILL_Transmit_FS((uint8_t*)buffer, 2); 
 		} else {
-			OSCILL_Transmit_FS((uint8_t*)buffer, (FRAME_SIZE + 1) * 2); 
+			memcpy(bufferD,buffer,sizeof(bufferD));
+//			if(counter != NULL)bufferD[FRAME_SIZE - * counter + 2] = NO_DATA;
+			OSCILL_Transmit_FS((uint8_t*)bufferD, (FRAME_SIZE + 1) * 2); 
 		}
-	}
+}

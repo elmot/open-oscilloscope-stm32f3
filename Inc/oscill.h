@@ -7,6 +7,8 @@
 #define FLAG_NEW 0x4000
 #define FLAG_CLEAR 0x2000
 
+#define NO_DATA 0x8000
+
 #define FRAME_SIZE 2047
 
 extern uint8_t OscillConfigData[];
