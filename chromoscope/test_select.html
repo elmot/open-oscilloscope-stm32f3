@@ -1,22 +1,30 @@
 <html>
 
 <body>
-<select id="a">
-    <option value="_">to be deleted</option>
-    <option value="__">to be deleted</option>
-</select>
+<p>
+    <select id="a">
+        <option value="_">to be deleted</option>
+        <option value="__">to be deleted</option>
+    </select>
+</p>
+<canvas width="800" height="600" style="background-color: pink"></canvas>
 <script>
-    var s = document.getElementById("a");
-    while(s.options.length>0) s.options.remove(0)
-    var opt = document.createElement("option");
-    opt.value="aa";
-    opt.innerHTML="aa5";
-    s.options.add(opt);
-    opt = document.createElement("option");
-    opt.value="ab";
-    opt.innerHTML="bb3";
-    opt.selected = "selected";
-    s.options.add(opt)
+    {
+        var s = document.getElementById("a");
+        while (s.options.length > 0) s.options.remove(0)
+        var opt = document.createElement("option");
+        opt.value = "aa";
+        opt.innerHTML = "aa5";
+        s.options.add(opt);
+        opt = document.createElement("option");
+        opt.value = "ab";
+        opt.innerHTML = "bb3";
+        opt.selected = "selected";
+        s.options.add(opt)
+    }
+    {
+          var frame
+    }
 </script>
 </body>
 </html>
