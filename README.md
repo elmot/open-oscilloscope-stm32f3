@@ -6,7 +6,7 @@ Tomasz has a bunch of ready-to-use-devices, and I have the only preliminary sche
 The main idea is to build PC-oscilloscope. Hardware is ST Microelectronics development board
 [STM32F3-DISCOVERY](http://www.st.com/web/catalog/tools/FM116/SC959/SS1532/PF254044) plus small additional board with simple protection circuits and basic voltage dividers.
 
-For PC part of software Chrome Application is used.
+A special Chrome Application is supposed to be a PC part of the system.
 
 ###License:
 [MIT](license.txt)
