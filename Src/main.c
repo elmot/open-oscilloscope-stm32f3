@@ -46,6 +46,7 @@
 #include "usb_device.h"
 
 /* USER CODE BEGIN Includes */
+#include "oscilloscope.h"
 
 /* USER CODE END Includes */
 
@@ -73,7 +74,7 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-
+DMA_HandleTypeDef hdma_memtomem_dma1_channel2;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -96,10 +97,23 @@ static void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
+  extern void initialise_monitor_handles(void);
 
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+
+void resetLD10() {
+  GPIO_InitTypeDef ge;
+  ge.Pin = LD10_Pin;
+  ge.Mode = GPIO_MODE_INPUT;
+  HAL_GPIO_Init(GPIOE,&ge);
+}
+
+void startDAC() {
+  HAL_TIM_Base_Start(&htim2);
+  HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
+}
 
 /* USER CODE END 0 */
 
@@ -137,26 +151,27 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
   {
-    GPIO_InitTypeDef ge;
-    ge.Pin = LD10_Pin;
-    ge.Mode = GPIO_MODE_INPUT;
-    HAL_GPIO_Init(GPIOE,&ge);
-    HAL_DAC_SetValue(&hdac,DAC_CHANNEL_1,DAC_ALIGN_12B_R,0xffffffff);
+    resetLD10();
+    initialise_monitor_handles();
   }
+  startDAC();
+  setupAdc();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-noreturn"
   while (1)
   {
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-    HAL_GPIO_WritePin(LD3_GPIO_Port,LD3_Pin,GPIO_PIN_SET);
-    HAL_Delay(300);
-    HAL_GPIO_WritePin(LD3_GPIO_Port,LD3_Pin,GPIO_PIN_RESET);
+    HAL_GPIO_TogglePin(LD9_GPIO_Port,LD9_Pin);
     HAL_Delay(300);
   }
+#pragma clang diagnostic pop
   /* USER CODE END 3 */
 
 }
@@ -358,7 +373,6 @@ static void MX_ADC3_Init(void)
 static void MX_ADC4_Init(void)
 {
 
-  ADC_AnalogWDGConfTypeDef AnalogWDGConfig;
   ADC_ChannelConfTypeDef sConfig;
 
     /**Common config 
@@ -376,19 +390,6 @@ static void MX_ADC4_Init(void)
   hadc4.Init.LowPowerAutoWait = DISABLE;
   hadc4.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;
   if (HAL_ADC_Init(&hadc4) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-    /**Configure Analog WatchDog 1 
-    */
-  AnalogWDGConfig.WatchdogNumber = ADC_ANALOGWATCHDOG_1;
-  AnalogWDGConfig.WatchdogMode = ADC_ANALOGWATCHDOG_SINGLE_REG;
-  AnalogWDGConfig.HighThreshold = 4095;
-  AnalogWDGConfig.LowThreshold = 0;
-  AnalogWDGConfig.Channel = ADC_CHANNEL_3;
-  AnalogWDGConfig.ITMode = ENABLE;
-  if (HAL_ADC_AnalogWDGConfig(&hadc4, &AnalogWDGConfig) != HAL_OK)
   {
     Error_Handler();
   }
@@ -431,9 +432,9 @@ static void MX_DAC_Init(void)
     Error_Handler();
   }
 
-    /**Configure Triangle wave generation on DAC OUT1 
+    /**Configure Noise wave generation on DAC OUT1 
     */
-  if (HAL_DACEx_TriangleWaveGenerate(&hdac, DAC_CHANNEL_1, DAC_TRIANGLEAMPLITUDE_4095) != HAL_OK)
+  if (HAL_DACEx_NoiseWaveGenerate(&hdac, DAC_CHANNEL_1, DAC_LFSRUNMASK_BITS11_0) != HAL_OK)
   {
     Error_Handler();
   }
@@ -640,12 +641,30 @@ static void MX_USART2_UART_Init(void)
 
 /** 
   * Enable DMA controller clock
+  * Configure DMA for memory to memory transfers
+  *   hdma_memtomem_dma1_channel2
   */
 static void MX_DMA_Init(void) 
 {
   /* DMA controller clock enable */
   __HAL_RCC_DMA1_CLK_ENABLE();
   __HAL_RCC_DMA2_CLK_ENABLE();
+
+  /* Configure DMA request hdma_memtomem_dma1_channel2 on DMA1_Channel2 */
+  hdma_memtomem_dma1_channel2.Instance = DMA1_Channel2;
+  hdma_memtomem_dma1_channel2.Init.Direction = DMA_MEMORY_TO_MEMORY;
+  hdma_memtomem_dma1_channel2.Init.PeriphInc = DMA_PINC_ENABLE;
+  hdma_memtomem_dma1_channel2.Init.MemInc = DMA_MINC_ENABLE;
+  hdma_memtomem_dma1_channel2.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+  hdma_memtomem_dma1_channel2.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
+  hdma_memtomem_dma1_channel2.Init.Mode = DMA_NORMAL;
+  hdma_memtomem_dma1_channel2.Init.Priority = DMA_PRIORITY_HIGH;
+  if (HAL_DMA_Init(&hdma_memtomem_dma1_channel2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+        
+  
 
   /* DMA interrupt init */
   /* DMA1_Channel1_IRQn interrupt configuration */
@@ -776,9 +795,14 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler */
   /* User can add his own implementation to report the HAL error return state */
-  while(1) 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-noreturn"
+  while(1)
   {
+    HAL_GPIO_TogglePin(LD3_GPIO_Port,LD3_Pin);
+    HAL_Delay(200);
   }
+#pragma clang diagnostic pop
   /* USER CODE END Error_Handler */ 
 }
 
