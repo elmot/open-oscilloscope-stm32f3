@@ -8,7 +8,7 @@ CMAKE_FORCE_CXX_COMPILER(arm-none-eabi-g++ GNU)
 
 SET(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32F303VCTx_FLASH.ld)
 
-SET(COMMON_FLAGS "-g -mlittle-endian -mthumb -mcpu=cortex-m4 -march=armv7e-m -mfpu=fpv4-sp-d16 -mfloat-abi=hard -ffreestanding --specs=nano.specs  --specs=nosys.specs")
+SET(COMMON_FLAGS "-g -mlittle-endian -mthumb -mcpu=cortex-m4 -march=armv7e-m -mfpu=fpv4-sp-d16 -mfloat-abi=hard -ffreestanding --specs=nano.specs  --specs=nosys.specs --specs=rdimon.specs")
 #SET(COMMON_FLAGS "-mcpu=cortex-m0 -mthumb -mfloat-abi=soft -ffunction-sections -fdata-sections -g -fno-common -fmessage-length=0 --specs=nano.specs  --specs=nosys.specs ")
 SET(CMAKE_CXX_FLAGS "${COMMON_FLAGS} -std=c++11")
 SET(CMAKE_C_FLAGS "${COMMON_FLAGS} -std=gnu99")
