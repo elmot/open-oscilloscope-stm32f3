@@ -156,20 +156,28 @@ int main(void)
   }
   startDAC();
   setupAdc();
-
+  setupUsbComm();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
+  long t = HAL_GetTick();
   while (1)
   {
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-    HAL_GPIO_TogglePin(LD9_GPIO_Port,LD9_Pin);
-    HAL_Delay(300);
+    if(t > HAL_GetTick()) {
+      HAL_GPIO_TogglePin(LD9_GPIO_Port, LD9_Pin);
+      t = HAL_GetTick() + 300;
+    }
+    char buffer[100];
+    if(getCommand(buffer,sizeof buffer) && ! strcmp("FRAME",buffer)) {
+      printf("buffer request\n\r");
+      transmitFrame(NULL);
+    }
   }
 #pragma clang diagnostic pop
   /* USER CODE END 3 */
