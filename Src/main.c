@@ -157,6 +157,7 @@ int main(void)
   startDAC();
   setupAdc();
   setupUsbComm();
+  HAL_OPAMP_Start(&hopamp1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -176,7 +177,7 @@ int main(void)
     char buffer[100];
     if(getCommand(buffer,sizeof buffer) && ! strcmp("FRAME",buffer)) {
       printf("buffer request\n\r");
-      transmitFrame(NULL);
+      transmitFrame(lastFrame);
     }
   }
 #pragma clang diagnostic pop
@@ -442,7 +443,7 @@ static void MX_DAC_Init(void)
 
     /**Configure Noise wave generation on DAC OUT1 
     */
-  if (HAL_DACEx_NoiseWaveGenerate(&hdac, DAC_CHANNEL_1, DAC_LFSRUNMASK_BITS11_0) != HAL_OK)
+  if (HAL_DACEx_TriangleWaveGenerate(&hdac, DAC_CHANNEL_1, DAC_TRIANGLEAMPLITUDE_127) != HAL_OK)
   {
     Error_Handler();
   }

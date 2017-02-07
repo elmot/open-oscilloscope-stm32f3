@@ -29,12 +29,13 @@ typedef struct FRAME {
     size_t dataLength;
     volatile bool triggered;
     volatile bool busy;
+    volatile bool sent;
 } FRAME;
 
 
 extern FRAME frame1;
 extern FRAME frame2;
-
+extern FRAME * lastFrame;
 extern volatile int phase;
 
 void setupAdc(void);

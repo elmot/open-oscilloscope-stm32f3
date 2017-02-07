@@ -7,6 +7,7 @@ extern DMA_HandleTypeDef hdma_memtomem_dma1_channel2;
 uint16_t adc1_buffer[FRAME_SIZE * 2];
 FRAME frame1;
 FRAME frame2;
+FRAME * lastFrame = NULL;
 
 
 static void halfDmaDone(struct __DMA_HandleTypeDef *pDef);
@@ -45,11 +46,14 @@ static void copyDataToAvailableFrame(uint16_t *src, size_t size, bool triggered)
   }
   __enable_irq();
   if (frame != NULL) {
+    if(!triggered && frame->triggered && !frame-> sent) return;
     HAL_DMA_Start(&hdma_memtomem_dma1_channel2, (uint32_t) src, (uint32_t) frame->bufferA, size / 2);
-    frame->triggered = false;
+    frame->triggered = triggered;
     frame->dataLength = size;
+    frame->sent = false;
     HAL_DMA_PollForTransfer(&hdma_memtomem_dma1_channel2,HAL_DMA_FULL_TRANSFER, 2000); // todo optimise awful ST code
     frame->busy = false;
+    lastFrame = frame;
   }
 
 }
