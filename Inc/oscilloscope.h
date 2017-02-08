@@ -22,6 +22,7 @@ typedef enum FRAME_STATUS {
 
 #define CMD_MAX_SIZE 128
 #define CMD_BUFFER 4
+#define NUM_CHANNELS 1
 extern uint16_t adc1_buffer[FRAME_SIZE * 2];
 
 typedef struct FRAME {

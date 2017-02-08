@@ -10,35 +10,35 @@ static int writeBufferIndex = 0;
 static int writeCharIndex = 0;
 static int readBufferIndex = 0;
 
-static bool sendString(const char *s, int len) {
+static bool sendBytes(uint8_t *s, int len) {
   uint8_t transmitResult;
-  if (len == -1) len = strlen(s);
   if (len == 0) return true;
   do {
-    transmitResult = CDC_Transmit_FS((uint8_t *) s, (uint16_t) len);
+    transmitResult = CDC_Transmit_FS(s, (uint16_t) len);
   } while (transmitResult == USBD_BUSY);
   return transmitResult == USBD_OK;
 }
+
+static bool sendString(const char *s, int len) {
+  if (len == -1) len = strlen(s);
+  return sendBytes((uint8_t *) s, len);
+}
+
 void transmitFrame(FRAME *frame) {
   //todo
+  uint16_t length;
+  static const uint8_t NO_DATA[2] = {00, 0x80};
   if(frame == NULL) {
-    sendString("#NODATA\n\r", 9);
+    sendBytes((uint8_t *) NO_DATA, 2);
     return;
   }
   __disable_irq();
   frame->busy = true;
   __enable_irq();
-  char buf[200];
-  sendString("#FRAME\n\r", 8);
-  for (int i = 0; i < frame->dataLength; i++) {
-    int m = frame->bufferA[i] / 32;
-    memset(buf, 32, m);
-    buf[m] = '*';
-    buf[m + 1] = '\r';
-    buf[m + 2] = '\n';
-    buf[m + 3] = 0;
-    sendString(buf, m + 3);
-  }
+  length = (uint16_t) (0x8000 | frame->dataLength | (frame->triggered ? 0x4000 : 0) | (0x1000 * NUM_CHANNELS));
+  uint8_t buffer[2] = {(uint8_t) (length & 0xff), (uint8_t) (length >> 8)};
+  sendBytes(buffer, 2);
+  sendBytes((uint8_t *) frame->bufferA, frame->dataLength * 2);
   frame->busy = false;
   frame->busy = true;
 
