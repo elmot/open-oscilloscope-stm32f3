@@ -115,13 +115,29 @@ void startDAC() {
   HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
 }
 
+void simulateUsbDown() {
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  HAL_GPIO_WritePin(GPIOA,GPIO_PIN_11 | GPIO_PIN_12,0);
+  GPIO_InitTypeDef GPIO_InitStruct;
+  GPIO_InitStruct.Pin = GPIO_PIN_11 | GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(GPIOA, & GPIO_InitStruct);
+  for(long l = 0; l < 20000; l++) {
+    __NOP();
+  }
+  __HAL_RCC_GPIOA_FORCE_RESET();
+  __HAL_RCC_GPIOA_RELEASE_RESET();
+
+}
 /* USER CODE END 0 */
 
 int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+  simulateUsbDown();
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -172,7 +188,7 @@ int main(void)
   /* USER CODE BEGIN 3 */
     if(t > HAL_GetTick()) {
       HAL_GPIO_TogglePin(LD9_GPIO_Port, LD9_Pin);
-      t = HAL_GetTick() + 300;
+      t = HAL_GetTick() + 30;
     }
     char buffer[100];
     if(getCommand(buffer,sizeof buffer) && ! strcmp("FRAME",buffer)) {
@@ -224,10 +240,9 @@ void SystemClock_Config(void)
 
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB|RCC_PERIPHCLK_USART1
                               |RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_TIM1
-                              |RCC_PERIPHCLK_ADC12|RCC_PERIPHCLK_ADC34;
+                              |RCC_PERIPHCLK_ADC34;
   PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
   PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-  PeriphClkInit.Adc12ClockSelection = RCC_ADC12PLLCLK_DIV1;
   PeriphClkInit.Adc34ClockSelection = RCC_ADC34PLLCLK_DIV1;
   PeriphClkInit.USBClockSelection = RCC_USBCLKSOURCE_PLL_DIV1_5;
   PeriphClkInit.Tim1ClockSelection = RCC_TIM1CLK_HCLK;
@@ -259,7 +274,7 @@ static void MX_ADC1_Init(void)
     /**Common config 
     */
   hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
   hadc1.Init.ContinuousConvMode = DISABLE;
@@ -435,15 +450,15 @@ static void MX_DAC_Init(void)
     /**DAC channel OUT1 config 
     */
   sConfig.DAC_Trigger = DAC_TRIGGER_T2_TRGO;
-  sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
+  sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_DISABLE;
   if (HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_1) != HAL_OK)
   {
     Error_Handler();
   }
 
-    /**Configure Noise wave generation on DAC OUT1 
+    /**Configure Triangle wave generation on DAC OUT1 
     */
-  if (HAL_DACEx_TriangleWaveGenerate(&hdac, DAC_CHANNEL_1, DAC_TRIANGLEAMPLITUDE_127) != HAL_OK)
+  if (HAL_DACEx_TriangleWaveGenerate(&hdac, DAC_CHANNEL_1, DAC_TRIANGLEAMPLITUDE_511) != HAL_OK)
   {
     Error_Handler();
   }
@@ -514,7 +529,7 @@ static void MX_TIM1_Init(void)
   htim1.Instance = TIM1;
   htim1.Init.Prescaler = 0;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 3000;
+  htim1.Init.Period = 100;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
@@ -549,7 +564,7 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 0;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 2000;
+  htim2.Init.Period = 100;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -667,7 +682,7 @@ static void MX_DMA_Init(void)
   hdma_memtomem_dma1_channel2.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
   hdma_memtomem_dma1_channel2.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
   hdma_memtomem_dma1_channel2.Init.Mode = DMA_NORMAL;
-  hdma_memtomem_dma1_channel2.Init.Priority = DMA_PRIORITY_HIGH;
+  hdma_memtomem_dma1_channel2.Init.Priority = DMA_PRIORITY_VERY_HIGH;
   if (HAL_DMA_Init(&hdma_memtomem_dma1_channel2) != HAL_OK)
   {
     Error_Handler();

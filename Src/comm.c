@@ -1,4 +1,6 @@
 #include <usbd_cdc_if.h>
+#include <usb_device.h>
+#include <usbd_cdc.h>
 #include "oscilloscope.h"
 //
 // Created by elmot on 6.2.2017.
@@ -17,6 +19,11 @@ static bool sendBytes(uint8_t *s, int len) {
     transmitResult = CDC_Transmit_FS(s, (uint16_t) len);
   } while (transmitResult == USBD_BUSY);
   return transmitResult == USBD_OK;
+}
+
+static void waitUntilTransmissed() {
+  USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef *) hUsbDeviceFS.pClassData;
+  while (hcdc->TxState != 0);
 }
 
 static bool sendString(const char *s, int len) {
@@ -38,9 +45,10 @@ void transmitFrame(FRAME *frame) {
   length = (uint16_t) (0x8000 | frame->dataLength | (frame->triggered ? 0x4000 : 0) | (0x1000 * NUM_CHANNELS));
   uint8_t buffer[2] = {(uint8_t) (length & 0xff), (uint8_t) (length >> 8)};
   sendBytes(buffer, 2);
+  waitUntilTransmissed();
   sendBytes((uint8_t *) frame->bufferA, frame->dataLength * 2);
+  waitUntilTransmissed();
   frame->busy = false;
-  frame->busy = true;
 
 }
 

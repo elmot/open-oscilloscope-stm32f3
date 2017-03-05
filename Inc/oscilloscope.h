@@ -52,4 +52,12 @@ void setupUsbComm();
  */
 bool getCommand(char * buffer, size_t maxLength);
 
+
+// hardware device config
+#define MAJOR_DMA DMA1
+#define MAJOR_DMA_ISR_HTI_FLAG DMA_ISR_HTIF1
+#define MAJOR_DMA_ISR_TCI_FLAG DMA_ISR_TCIF1
+#define MAJOR_DMA_CH DMA1_Channel1
+
+
 #endif //F3_OSCILL_FRAME_H

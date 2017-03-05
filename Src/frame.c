@@ -1,3 +1,5 @@
+#include <string.h>
+#include <stm32f303xc.h>
 #include "oscilloscope.h"
 
 extern ADC_HandleTypeDef hadc1;
@@ -9,30 +11,32 @@ FRAME frame1;
 FRAME frame2;
 FRAME * lastFrame = NULL;
 
+/*__attribute__( ( long_call, section(".data") ) ) */static void copyDataToAvailableFrame(uint16_t * src, size_t size, bool triggered);
 
-static void halfDmaDone(struct __DMA_HandleTypeDef *pDef);
+/*__attribute__( ( long_call, section(".data") ) ) */void DMA1_Channel1_IRQHandler(void)
+{
+  switch( MAJOR_DMA->ISR & (MAJOR_DMA_ISR_HTI_FLAG | MAJOR_DMA_ISR_TCI_FLAG))
+  {
+    case MAJOR_DMA_ISR_HTI_FLAG:
+      copyDataToAvailableFrame(adc1_buffer, FRAME_SIZE, false); break;
+    case MAJOR_DMA_ISR_TCI_FLAG:
+      copyDataToAvailableFrame(&adc1_buffer[FRAME_SIZE], FRAME_SIZE, false); break;
+    default: break;// Too late IRQ, skip the frame
+  }
+  MAJOR_DMA->IFCR |= MAJOR_DMA_ISR_HTI_FLAG | DMA_ISR_TCIF1;
 
-static void fullDmaDone(struct __DMA_HandleTypeDef *pDef);
+}
 
-static void copyDataToAvailableFrame(uint16_t * src, size_t size, bool triggered);
 
+static volatile bool busy = false;
 void setupAdc() {
   HAL_ADC_Start_DMA(&hadc1, (uint32_t *) adc1_buffer, FRAME_SIZE * 2);
   HAL_TIM_Base_Start(&htim1);
-  hadc1.DMA_Handle->XferCpltCallback = fullDmaDone;//todo optimize dma
-  hadc1.DMA_Handle->XferHalfCpltCallback = halfDmaDone; //todo optimize dma
-}
-
-static void halfDmaDone(struct __DMA_HandleTypeDef *pDef) {
-  copyDataToAvailableFrame(adc1_buffer, FRAME_SIZE, false);
-}
-
-
-static void fullDmaDone(struct __DMA_HandleTypeDef *pDef) {
-  copyDataToAvailableFrame(&adc1_buffer[FRAME_SIZE], FRAME_SIZE, false);
 }
 
 static void copyDataToAvailableFrame(uint16_t *src, size_t size, bool triggered) {
+  if(busy)return;
+  busy = true;
   FRAME *frame;//todo do not overwrite triggered frames!
   __disable_irq();
   if (!frame1.busy) {
@@ -51,9 +55,12 @@ static void copyDataToAvailableFrame(uint16_t *src, size_t size, bool triggered)
     frame->triggered = triggered;
     frame->dataLength = size;
     frame->sent = false;
-    HAL_DMA_PollForTransfer(&hdma_memtomem_dma1_channel2,HAL_DMA_FULL_TRANSFER, 2000); // todo optimise awful ST code
+    HAL_DMA_PollForTransfer(&hdma_memtomem_dma1_channel2, HAL_DMA_FULL_TRANSFER, 2000); // todo optimise awful ST code
+//    memcpy(frame->bufferA,src,size*2);
     frame->busy = false;
     lastFrame = frame;
+    busy = false;
   }
 
 }
+
