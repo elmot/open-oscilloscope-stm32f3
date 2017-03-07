@@ -67,7 +67,7 @@ void HAL_MspInit(void)
 
   __HAL_RCC_SYSCFG_CLK_ENABLE();
 
-  HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_0);
+  HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_3);
 
   /* System interrupt init*/
   /* MemoryManagement_IRQn interrupt configuration */
@@ -189,6 +189,9 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
 
     __HAL_LINKDMA(hadc,DMA_Handle,hdma_adc4);
 
+    /* Peripheral interrupt init */
+    HAL_NVIC_SetPriority(ADC4_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(ADC4_IRQn);
   /* USER CODE BEGIN ADC4_MspInit 1 */
 
   /* USER CODE END ADC4_MspInit 1 */
@@ -247,6 +250,10 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
 
     /* Peripheral DMA DeInit*/
     HAL_DMA_DeInit(hadc->DMA_Handle);
+
+    /* Peripheral interrupt DeInit*/
+    HAL_NVIC_DisableIRQ(ADC4_IRQn);
+
   /* USER CODE BEGIN ADC4_MspDeInit 1 */
 
   /* USER CODE END ADC4_MspDeInit 1 */

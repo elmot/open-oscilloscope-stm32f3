@@ -168,7 +168,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   {
     resetLD10();
-    initialise_monitor_handles();
+//      initialise_monitor_handles();
   }
   startDAC();
   setupAdc();
@@ -304,10 +304,10 @@ static void MX_ADC1_Init(void)
     */
   AnalogWDGConfig.WatchdogNumber = ADC_ANALOGWATCHDOG_1;
   AnalogWDGConfig.WatchdogMode = ADC_ANALOGWATCHDOG_SINGLE_REG;
-  AnalogWDGConfig.HighThreshold = 4095;
+  AnalogWDGConfig.HighThreshold = 900;
   AnalogWDGConfig.LowThreshold = 0;
   AnalogWDGConfig.Channel = ADC_CHANNEL_3;
-  AnalogWDGConfig.ITMode = ENABLE;
+  AnalogWDGConfig.ITMode = DISABLE;
   if (HAL_ADC_AnalogWDGConfig(&hadc1, &AnalogWDGConfig) != HAL_OK)
   {
     Error_Handler();
@@ -599,7 +599,7 @@ static void MX_TIM3_Init(void)
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim3.Init.Period = 2095;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
   {
     Error_Handler();
@@ -612,7 +612,7 @@ static void MX_TIM3_Init(void)
     Error_Handler();
   }
 
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
   {
@@ -692,7 +692,7 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA1_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
   /* DMA2_Channel3_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Channel3_IRQn, 0, 0);

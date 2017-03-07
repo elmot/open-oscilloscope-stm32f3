@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <string.h>
 #include <stm32f303xc.h>
 #include "oscilloscope.h"
@@ -13,7 +14,7 @@ FRAME * lastFrame = NULL;
 
 /*__attribute__( ( long_call, section(".data") ) ) */static void copyDataToAvailableFrame(uint16_t * src, size_t size, bool triggered);
 
-/*__attribute__( ( long_call, section(".data") ) ) */void DMA1_Channel1_IRQHandler(void)
+/*__attribute__( ( long_call, section(".data") ) ) */void __unused DMA1_Channel1_IRQHandler(void)
 {
   switch( MAJOR_DMA->ISR & (MAJOR_DMA_ISR_HTI_FLAG | MAJOR_DMA_ISR_TCI_FLAG))
   {
@@ -23,6 +24,7 @@ FRAME * lastFrame = NULL;
       copyDataToAvailableFrame(&adc1_buffer[FRAME_SIZE], FRAME_SIZE, false); break;
     default: break;// Too late IRQ, skip the frame
   }
+
   MAJOR_DMA->IFCR |= MAJOR_DMA_ISR_HTI_FLAG | DMA_ISR_TCIF1;
 
 }
