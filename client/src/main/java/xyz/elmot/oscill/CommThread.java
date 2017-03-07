@@ -1,6 +1,7 @@
 package xyz.elmot.oscill;
 
-import purejavacomm.*;
+
+import gnu.io.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,7 +47,7 @@ public class CommThread extends Thread {
 
     @Override
     public void run() {
-        PureJavaSerialPort oscilloscope;
+        SerialPort oscilloscope;
         CommPortIdentifier portIdentifier;
 
         while (running) {
@@ -60,7 +61,7 @@ public class CommThread extends Thread {
             }
             for (oscilloscope = null; running && oscilloscope == null && portIdentifier != null; ) {
                 try {
-                    oscilloscope = (PureJavaSerialPort) portIdentifier.open("Oscilloscope", 250);
+                    oscilloscope = (SerialPort) portIdentifier.open("Oscilloscope", 250);
                 } catch (PortInUseException e) {
                     sendStatus("Port is in use");
                 }
@@ -86,12 +87,14 @@ public class CommThread extends Thread {
                         int data[] = new int[len];
                         for (int i = 0; i < data.length; i++) {
                             data[i] = read16(inputStream);
+                            data[i] = (int) (Math.random() * 1024);
                         }
                         Frame.TYPE type = Math.random() < 0.1 ? Frame.TYPE.NORMAL : Frame.TYPE.TRIGGERED;
                         Frame frame = new Frame(type, N_CHANNELS,
                                 len, 12, new int[][]{data});
                         try {
                             frames.put(frame);
+//                            Thread.sleep(250);
                         } catch (InterruptedException ignored) {
                         }
                     }

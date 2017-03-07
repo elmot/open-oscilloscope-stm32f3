@@ -1,45 +1,48 @@
 package xyz.elmot.oscill;
 
+import com.sun.javafx.webkit.WebConsoleListener;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.chart.LineChart;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.XYChart;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
+import netscape.javascript.JSObject;
+
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * (c) elmot on 9.2.2017.
  */
-public class Main extends Application {
+public class BrowserMain extends Application {
 
     private static CommThread commThread;
     private final long[] frameTimes = new long[20];
-    private int frameTimeIndex = 0 ;
-    private boolean arrayFilled = false ;
-    private LineChart<Number, Number> chart;
+    private int frameTimeIndex = 0;
+    private boolean arrayFilled = false;
 
     @Override
     public void start(Stage stage) throws Exception {
+        stage.getIcons().add( new Image( BrowserMain.class.getResourceAsStream( "icon.png" )));
         AnimationTimer frameRateMeter = new AnimationTimer() {
 
             @Override
             public void handle(long now) {
-                long oldFrameTime = frameTimes[frameTimeIndex] ;
-                frameTimes[frameTimeIndex] = now ;
-                frameTimeIndex = (frameTimeIndex + 1) % frameTimes.length ;
+                long oldFrameTime = frameTimes[frameTimeIndex];
+                frameTimes[frameTimeIndex] = now;
+                frameTimeIndex = (frameTimeIndex + 1) % frameTimes.length;
                 if (frameTimeIndex == 0) {
-                    arrayFilled = true ;
+                    arrayFilled = true;
                 }
                 if (arrayFilled) {
-                    long elapsedNanos = now - oldFrameTime ;
-                    long elapsedNanosPerFrame = elapsedNanos / frameTimes.length ;
-                    double frameRate = 1_000_000_000.0 / elapsedNanosPerFrame ;
+                    long elapsedNanos = now - oldFrameTime;
+                    long elapsedNanosPerFrame = elapsedNanos / frameTimes.length;
+                    double frameRate = 1_000_000_000.0 / elapsedNanosPerFrame;
                     stage.setTitle(String.format("Oscilloscope. FPS: %.3f", frameRate));
                 }
             }
@@ -57,29 +60,32 @@ public class Main extends Application {
 
         stage.setTitle("Oscilloscope");
         stage.setFullScreenExitKeyCombination(KeyCombination.keyCombination("F11"));
-        NumberAxis xAxis = new NumberAxis();
-        NumberAxis yAxis = new NumberAxis(0, 1000, 2);
-        chart = new LineChart<>(xAxis, yAxis);
-        chart.setAnimated(false);
-        chart.setCreateSymbols(false);
-        xAxis.setTickLabelsVisible(false);
-        xAxis.setTickMarkVisible(false);
-        xAxis.setMinorTickVisible(false);
-
-        yAxis.setForceZeroInRange(true);
-        for (int j = 0; j < 2; j++) {
-            XYChart.Series<Number, Number> series = new XYChart.Series<>();
-            for (int i = 0; i < 1; i++) series.getData().add(new XYChart.Data<>(i, -1d));
-            chart.getData().add(series);
-        }
-        Scene scene = new Scene(chart);
+        WebView webView = createWebView();
+        Scene scene = new Scene(webView);
         decorateStage(stage, scene);
         stage.setScene(scene);
         stage.setOnCloseRequest(event -> Platform.exit());
         stage.show();
-        Platform.runLater(new FxUpdate(chart));
+//        Platform.runLater(new FxUpdate(chart));
     }
 
+    private WebView createWebView() {
+        WebConsoleListener.setDefaultListener(
+                (webView1, message, lineNumber, sourceId) ->
+                        System.err.printf("%s[%d]: %s\n\r", sourceId, lineNumber, message));
+
+        WebView webView = new WebView();
+        webView.setContextMenuEnabled(false);
+
+        WebEngine engine = webView.getEngine();
+        engine.setOnAlert(event -> System.out.println("event.getData() = " + event.getData()));
+        engine.setJavaScriptEnabled(true);
+
+        engine.load(BrowserMain.class.getResource("content.html").toExternalForm());
+        JSObject jsobj = (JSObject) engine.executeScript("window");
+        jsobj.setMember("oscilloscope", new OscilloscopeBridge());
+        return webView;
+    }
 
 
     private void decorateStage(Stage stage, Scene scene) {
@@ -89,7 +95,7 @@ public class Main extends Application {
 //        scene.getStylesheets().add("root.css");
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
 
         commThread = new CommThread("/dev/ttyACM0", System.err::println);
         commThread.start();
@@ -101,12 +107,8 @@ public class Main extends Application {
 
     }
 
+/*
     private class FxUpdate implements Runnable {
-        private final XYChart<Number, Number> chart;
-
-        public FxUpdate(XYChart<Number, Number> chart) {
-            this.chart = chart;
-        }
 
         @Override
         public void run() {
@@ -133,5 +135,6 @@ public class Main extends Application {
 
         }
     }
+*/
 
 }
