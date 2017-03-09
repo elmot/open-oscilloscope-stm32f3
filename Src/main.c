@@ -131,6 +131,23 @@ void simulateUsbDown() {
   __HAL_RCC_GPIOA_RELEASE_RESET();
 
 }
+
+#define DEBUG_CHECK 0xAB
+#define DEBUG_OFF 0x54
+#define DEBUG_ON 0x45
+static uint8_t   __attribute__ ((section (".noinit"))) debug_flag = 0;
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-noreturn"
+
+void __unused HardFault_Handler() {
+  if (debug_flag == DEBUG_CHECK) {
+    NVIC_SystemReset();
+  }
+  while (1);
+}
+
+#pragma clang diagnostic pop
 /* USER CODE END 0 */
 
 int main(void)
@@ -168,7 +185,13 @@ int main(void)
   /* USER CODE BEGIN 2 */
   {
     resetLD10();
-//      initialise_monitor_handles();
+    if (debug_flag == DEBUG_CHECK) {
+      debug_flag == DEBUG_OFF;
+    } else {
+      debug_flag = DEBUG_CHECK;
+      initialise_monitor_handles();
+      debug_flag == DEBUG_ON;
+    }
   }
   startDAC();
   setupAdc();
@@ -192,7 +215,7 @@ int main(void)
     }
     char buffer[100];
     if(getCommand(buffer,sizeof buffer) && ! strcmp("FRAME",buffer)) {
-      printf("buffer request\n\r");
+      if (debug_flag == DEBUG_ON)printf("buffer request\n\r");
       transmitFrame(lastFrame);
     }
   }
