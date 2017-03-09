@@ -67,7 +67,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function setParamFromInput(event) {
         var elm = event.srcElement;
-        console.log(elm.name + ":" + elm.value);//todo remove
         var nodeList = document.querySelectorAll(".input-value[for='" + elm.name + "']");
         for (var i = 0; i < nodeList.length; i++) nodeList[i].innerHTML = elm.value
         setParam(elm.name, elm.value)
@@ -139,6 +138,7 @@ document.addEventListener('DOMContentLoaded', function () {
     _addListener(".vertical-picker", "click", pickVertical);
     _addListener(".inputReset", "click", inputReset);
     _addListener(".wheelChange", "wheel", wheelChange);
+
     setZoom();
 });
 

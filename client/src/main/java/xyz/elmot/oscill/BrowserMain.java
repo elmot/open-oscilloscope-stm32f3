@@ -4,6 +4,7 @@ import com.sun.javafx.webkit.WebConsoleListener;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.concurrent.Worker;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCombination;
@@ -12,9 +13,8 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import netscape.javascript.JSObject;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * (c) elmot on 9.2.2017.
@@ -25,10 +25,11 @@ public class BrowserMain extends Application {
     private final long[] frameTimes = new long[20];
     private int frameTimeIndex = 0;
     private boolean arrayFilled = false;
+    private WebEngine webEngine;
 
     @Override
     public void start(Stage stage) throws Exception {
-        stage.getIcons().add( new Image( BrowserMain.class.getResourceAsStream( "icon.png" )));
+        stage.getIcons().add(new Image(BrowserMain.class.getResourceAsStream("icon.png")));
         AnimationTimer frameRateMeter = new AnimationTimer() {
 
             @Override
@@ -66,7 +67,7 @@ public class BrowserMain extends Application {
         stage.setScene(scene);
         stage.setOnCloseRequest(event -> Platform.exit());
         stage.show();
-//        Platform.runLater(new FxUpdate(chart));
+        Platform.runLater(new FxUpdate());
     }
 
     private WebView createWebView() {
@@ -77,17 +78,25 @@ public class BrowserMain extends Application {
         WebView webView = new WebView();
         webView.setContextMenuEnabled(false);
 
-        WebEngine engine = webView.getEngine();
-        engine.setOnAlert(event -> System.out.println("event.getData() = " + event.getData()));
-        engine.setJavaScriptEnabled(true);
+        webEngine = webView.getEngine();
+        webEngine.setOnAlert(event -> System.out.println("Alert: " + event.getData()));
+        webEngine.setJavaScriptEnabled(true);
 
-        engine.load(BrowserMain.class.getResource("content.html").toExternalForm());
-        JSObject jsobj = (JSObject) engine.executeScript("window");
-        jsobj.setMember("oscilloscope", new OscilloscopeBridge());
+        webEngine.getLoadWorker().stateProperty().addListener((ov, oldState, newState) -> {
+
+            if (newState == Worker.State.SUCCEEDED) {
+                System.out.println("READY");
+                JSObject jsobj = (JSObject) webEngine.executeScript("window");
+                jsobj.setMember("osc", new OscilloscopeBridge());
+            }
+
+        });
+        webEngine.load(BrowserMain.class.getResource("content.html").toExternalForm());
         return webView;
     }
 
 
+    @SuppressWarnings("unused")
     private void decorateStage(Stage stage, Scene scene) {
 //        stage.initStyle(StageStyle.TRANSPARENT);
 //        stage.setFullScreen(true);
@@ -97,7 +106,15 @@ public class BrowserMain extends Application {
 
     public static void main(String[] args) {
 
-        commThread = new CommThread("/dev/ttyACM0", System.err::println);
+        commThread = new CommThread("ttyACM0", System.err::println) {
+            protected void waitForCommand() {
+                try {
+                    Thread.sleep(25);
+                } catch (InterruptedException ignored) {
+                }
+            }
+
+        };
         commThread.start();
         try {
             launch(args);
@@ -107,25 +124,27 @@ public class BrowserMain extends Application {
 
     }
 
-/*
     private class FxUpdate implements Runnable {
+        FxUpdate() {
+        }
 
         @Override
         public void run() {
-            ObservableList<XYChart.Series<Number, Number>> serie = chart.getData();
+
+            JSObject dataToDraw = (JSObject) webEngine.executeScript("[]");
             try {
                 Frame take = commThread.getFrames().take();
+//                int[][] fakeData = IntStream.range(0, 3).mapToObj(
+//                        j -> IntStream.range(0, 1400).map(i -> (int) (Math.random() * 1024)).toArray()
+//                ).collect(Collectors.toList()).toArray(new int[0][]);
+//                Frame take = new Frame(Frame.TYPE.NORMAL, 1, 1400, 12, fakeData);
                 int serieIndex = take.type == Frame.TYPE.TRIGGERED ? 1 : 0;
-                ObservableList<XYChart.Data<Number, Number>> data = serie.get(serieIndex).getData();
-                int[] line = take.data[0];
-//                XYChart.Data<Number, Number> chartData []= new XYChart.Data[line.length];
-                for (int i = 0; i < data.size(); i++) {
-                    data.get(i).setYValue(line[i]);
+                for (int i = 0; i < take.data.length; i++) {
+                    int index = i * 2 + serieIndex;
+                    dataToDraw.setSlot(index, take.data[i]);
                 }
-                for (int i = data.size(); i < line.length; i++) {
-                    data.add(new XYChart.Data<>(i,line[i]));
-                }
-//                data.setAll(chartData);
+                JSObject jsWindow = (JSObject) webEngine.executeScript("window");
+                jsWindow.call("drawData", dataToDraw);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -135,6 +154,24 @@ public class BrowserMain extends Application {
 
         }
     }
-*/
 
+    public class OscilloscopeBridge {
+        private Object statusChange;
+
+
+        @SuppressWarnings("unused")
+        public Object getStatusChange() {
+            return statusChange;
+        }
+
+        @SuppressWarnings("unused")
+        public void setStatusChange(Object statusChange) {
+            this.statusChange = statusChange;
+        }
+
+        @SuppressWarnings("unused")
+        public void sendCommand(String name, String value) {
+            System.out.printf("%s: %s\n", name, value);
+        }
+    }
 }

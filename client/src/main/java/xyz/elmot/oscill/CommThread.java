@@ -1,7 +1,6 @@
 package xyz.elmot.oscill;
 
-
-import gnu.io.*;
+import purejavacomm.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,7 +14,7 @@ import java.util.function.Consumer;
 /**
  * (c) elmot on 2.3.2017.
  */
-public class CommThread extends Thread {
+public abstract class CommThread extends Thread {
     private static final int N_CHANNELS = 1;/*todo*/
     private final String portName;
     private final Consumer<String> portStatusConsumer;
@@ -77,6 +76,7 @@ public class CommThread extends Thread {
                     sendStatus("Connected");
                     byteCounter.set(0);
                     while (running) {
+                        waitForCommand();
                         cmdStream.write("\nFRAME\n".getBytes());
                         int head = read16(inputStream);
                         if ((head & 0x8000) == 0) {
@@ -87,14 +87,13 @@ public class CommThread extends Thread {
                         int data[] = new int[len];
                         for (int i = 0; i < data.length; i++) {
                             data[i] = read16(inputStream);
-                            data[i] = (int) (Math.random() * 1024);
+//                            data[i] = (int) (Math.random() * 1024);
                         }
                         Frame.TYPE type = Math.random() < 0.1 ? Frame.TYPE.NORMAL : Frame.TYPE.TRIGGERED;
                         Frame frame = new Frame(type, N_CHANNELS,
                                 len, 12, new int[][]{data});
                         try {
                             frames.put(frame);
-//                            Thread.sleep(250);
                         } catch (InterruptedException ignored) {
                         }
                     }
@@ -107,6 +106,8 @@ public class CommThread extends Thread {
             }
         }
     }
+
+     abstract protected void waitForCommand();
 
     @SuppressWarnings("SameParameterValue")
     private void sleepMe(long millis) {

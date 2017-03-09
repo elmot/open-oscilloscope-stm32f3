@@ -91,7 +91,15 @@ public class Main extends Application {
 
     public static void main(String[] args){
 
-        commThread = new CommThread("/dev/ttyACM0", System.err::println);
+        commThread = new CommThread("/dev/ttyACM0", System.err::println) {
+            protected void waitForCommand() {
+                try {
+                    Thread.sleep(25);
+                } catch (InterruptedException ignored) {
+                }
+            }
+
+        };
         commThread.start();
         try {
             launch(args);
