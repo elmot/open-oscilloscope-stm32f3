@@ -4,14 +4,12 @@ import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.input.KeyCombination;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 
 /**
  * (c) elmot on 9.2.2017.
@@ -91,7 +89,7 @@ public class Main extends Application {
 
     public static void main(String[] args){
 
-        commThread = new CommThread("/dev/ttyACM0", System.err::println) {
+        commThread = new CommThread("/dev/ttyACM0", System.err::println, 2) {
             protected void waitForCommand() {
                 try {
                     Thread.sleep(25);
@@ -123,7 +121,7 @@ public class Main extends Application {
                 Frame take = commThread.getFrames().take();
                 int serieIndex = take.type == Frame.TYPE.TRIGGERED ? 1 : 0;
                 ObservableList<XYChart.Data<Number, Number>> data = serie.get(serieIndex).getData();
-                int[] line = take.data[0];
+                short[] line = take.data[0];
 //                XYChart.Data<Number, Number> chartData []= new XYChart.Data[line.length];
                 for (int i = 0; i < data.size(); i++) {
                     data.get(i).setYValue(line[i]);

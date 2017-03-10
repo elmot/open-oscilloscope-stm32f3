@@ -19,16 +19,17 @@ public abstract class CommThread extends Thread {
     private final String portName;
     private final Consumer<String> portStatusConsumer;
     private volatile boolean running = true;
-    private final BlockingQueue<Frame> frames = new ArrayBlockingQueue<>(2);
+    private final BlockingQueue<Frame> frames;
     private String status;
     private final AtomicLong byteCounter = new AtomicLong(0);
 
     @SuppressWarnings("WeakerAccess")
-    public CommThread(String portName, Consumer<String> portStatusConsumer) {
+    public CommThread(String portName, Consumer<String> portStatusConsumer, int queueDepth) {
         setDaemon(true);
         this.portName = portName;
         this.portStatusConsumer = portStatusConsumer;
         sendStatus("Not started");
+        frames = new ArrayBlockingQueue<>(queueDepth);
     }
 
     private void sendStatus(String newStatus) {
@@ -84,14 +85,13 @@ public abstract class CommThread extends Thread {
                             break;
                         }
                         int len = (head & 0xfff) / N_CHANNELS;
-                        int data[] = new int[len];
+                        short data[] = new short[len];
                         for (int i = 0; i < data.length; i++) {
                             data[i] = read16(inputStream);
-//                            data[i] = (int) (Math.random() * 1024);
                         }
                         Frame.TYPE type = Math.random() < 0.1 ? Frame.TYPE.NORMAL : Frame.TYPE.TRIGGERED;
                         Frame frame = new Frame(type, N_CHANNELS,
-                                len, 12, new int[][]{data});
+                                len, 12, new short[][]{data});
                         try {
                             frames.put(frame);
                         } catch (InterruptedException ignored) {
@@ -118,7 +118,7 @@ public abstract class CommThread extends Thread {
     }
 
 
-    private int read16(InputStream in) throws IOException {
+    private short read16(InputStream in) throws IOException {
         int val = in.read();
         if (val < 0) throw new IOException("unexpected EOF at " + byteCounter);
         byteCounter.incrementAndGet();
@@ -126,7 +126,7 @@ public abstract class CommThread extends Thread {
         if (c < 0) throw new IOException("unexpected EOF at " + byteCounter);
         byteCounter.incrementAndGet();
         val |= c * 256;
-        return val;
+        return (short) val;
     }
 
     @SuppressWarnings("unused")

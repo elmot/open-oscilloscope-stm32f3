@@ -1,17 +1,18 @@
 package xyz.elmot.oscill;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
 import fi.iki.elonen.NanoHTTPD;
+import fi.iki.elonen.NanoHTTPD.Response.Status;
 
-import javax.swing.*;
-import java.awt.*;
-import java.io.ByteArrayOutputStream;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.WindowConstants;
+import java.awt.Desktop;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
@@ -21,6 +22,7 @@ public class WebMain extends NanoHTTPD {
 
     private static final int PORT = 1515;
     private final static Map<String, Resource> staticResources = new TreeMap<>();
+    private final CommThread commThread;
 
     private static class Resource {
         final String mimeType;
@@ -37,18 +39,9 @@ public class WebMain extends NanoHTTPD {
     }
 
     private static void registerResource(String name, String realName, String mimeType) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        InputStream inputStream = WebMain.class.getResourceAsStream(realName);
-        try {
-            for (int b; (b = inputStream.read()) >= 0; ) {
-                baos.write(b);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        byte[] bytes = baos.toByteArray();
-        staticResources.put("/" + name, new Resource(mimeType, () -> new ByteInputStream(bytes, bytes.length)));
-
+            staticResources.put("/" + name, new Resource(mimeType, () ->
+                    WebMain.class.getResourceAsStream(realName))
+            );
     }
 
     static {
@@ -60,13 +53,13 @@ public class WebMain extends NanoHTTPD {
 
     private WebMain() {
         super(PORT);
-        CountDownLatch
-        new CommThread("ttyACM0", null) {
+
+        commThread = new CommThread("ttyACM0", null, 5) {
             @Override
             protected void waitForCommand() {
-
             }
         };
+        commThread.start();
     }
 
     @Override
@@ -77,29 +70,41 @@ public class WebMain extends NanoHTTPD {
             case POST:
                 return serveCommand(session);
             default:
-                return responsStatus(Response.Status.METHOD_NOT_ALLOWED);
+                return responseStatus(Status.METHOD_NOT_ALLOWED);
         }
     }
 
     private Response serveCommand(IHTTPSession session) {
-        return null;
+        if ("/cmd".equals(session.getUri())) {
+            //todo different commands
+            Frame frame = null;
+            try {
+                frame = commThread.getFrames().poll(1200, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException ignored) {
+            }
+            if (frame == null) return responseStatus(Status.NO_CONTENT);
+            ShortFlowInputStream shortFlowInputStream = new ShortFlowInputStream(frame.data);
+            return newFixedLengthResponse(Status.OK, "application/binary"
+                    , shortFlowInputStream, shortFlowInputStream.getSize());
+        } else return responseStatus(Status.METHOD_NOT_ALLOWED);
+
     }
 
     private Response serveStaticResources(IHTTPSession session) {
         String uri = session.getUri();
         if (uri == null || "".equals(uri) || "/".equals(uri)) {
-            Response response = responsStatus(Response.Status.REDIRECT);
+            Response response = responseStatus(Status.REDIRECT);
             response.addHeader("Location", "/content.html");
             return response;
         }
         Resource resource = staticResources.get(uri);
         if (resource != null) {
-            return newChunkedResponse(Response.Status.OK, resource.mimeType, resource.data.get());
+            return newChunkedResponse(Status.OK, resource.mimeType, resource.data.get());
         }
-        return responsStatus(Response.Status.NOT_FOUND);
+        return responseStatus(Status.NOT_FOUND);
     }
 
-    private Response responsStatus(Response.Status status) {
+    private Response responseStatus(Status status) {
         return newFixedLengthResponse(status, NanoHTTPD.MIME_PLAINTEXT, status.getDescription());
     }
 

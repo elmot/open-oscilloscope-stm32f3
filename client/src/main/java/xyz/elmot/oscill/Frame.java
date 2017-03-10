@@ -14,10 +14,10 @@ public class Frame {
     final int len;
     final int channels;
     final int bits;
-    final int[][] data;
+    final short[][] data;
     final TYPE type;
 
-    public Frame(TYPE type, int channels, int len, int bits, int[][] data) {
+    public Frame(TYPE type, int channels, int len, int bits, short[][] data) {
         this.len = len;
         this.channels = channels;
         this.bits = bits;

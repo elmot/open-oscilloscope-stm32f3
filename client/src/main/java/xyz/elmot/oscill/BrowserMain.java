@@ -13,9 +13,6 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import netscape.javascript.JSObject;
 
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
 /**
  * (c) elmot on 9.2.2017.
  */
@@ -106,7 +103,7 @@ public class BrowserMain extends Application {
 
     public static void main(String[] args) {
 
-        commThread = new CommThread("ttyACM0", System.err::println) {
+        commThread = new CommThread("ttyACM0", System.err::println, 2) {
             protected void waitForCommand() {
                 try {
                     Thread.sleep(25);
