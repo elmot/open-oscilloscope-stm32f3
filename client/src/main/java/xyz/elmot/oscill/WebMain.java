@@ -1,19 +1,19 @@
 package xyz.elmot.oscill;
 
+import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
 import fi.iki.elonen.NanoHTTPD;
 import fi.iki.elonen.NanoHTTPD.Response.Status;
+import xyz.elmot.oscill.web.Resource;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.WindowConstants;
-import java.awt.Desktop;
+import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import java.awt.*;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
+import java.util.function.Consumer;
 
 /**
  * (c) elmot on 9.3.2017.
@@ -22,26 +22,17 @@ public class WebMain extends NanoHTTPD {
 
     private static final int PORT = 1515;
     private final static Map<String, Resource> staticResources = new TreeMap<>();
-    private final CommThread commThread;
-
-    private static class Resource {
-        final String mimeType;
-        final Supplier<InputStream> data;
-
-        Resource(String mimeType, Supplier<InputStream> data) {
-            this.mimeType = mimeType;
-            this.data = data;
-        }
-    }
+    private CommThread<byte[]> commThread;
+    private JLabel connectStatus;
 
     private static void registerResource(String name, String mimeType) {
         registerResource(name, name, mimeType);
     }
 
     private static void registerResource(String name, String realName, String mimeType) {
-            staticResources.put("/" + name, new Resource(mimeType, () ->
-                    WebMain.class.getResourceAsStream(realName))
-            );
+        staticResources.put("/" + name, new Resource(mimeType, () ->
+                WebMain.class.getResourceAsStream(realName))
+        );
     }
 
     static {
@@ -49,16 +40,16 @@ public class WebMain extends NanoHTTPD {
         registerResource("ui.js", "application/javascript");
         registerResource("hw.js", "hw_web.js", "application/javascript");
         registerResource("oscilloscope.css", "text/css");
+        registerResource("icon.png", "image/png");
     }
 
     private WebMain() {
         super(PORT);
 
-        commThread = new CommThread("ttyACM0", null, 5) {
-            @Override
-            protected void waitForCommand() {
-            }
-        };
+    }
+
+    private void openPort(String ttyACM0, Consumer<String> portStatusConsumer) {
+        commThread = new CommThread.Bytes(ttyACM0, portStatusConsumer, 5, 0);
         commThread.start();
     }
 
@@ -75,17 +66,17 @@ public class WebMain extends NanoHTTPD {
     }
 
     private Response serveCommand(IHTTPSession session) {
-        if ("/cmd".equals(session.getUri())) {
+        if ("/frame".equals(session.getUri())) {
             //todo different commands
-            Frame frame = null;
+            byte[] frame = null;
             try {
-                frame = commThread.getFrames().poll(1200, TimeUnit.MILLISECONDS);
+                if (commThread != null)
+                    frame = commThread.getQueue().poll(1200, TimeUnit.MILLISECONDS);
             } catch (InterruptedException ignored) {
             }
             if (frame == null) return responseStatus(Status.NO_CONTENT);
-            ShortFlowInputStream shortFlowInputStream = new ShortFlowInputStream(frame.data);
             return newFixedLengthResponse(Status.OK, "application/binary"
-                    , shortFlowInputStream, shortFlowInputStream.getSize());
+                    , new ByteInputStream(frame, frame.length), frame.length);
         } else return responseStatus(Status.METHOD_NOT_ALLOWED);
 
     }
@@ -113,12 +104,21 @@ public class WebMain extends NanoHTTPD {
      * this method should be invoked from the
      * event-dispatching thread.
      */
-    private static void createAndShowGUI() {
+    private void createAndShowGUI() {
         //Create and set up the window.
         JFrame frame = new JFrame("HelloWorldSwing");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.setIconImage(Toolkit.getDefaultToolkit().getImage(WebMain.class.getResource("icon.png")));
 
-        //Add the ubiquitous "Hello World" label.
+        JComboBox<String> portNames = new JComboBox<>(CommThread.ports());
+
+        Container contentPane = frame.getContentPane();
+        contentPane.setLayout(new GridBagLayout());
+        contentPane.add(new JLabel("Port:"), new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.NORTHWEST,
+                GridBagConstraints.BOTH, new Insets(10, 10, 10, 10), 5, 5));
+        contentPane.add(portNames, new GridBagConstraints(1, 0, 1, 1, 1, 0, GridBagConstraints.NORTHWEST,
+                GridBagConstraints.BOTH, new Insets(10, 10, 10, 10), 5, 5));
+
         JButton button = new JButton("Open Browser");
         button.addActionListener(e -> {
             try {
@@ -127,8 +127,22 @@ public class WebMain extends NanoHTTPD {
                 e1.printStackTrace();
             }
         });
-        frame.getContentPane().add(button);
 
+
+        contentPane.add(button, new GridBagConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.NORTHWEST,
+                GridBagConstraints.HORIZONTAL, new Insets(10, 10, 10, 10), 5, 5));
+        connectStatus = new JLabel("--");
+        connectStatus.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+        contentPane.add(connectStatus, new GridBagConstraints(0, 2, 2, 1, 1, 0, GridBagConstraints.SOUTHWEST,
+                GridBagConstraints.HORIZONTAL, new Insets(10, 10, 10, 10), 5, 5));
+        portNames.addActionListener(e -> {
+                    if (commThread != null)
+                        commThread.giveUp();
+                    openPort((String) portNames.getSelectedItem(),
+                            status -> SwingUtilities.invokeLater(() -> connectStatus.setText(status)));
+                }
+        );
+        portNames.setSelectedItem("ttyACM0");
         //Display the window.
         frame.pack();
         frame.setLocationByPlatform(true);
@@ -139,7 +153,8 @@ public class WebMain extends NanoHTTPD {
     public static void main(String[] args) throws IOException {
         //Schedule a job for the event-dispatching thread:
         //creating and showing this application's GUI.
-        new WebMain().start();
-        javax.swing.SwingUtilities.invokeLater(WebMain::createAndShowGUI);
+        WebMain webMain = new WebMain();
+        webMain.start();
+        javax.swing.SwingUtilities.invokeLater(webMain::createAndShowGUI);
     }
 }

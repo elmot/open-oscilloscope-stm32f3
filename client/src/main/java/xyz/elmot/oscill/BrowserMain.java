@@ -18,7 +18,7 @@ import netscape.javascript.JSObject;
  */
 public class BrowserMain extends Application {
 
-    private static CommThread commThread;
+    private static CommThread.Frame commThread;
     private final long[] frameTimes = new long[20];
     private int frameTimeIndex = 0;
     private boolean arrayFilled = false;
@@ -103,15 +103,7 @@ public class BrowserMain extends Application {
 
     public static void main(String[] args) {
 
-        commThread = new CommThread("ttyACM0", System.err::println, 2) {
-            protected void waitForCommand() {
-                try {
-                    Thread.sleep(25);
-                } catch (InterruptedException ignored) {
-                }
-            }
-
-        };
+        commThread = new CommThread.Frame("ttyACM0", System.err::println, 2, 25);
         commThread.start();
         try {
             launch(args);
@@ -130,12 +122,8 @@ public class BrowserMain extends Application {
 
             JSObject dataToDraw = (JSObject) webEngine.executeScript("[]");
             try {
-                Frame take = commThread.getFrames().take();
-//                int[][] fakeData = IntStream.range(0, 3).mapToObj(
-//                        j -> IntStream.range(0, 1400).map(i -> (int) (Math.random() * 1024)).toArray()
-//                ).collect(Collectors.toList()).toArray(new int[0][]);
-//                Frame take = new Frame(Frame.TYPE.NORMAL, 1, 1400, 12, fakeData);
-                int serieIndex = take.type == Frame.TYPE.TRIGGERED ? 1 : 0;
+                FrameData take = commThread.getQueue().take();
+                int serieIndex = take.type == FrameData.TYPE.TRIGGERED ? 1 : 0;
                 for (int i = 0; i < take.data.length; i++) {
                     int index = i * 2 + serieIndex;
                     dataToDraw.setSlot(index, take.data[i]);

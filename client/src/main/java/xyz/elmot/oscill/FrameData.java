@@ -5,7 +5,7 @@ import java.util.Arrays;
 /**
  * (c) elmot on 2.3.2017.
  */
-public class Frame {
+public class FrameData {
     enum TYPE {
         NORMAL,
         TRIGGERED
@@ -17,7 +17,7 @@ public class Frame {
     final short[][] data;
     final TYPE type;
 
-    public Frame(TYPE type, int channels, int len, int bits, short[][] data) {
+    public FrameData(TYPE type, int channels, int len, int bits, short[][] data) {
         this.len = len;
         this.channels = channels;
         this.bits = bits;

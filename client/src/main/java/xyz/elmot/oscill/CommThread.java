@@ -5,6 +5,7 @@ import purejavacomm.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -14,22 +15,25 @@ import java.util.function.Consumer;
 /**
  * (c) elmot on 2.3.2017.
  */
-public abstract class CommThread extends Thread {
+public abstract class CommThread<T> extends Thread {
     private static final int N_CHANNELS = 1;/*todo*/
     private final String portName;
     private final Consumer<String> portStatusConsumer;
+    private final int delay;
     private volatile boolean running = true;
-    private final BlockingQueue<Frame> frames;
+    @SuppressWarnings("WeakerAccess")
+    protected final BlockingQueue<T> queue;
     private String status;
     private final AtomicLong byteCounter = new AtomicLong(0);
 
     @SuppressWarnings("WeakerAccess")
-    public CommThread(String portName, Consumer<String> portStatusConsumer, int queueDepth) {
+    public CommThread(String portName, Consumer<String> portStatusConsumer, int queueDepth, int delay) {
         setDaemon(true);
         this.portName = portName;
         this.portStatusConsumer = portStatusConsumer;
         sendStatus("Not started");
-        frames = new ArrayBlockingQueue<>(queueDepth);
+        queue = new ArrayBlockingQueue<>(queueDepth);
+        this.delay = delay;
     }
 
     private void sendStatus(String newStatus) {
@@ -84,18 +88,7 @@ public abstract class CommThread extends Thread {
                             sendStatus("Broken header");
                             break;
                         }
-                        int len = (head & 0xfff) / N_CHANNELS;
-                        short data[] = new short[len];
-                        for (int i = 0; i < data.length; i++) {
-                            data[i] = read16(inputStream);
-                        }
-                        Frame.TYPE type = Math.random() < 0.1 ? Frame.TYPE.NORMAL : Frame.TYPE.TRIGGERED;
-                        Frame frame = new Frame(type, N_CHANNELS,
-                                len, 12, new short[][]{data});
-                        try {
-                            frames.put(frame);
-                        } catch (InterruptedException ignored) {
-                        }
+                        readResponseData(inputStream, head);
                     }
 
                 } catch (IOException e) {
@@ -107,18 +100,24 @@ public abstract class CommThread extends Thread {
         }
     }
 
-     abstract protected void waitForCommand();
+    protected abstract void readResponseData(InputStream inputStream, int head) throws IOException;
+
+    @SuppressWarnings("WeakerAccess")
+    protected void waitForCommand() {
+        sleepMe(delay);
+    }
 
     @SuppressWarnings("SameParameterValue")
     private void sleepMe(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException ignored) {
-        }
+        if (millis > 0)
+            try {
+                Thread.sleep(millis);
+            } catch (InterruptedException ignored) {
+            }
     }
 
 
-    private short read16(InputStream in) throws IOException {
+    short read16(InputStream in) throws IOException {
         int val = in.read();
         if (val < 0) throw new IOException("unexpected EOF at " + byteCounter);
         byteCounter.incrementAndGet();
@@ -135,8 +134,8 @@ public abstract class CommThread extends Thread {
     }
 
     @SuppressWarnings("WeakerAccess")
-    public BlockingQueue<Frame> getFrames() {
-        return frames;
+    public BlockingQueue<T> getQueue() {
+        return queue;
     }
 
 /*
@@ -145,5 +144,55 @@ public abstract class CommThread extends Thread {
     }
 */
 
-    //todo list ports
+    @SuppressWarnings("WeakerAccess")
+    public static String[] ports() {
+        return Collections.list(CommPortIdentifier.getPortIdentifiers()).stream()
+                .filter(identifier-> identifier.getPortType()== CommPortIdentifier.PORT_SERIAL)
+                .map(CommPortIdentifier::getName).toArray(String[]::new);
+
+    }
+
+    public static class Frame extends CommThread<FrameData> {
+        @SuppressWarnings("WeakerAccess")
+        public Frame(String portName, Consumer<String> portStatusConsumer, int queueDepth, int delay) {
+            super(portName, portStatusConsumer, queueDepth, delay);
+        }
+
+        protected void readResponseData(InputStream inputStream, int head) throws IOException {
+            int len = (head & 0xfff) / N_CHANNELS;
+            short data[] = new short[len];
+            for (int i = 0; i < data.length; i++) {
+                data[i] = read16(inputStream);
+            }
+            FrameData.TYPE type = Math.random() < 0.1 ? FrameData.TYPE.NORMAL : FrameData.TYPE.TRIGGERED;
+            FrameData frameData = new FrameData(type, N_CHANNELS,
+                    len, 12, new short[][]{data});
+            try {
+                queue.put(frameData);
+            } catch (InterruptedException ignored) {
+            }
+        }
+    }
+
+    public static class Bytes extends CommThread<byte[]> {
+        @SuppressWarnings("WeakerAccess")
+        public Bytes(String portName, Consumer<String> portStatusConsumer, int queueDepth, int delay) {
+            super(portName, portStatusConsumer, queueDepth, delay);
+        }
+
+        protected void readResponseData(InputStream inputStream, int head) throws IOException {
+            int len = (head & 0xfff);
+            byte data[] = new byte[2 + 2 * len];
+            data[0] = (byte) (len >> 8);
+            data[1] = (byte) len;
+            for (int i = 2; i < data.length; i++) {
+                data[i] = (byte) inputStream.read();
+            }
+
+            try {
+                queue.put(data);
+            } catch (InterruptedException ignored) {
+            }
+        }
+    }
 }

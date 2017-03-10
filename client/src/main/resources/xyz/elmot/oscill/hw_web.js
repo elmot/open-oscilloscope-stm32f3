@@ -14,7 +14,7 @@ function setParam(name, value) {
 
 function requestFrame() {
     var oReq = new XMLHttpRequest();
-    oReq.open("POST", "/cmd", true);
+    oReq.open("POST", "/frame", true);
     oReq.responseType = "arraybuffer";
     oReq.onload = function (oEvent) {
       var arrayBuffer = oReq.response; // Note: not oReq.responseText
@@ -23,8 +23,14 @@ function requestFrame() {
         if(shortArray.length >0) {
             drawData([shortArray]);
         }
+        document.getElementById("device-info").innerHTML = "";
       }
-        requestFrame();
+    };
+    oReq.onerror = function (oEvent) {
+        document.getElementById("device-info").innerHTML = "<em>Communication error</em>";
+    };
+    oReq.ontimeout = function (oEvent) {
+        document.getElementById("device-info").innerHTML = "<em>Communication timeout</em>";
     };
 
     oReq.send(null);

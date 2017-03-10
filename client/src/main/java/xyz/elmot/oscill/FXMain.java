@@ -14,9 +14,9 @@ import javafx.stage.Stage;
 /**
  * (c) elmot on 9.2.2017.
  */
-public class Main extends Application {
+public class FXMain extends Application {
 
-    private static CommThread commThread;
+    private static CommThread.Frame commThread;
     private final long[] frameTimes = new long[20];
     private int frameTimeIndex = 0 ;
     private boolean arrayFilled = false ;
@@ -89,15 +89,7 @@ public class Main extends Application {
 
     public static void main(String[] args){
 
-        commThread = new CommThread("/dev/ttyACM0", System.err::println, 2) {
-            protected void waitForCommand() {
-                try {
-                    Thread.sleep(25);
-                } catch (InterruptedException ignored) {
-                }
-            }
-
-        };
+        commThread = new CommThread.Frame("/dev/ttyACM0", System.err::println, 2,25);
         commThread.start();
         try {
             launch(args);
@@ -110,7 +102,7 @@ public class Main extends Application {
     private class FxUpdate implements Runnable {
         private final XYChart<Number, Number> chart;
 
-        public FxUpdate(XYChart<Number, Number> chart) {
+        FxUpdate(XYChart<Number, Number> chart) {
             this.chart = chart;
         }
 
@@ -118,8 +110,8 @@ public class Main extends Application {
         public void run() {
             ObservableList<XYChart.Series<Number, Number>> serie = chart.getData();
             try {
-                Frame take = commThread.getFrames().take();
-                int serieIndex = take.type == Frame.TYPE.TRIGGERED ? 1 : 0;
+                FrameData take = commThread.getQueue().take();
+                int serieIndex = take.type == FrameData.TYPE.TRIGGERED ? 1 : 0;
                 ObservableList<XYChart.Data<Number, Number>> data = serie.get(serieIndex).getData();
                 short[] line = take.data[0];
 //                XYChart.Data<Number, Number> chartData []= new XYChart.Data[line.length];
