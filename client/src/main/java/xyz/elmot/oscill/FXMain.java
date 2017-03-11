@@ -89,7 +89,7 @@ public class FXMain extends Application {
 
     public static void main(String[] args){
 
-        commThread = new CommThread.Frame("/dev/ttyACM0", System.err::println, 2,25);
+        commThread = new CommThread.Frame("ttyACM0", (text, connected) -> System.err.println(text), 2,25);
         commThread.start();
         try {
             launch(args);

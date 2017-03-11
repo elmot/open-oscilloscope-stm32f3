@@ -1,6 +1,5 @@
 #include <usbd_cdc_if.h>
 #include <usb_device.h>
-#include <usbd_cdc.h>
 #include "oscilloscope.h"
 //
 // Created by elmot on 6.2.2017.
@@ -29,6 +28,10 @@ static void waitUntilTransmissed() {
 static bool sendString(const char *s, int len) {
   if (len == -1) len = strlen(s);
   return sendBytes((uint8_t *) s, len);
+}
+
+void transmitString(char *str) {
+  sendBytes((uint8_t *) str, strlen(str));
 }
 
 void transmitFrame(FRAME *frame) {

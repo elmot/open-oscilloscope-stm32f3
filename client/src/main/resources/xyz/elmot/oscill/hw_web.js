@@ -9,7 +9,16 @@ var frameParam = {w: 2047, h: 4096};
 
 
 function setParam(name, value) {
-    console.log("Parameters setting is not implemented! " + name + ": " + value);
+    var oReq = new XMLHttpRequest();
+    oReq.open("POST", "/cmd", true);
+    oReq.onerror = function (oEvent) {
+        document.getElementById("device-info").innerHTML = "<em>Communication error</em>";
+    };
+    oReq.ontimeout = function (oEvent) {
+        document.getElementById("device-info").innerHTML = "<em>Communication timeout</em>";
+    };
+
+    oReq.send(name + "=" + value);
 }
 
 function requestFrame() {
@@ -36,7 +45,7 @@ function requestFrame() {
     oReq.send(null);
 }
 
-setInterval(requestFrame, 20);
+setInterval(requestFrame, 520);
 
 
 

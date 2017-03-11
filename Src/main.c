@@ -186,11 +186,11 @@ int main(void)
   {
     resetLD10();
     if (debug_flag == DEBUG_CHECK) {
-      debug_flag == DEBUG_OFF;
+      debug_flag = DEBUG_OFF;
     } else {
       debug_flag = DEBUG_CHECK;
       initialise_monitor_handles();
-      debug_flag == DEBUG_ON;
+      debug_flag = DEBUG_ON;
     }
   }
   startDAC();
@@ -214,9 +214,18 @@ int main(void)
       t = HAL_GetTick() + 30;
     }
     char buffer[100];
-    if(getCommand(buffer,sizeof buffer) && ! strcmp("FRAME",buffer)) {
-      if (debug_flag == DEBUG_ON)printf("buffer request\n\r");
-      transmitFrame(lastFrame);
+    if (getCommand(buffer, sizeof buffer)) {
+      if (strcmp("FRAME", buffer) == 0) {
+        if (debug_flag == DEBUG_ON)printf("FR REQ\n\r");
+        transmitFrame(lastFrame);
+      } else
+      if (buffer[0] == 'A' && buffer[1] == 'T' ) {
+        if (debug_flag == DEBUG_ON)printf("PNP REQ: %s\n\r", buffer);
+        transmitString("FAIL\r\n");
+      } else {
+        if (debug_flag == DEBUG_ON)printf("REQ:%s\n\r", buffer);
+        transmitString("OK\r\n");
+      }
     }
   }
 #pragma clang diagnostic pop

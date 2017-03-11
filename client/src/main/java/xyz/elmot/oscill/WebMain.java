@@ -1,19 +1,26 @@
 package xyz.elmot.oscill;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+
 import fi.iki.elonen.NanoHTTPD;
 import fi.iki.elonen.NanoHTTPD.Response.Status;
+import org.apache.commons.io.IOUtils;
 import xyz.elmot.oscill.web.Resource;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 /**
  * (c) elmot on 9.3.2017.
@@ -48,24 +55,28 @@ public class WebMain extends NanoHTTPD {
 
     }
 
-    private void openPort(String ttyACM0, Consumer<String> portStatusConsumer) {
+    private void openPort(String ttyACM0, BiConsumer<String, Boolean> portStatusConsumer) {
         commThread = new CommThread.Bytes(ttyACM0, portStatusConsumer, 5, 0);
         commThread.start();
     }
 
     @Override
     public Response serve(IHTTPSession session) {
-        switch (session.getMethod()) {
-            case GET:
-                return serveStaticResources(session);
-            case POST:
-                return serveCommand(session);
-            default:
-                return responseStatus(Status.METHOD_NOT_ALLOWED);
+        try {
+            switch (session.getMethod()) {
+                case GET:
+                    return serveStaticResources(session);
+                case POST:
+                    return serveCommand((HTTPSession) session);
+                default:
+                    return responseStatus(Status.METHOD_NOT_ALLOWED);
+            }
+        } catch (IOException e) {
+            return newFixedLengthResponse(Status.INTERNAL_ERROR, "text/plain", e.getMessage());
         }
     }
 
-    private Response serveCommand(IHTTPSession session) {
+    private Response serveCommand(HTTPSession session) throws IOException {
         if ("/frame".equals(session.getUri())) {
             //todo different commands
             byte[] frame = null;
@@ -76,7 +87,19 @@ public class WebMain extends NanoHTTPD {
             }
             if (frame == null) return responseStatus(Status.NO_CONTENT);
             return newFixedLengthResponse(Status.OK, "application/binary"
-                    , new ByteInputStream(frame, frame.length), frame.length);
+                    , new ByteArrayInputStream(frame), frame.length);
+        } else if ("/cmd".equals(session.getUri())) {
+            InputStream inputStream = session.getInputStream();
+            long bodySize = session.getBodySize();
+            if (bodySize >= 1000000) {
+                return responseStatus(Status.PAYLOAD_TOO_LARGE);
+            }
+            byte[] bytes = new byte[(int) bodySize];
+            IOUtils.read(inputStream, bytes);
+            if (commThread != null) {
+                commThread.sendCommand(new String(bytes, StandardCharsets.US_ASCII));
+            }
+            return responseStatus(Status.ACCEPTED);
         } else return responseStatus(Status.METHOD_NOT_ALLOWED);
 
     }
@@ -106,7 +129,7 @@ public class WebMain extends NanoHTTPD {
      */
     private void createAndShowGUI() {
         //Create and set up the window.
-        JFrame frame = new JFrame("HelloWorldSwing");
+        JFrame frame = new JFrame("Oscilloscope server");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setIconImage(Toolkit.getDefaultToolkit().getImage(WebMain.class.getResource("icon.png")));
 
@@ -131,7 +154,7 @@ public class WebMain extends NanoHTTPD {
 
         contentPane.add(button, new GridBagConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.NORTHWEST,
                 GridBagConstraints.HORIZONTAL, new Insets(10, 10, 10, 10), 5, 5));
-        connectStatus = new JLabel("--");
+        connectStatus = new JLabel("Not Started");
         connectStatus.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
         contentPane.add(connectStatus, new GridBagConstraints(0, 2, 2, 1, 1, 0, GridBagConstraints.SOUTHWEST,
                 GridBagConstraints.HORIZONTAL, new Insets(10, 10, 10, 10), 5, 5));
@@ -139,9 +162,31 @@ public class WebMain extends NanoHTTPD {
                     if (commThread != null)
                         commThread.giveUp();
                     openPort((String) portNames.getSelectedItem(),
-                            status -> SwingUtilities.invokeLater(() -> connectStatus.setText(status)));
+                            (status, connected) -> SwingUtilities.invokeLater(() -> {
+                                connectStatus.setText(status);
+                                connectStatus.setForeground(connected ? Color.GREEN.darker() : Color.RED.darker());
+                            }));
                 }
         );
+        portNames.addPopupMenuListener(new PopupMenuListener() {
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+
+                DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>(CommThread.ports());
+                model.setSelectedItem(portNames.getSelectedItem());
+                portNames.setModel(model);
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+
+            }
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {
+
+            }
+        });
         portNames.setSelectedItem("ttyACM0");
         //Display the window.
         frame.pack();

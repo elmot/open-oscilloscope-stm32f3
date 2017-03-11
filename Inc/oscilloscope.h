@@ -43,6 +43,8 @@ void setupAdc(void);
 
 void transmitFrame(FRAME * frame);
 
+void transmitString(char *str);
+
 void setupUsbComm();
 /**
  *

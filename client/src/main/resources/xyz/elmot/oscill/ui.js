@@ -66,40 +66,43 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function setParamFromInput(event) {
-        var elm = event.srcElement;
+        var elm = event.target;
         var nodeList = document.querySelectorAll(".input-value[for='" + elm.name + "']");
         for (var i = 0; i < nodeList.length; i++) nodeList[i].innerHTML = elm.value
         setParam(elm.name, elm.value)
     }
 
     function wheelSelect(event) {
-        if (event.srcElement.options) {
-            var idx = event.srcElement.selectedIndex;
-            if (idx > 0 && event.wheelDelta > 0) idx--;
-            else if (event.wheelDelta < 0 && idx + 1 < event.srcElement.options.length) idx++;
-            event.srcElement.selectedIndex = idx;
-            event.srcElement.dispatchEvent(new Event("change"))
+        if (event.target.options) {
+            var idx = event.target.selectedIndex;
+            var delta = event.deltaX + event.deltaY;
+            if (idx > 0 && delta > 0) idx--;
+            else if (delta < 0 && idx + 1 < event.target.options.length) idx++;
+            event.target.selectedIndex = idx;
+            event.target.dispatchEvent(new Event("change"))
         }
 
     }
 
     function wheelChange(event) {
-        if (event.srcElement.value) {
-            var v = event.srcElement.value - event.wheelDelta;
-            if (v < event.srcElement.min) v = event.srcElement.min;
-            if (v > event.srcElement.max) v = event.srcElement.max;
-            event.srcElement.value = v;
-            event.srcElement.dispatchEvent(new Event("change"))
+        if (event.target.value) {
+            var delta = event.deltaX + deltaY;
+            if(event.deltaMode == 0) delta = event.delta/50;
+            var v = event.target.value - delta;
+            if (v < event.target.min) v = event.target.min;
+            if (v > event.target.max) v = event.target.max;
+            event.target.value = v;
+            event.target.dispatchEvent(new Event("change"))
         }
 
     }
 
     function pickVertical(event) {
-        var elm = event.srcElement;
+        var elm = event.target;
 
         function verticalPickClick(event) {
             cancelPick();
-            var value = frameParam.h * (1.0 - event.offsetY / event.srcElement.offsetHeight);
+            var value = frameParam.h * (1.0 - event.offsetY / event.target.offsetHeight);
             value = Math.floor(value);
             var elm = document.getElementById("trig.level");
             elm.value = value;
@@ -124,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function inputReset(event) {
-        var elm = event.srcElement;
+        var elm = event.target;
         var valueElement = document.getElementById(elm.getAttribute("for"));
         if (valueElement != null) {
             valueElement.value = elm.value;

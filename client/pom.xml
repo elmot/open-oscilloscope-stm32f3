@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>xyz.elmot.oscill</groupId>
-    <artifactId>client</artifactId>
+    <artifactId>oscilloscope-client</artifactId>
     <version>1.0-SNAPSHOT</version>
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -23,6 +23,11 @@
             <artifactId>nanohttpd</artifactId>
             <version>2.3.1</version>
         </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.5</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -34,8 +39,11 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
+                    <finalName>osc-web</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
                     <archive>
                         <manifest>
+                            <addDefaultImplementationEntries/>
                             <mainClass>xyz.elmot.oscill.WebMain</mainClass>
                         </manifest>
                     </archive>
