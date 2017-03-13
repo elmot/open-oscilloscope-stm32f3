@@ -18,7 +18,7 @@ void startDAC() {
 //todo config
 // todo three channels
 // todo check & fix sampling time (esp. 1,2,5MHz)
-//
+// todo fix hang on high frame rate
 typedef struct {
     __IO uint32_t *div2ODR;
     uint32_t div2mask;
@@ -177,7 +177,9 @@ void setTiming(char t) {
   sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
   sConfig.OffsetNumber = ADC_OFFSET_NONE;
   sConfig.Offset = 0;
+  __HAL_ADC_DISABLE(&hadc1);
   HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+  __HAL_ADC_ENABLE(&hadc1);
   //TODO config ADC3
   //TODO config ADC4
 
@@ -186,7 +188,7 @@ void setTiming(char t) {
 char triggerType = 'R';
 char triggerChannel = 'A';
 int triggerTimeShift = 0;
-int triggerLevel = 0;
+int triggerLevel = 700;
 volatile uint32_t triggerLevelReg2 = 0xFFFFFFFF;//todo make that AWD2?
 
 ADC_HandleTypeDef *getTriggerADC() {
@@ -293,9 +295,9 @@ void channelTrigger() {
   size_t counter = hadc1.DMA_Handle->Instance->CNDTR;
 
   if (counter >= FRAME_SIZE) {
-    copyDataToAvailableFrame(&adc1_buffer[2 * FRAME_SIZE - counter], FRAME_SIZE, NULL, true);
+//    copyDataToAvailableFrame(&adc1_buffer[2 * FRAME_SIZE - counter], FRAME_SIZE, NULL, true);
   } else {
-    copyDataToAvailableFrame(&adc1_buffer[2 * FRAME_SIZE - counter], counter, adc1_buffer, true);
+//    copyDataToAvailableFrame(&adc1_buffer[2 * FRAME_SIZE - counter], counter, adc1_buffer, true);
 
   }
 
