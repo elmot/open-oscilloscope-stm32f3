@@ -112,7 +112,7 @@ public abstract class CommThread<T> extends Thread {
                         readResponseData(inputStream, head);
                     }
                 } catch (IOException e) {
-                    sendStatus("Port exchange error", false);
+                    sendStatus("Port exchange error:" + e.getMessage(), false);
                 } finally {
                     if (connected) {
                         sendStatus("Closed", false);
@@ -219,8 +219,8 @@ public abstract class CommThread<T> extends Thread {
         protected void readResponseData(InputStream inputStream, int head) throws IOException {
             int len = (head & 0xfff);
             byte data[] = new byte[2 + 2 * len];
-            data[0] = (byte) (len >> 8);
-            data[1] = (byte) len;
+            data[0] = (byte) head;
+            data[1] = (byte) (head >> 8);
             for (int i = 2; i < data.length; i++) {
                 data[i] = (byte) inputStream.read();
             }

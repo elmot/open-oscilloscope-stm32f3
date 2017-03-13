@@ -12,16 +12,20 @@ FRAME frame1;
 FRAME frame2;
 FRAME * lastFrame = NULL;
 
-/*__attribute__( ( long_call, section(".data") ) ) */static void copyDataToAvailableFrame(uint16_t * src, size_t size, bool triggered);
+/* USER CODE END PFP */
+
+void initOscilloscope();
 
 /*__attribute__( ( long_call, section(".data") ) ) */void __unused DMA1_Channel1_IRQHandler(void)
 {
   switch( MAJOR_DMA->ISR & (MAJOR_DMA_ISR_HTI_FLAG | MAJOR_DMA_ISR_TCI_FLAG))
   {
     case MAJOR_DMA_ISR_HTI_FLAG:
-      copyDataToAvailableFrame(adc1_buffer, FRAME_SIZE, false); break;
+//      copyDataToAvailableFrame(adc1_buffer, FRAME_SIZE, NULL, false);
+      break;
     case MAJOR_DMA_ISR_TCI_FLAG:
-      copyDataToAvailableFrame(&adc1_buffer[FRAME_SIZE], FRAME_SIZE, false); break;
+//      copyDataToAvailableFrame(&adc1_buffer[FRAME_SIZE], FRAME_SIZE, NULL, false);
+      break;
     default: break;// Too late IRQ, skip the frame
   }
 
@@ -31,12 +35,8 @@ FRAME * lastFrame = NULL;
 
 
 static volatile bool busy = false;
-void setupAdc() {
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t *) adc1_buffer, FRAME_SIZE * 2);
-  HAL_TIM_Base_Start(&htim1);
-}
 
-static void copyDataToAvailableFrame(uint16_t *src, size_t size, bool triggered) {
+void copyDataToAvailableFrame(uint16_t *src1, size_t size1, uint16_t *src2, bool triggered) {
   if(busy)return;
   busy = true;
   FRAME *frame;//todo do not overwrite triggered frames!
@@ -53,10 +53,13 @@ static void copyDataToAvailableFrame(uint16_t *src, size_t size, bool triggered)
   __enable_irq();
   if (frame != NULL) {
     if(!triggered && frame->triggered && !frame-> sent) return;
-    HAL_DMA_Start(&hdma_memtomem_dma1_channel2, (uint32_t) src, (uint32_t) frame->bufferA, size / 2);
+    HAL_DMA_Start(&hdma_memtomem_dma1_channel2, (uint32_t) src1, (uint32_t) frame->bufferA, size1 / 2);
     frame->triggered = triggered;
-    frame->dataLength = size;
+    frame->dataLength = FRAME_SIZE;
     frame->sent = false;
+    if (src2 != NULL) {
+      memcpy(&frame->bufferA[size1], src2, (FRAME_SIZE - size1) / 2);
+    }
     HAL_DMA_PollForTransfer(&hdma_memtomem_dma1_channel2, HAL_DMA_FULL_TRANSFER, 2000); // todo optimise awful ST code
 //    memcpy(frame->bufferA,src,size*2);
     frame->busy = false;

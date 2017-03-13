@@ -33,19 +33,37 @@ typedef struct FRAME {
     volatile bool sent;
 } FRAME;
 
+extern OPAMP_HandleTypeDef hopamp1;
+extern OPAMP_HandleTypeDef hopamp3;
+extern OPAMP_HandleTypeDef hopamp4;
+
+extern ADC_HandleTypeDef hadc1;
+extern ADC_HandleTypeDef hadc3;
+extern ADC_HandleTypeDef hadc4;
+
+extern TIM_HandleTypeDef htim1;
+TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim3;
+
+DAC_HandleTypeDef hdac;
+DMA_HandleTypeDef hdma_dac_ch1;
 
 extern FRAME frame1;
 extern FRAME frame2;
 extern FRAME * lastFrame;
 extern volatile int phase;
 
-void setupAdc(void);
-
 void transmitFrame(FRAME * frame);
 
 void transmitString(char *str);
 
 void setupUsbComm();
+
+void initOscilloscope();
+
+/*__attribute__( ( long_call, section(".data") ) ) */void
+copyDataToAvailableFrame(uint16_t *src1, size_t size, uint16_t *src2, bool triggered);
+
 /**
  *
  * @param buffer buffer for the command
@@ -53,6 +71,8 @@ void setupUsbComm();
  * @return true if the command was received
  */
 bool getCommand(char * buffer, size_t maxLength);
+
+bool processCommand(char buffer[]);
 
 
 // hardware device config

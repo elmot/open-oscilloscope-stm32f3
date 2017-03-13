@@ -56,7 +56,7 @@ public class WebMain extends NanoHTTPD {
     }
 
     private void openPort(String ttyACM0, BiConsumer<String, Boolean> portStatusConsumer) {
-        commThread = new CommThread.Bytes(ttyACM0, portStatusConsumer, 5, 0);
+        commThread = new CommThread.Bytes(ttyACM0, portStatusConsumer, 2, 0);
         commThread.start();
     }
 

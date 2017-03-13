@@ -27,8 +27,13 @@ function requestFrame() {
     oReq.responseType = "arraybuffer";
     oReq.onload = function (oEvent) {
       var arrayBuffer = oReq.response; // Note: not oReq.responseText
-      if (arrayBuffer) {
-        var shortArray = new Uint16Array(arrayBuffer);
+      if (arrayBuffer && arrayBuffer.byteLength > 2) {
+        var dView = new DataView(arrayBuffer);
+        var header = dView.getUint16(0, true);
+
+        var shortArray = new Uint16Array(arrayBuffer.byteLength / 2 - 1);
+        for(var i = 0; i < shortArray.length;i++)
+            shortArray[i] = dView.getUint16(i * 2 + 2, true);
         if(shortArray.length >0) {
             drawData([shortArray]);
         }
@@ -45,7 +50,7 @@ function requestFrame() {
     oReq.send(null);
 }
 
-setInterval(requestFrame, 520);
+setInterval(requestFrame, 250);
 
 
 

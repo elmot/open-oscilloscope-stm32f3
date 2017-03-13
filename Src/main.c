@@ -97,7 +97,6 @@ static void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-  extern void initialise_monitor_handles(void);
 
 /* USER CODE END PFP */
 
@@ -110,10 +109,6 @@ void resetLD10() {
   HAL_GPIO_Init(GPIOE,&ge);
 }
 
-void startDAC() {
-  HAL_TIM_Base_Start(&htim2);
-  HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
-}
 
 void simulateUsbDown() {
   __HAL_RCC_GPIOA_CLK_ENABLE();
@@ -148,6 +143,9 @@ void __unused HardFault_Handler() {
 }
 
 #pragma clang diagnostic pop
+
+void initialise_monitor_handles(void );
+
 /* USER CODE END 0 */
 
 int main(void)
@@ -193,10 +191,7 @@ int main(void)
       debug_flag = DEBUG_ON;
     }
   }
-  startDAC();
-  setupAdc();
-  setupUsbComm();
-  HAL_OPAMP_Start(&hopamp1);
+  initOscilloscope();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -222,7 +217,7 @@ int main(void)
       if (buffer[0] == 'A' && buffer[1] == 'T' ) {
         if (debug_flag == DEBUG_ON)printf("PNP REQ: %s\n\r", buffer);
         transmitString("FAIL\r\n");
-      } else {
+      } else if (!processCommand(buffer)) {
         if (debug_flag == DEBUG_ON)printf("REQ:%s\n\r", buffer);
         transmitString("OK\r\n");
       }
@@ -339,7 +334,7 @@ static void MX_ADC1_Init(void)
   AnalogWDGConfig.HighThreshold = 900;
   AnalogWDGConfig.LowThreshold = 0;
   AnalogWDGConfig.Channel = ADC_CHANNEL_3;
-  AnalogWDGConfig.ITMode = DISABLE;
+  AnalogWDGConfig.ITMode = ENABLE;
   if (HAL_ADC_AnalogWDGConfig(&hadc1, &AnalogWDGConfig) != HAL_OK)
   {
     Error_Handler();
