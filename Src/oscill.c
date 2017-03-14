@@ -17,8 +17,6 @@ void startDAC() {
 // todo key frame
 //todo config
 // todo three channels
-// todo check & fix sampling time (esp. 1,2,5MHz)
-// todo fix hang on high frame rate
 typedef struct {
     __IO uint32_t *div2ODR;
     uint32_t div2mask;
@@ -164,6 +162,7 @@ static const TimeCoeff timing[TIMING_COUNT] =
 void setTiming(char t) {
   if (t < 'A') t = 0; else t -= 'A';
   if (t >= TIMING_COUNT) t = TIMING_COUNT - 1;
+  __HAL_TIM_DISABLE(&htim1);
   htim1.Instance->PSC = timing[t].prescaler;
   htim1.Instance->ARR = timing[t].arr;
   htim1.Instance->CNT = 0;
@@ -182,6 +181,7 @@ void setTiming(char t) {
   __HAL_ADC_ENABLE(&hadc1);
   //TODO config ADC3
   //TODO config ADC4
+  __HAL_TIM_ENABLE(&htim1);
 
 }
 
@@ -288,9 +288,22 @@ bool processCommand(char buffer[]) {
 }
 
 
-void channelTrigger() {
-  HAL_TIM_Base_Stop(&htim1);
-  HAL_TIM_Base_Stop(&htim3);
+void ADC1_IRQHandler() {
+  ADC_HandleTypeDef *hadc = &hadc1;
+  if (triggerLevelReg2 == 0xFFFFFFFF) {
+//    ongoingFrameClear = false; todo???
+    __HAL_TIM_ENABLE(&htim3);
+    hadc->Instance->CFGR &= ~ADC_CFGR_AWD1EN;
+  } else {
+    hadc->Instance->TR1 = triggerLevelReg2;
+    triggerLevelReg2 = 0xFFFFFFFF;
+  }
+  __HAL_ADC_CLEAR_FLAG(hadc, ADC_FLAG_AWD1);
+}
+
+void __unused TIM3_IRQHandler() {
+  __HAL_TIM_DISABLE(&htim1);
+  __HAL_TIM_DISABLE(&htim3);
   __HAL_TIM_CLEAR_IT(&htim3, TIM_IT_UPDATE);
   size_t counter = hadc1.DMA_Handle->Instance->CNDTR;
 
@@ -317,34 +330,13 @@ void channelTrigger() {
 //    bufferBT[0] |= FLAG_CLEAR;
 //    bufferCT[0] |= FLAG_CLEAR;
 //  }
-  HAL_TIM_Base_Start(&htim1);
-
   setupTrigger();
-}
-
-void HAL_ADC_LevelOutOfWindowCallback(ADC_HandleTypeDef *hadc) {
-  if (triggerLevelReg2 == 0xFFFFFFFF) {
-//    ongoingFrameClear = false; todo???
-    HAL_TIM_Base_Start(&htim3);
-    hadc->Instance->CFGR &= ~ADC_CFGR_AWD1EN;
-  } else {
-    hadc->Instance->TR1 = triggerLevelReg2;
-    triggerLevelReg2 = 0xFFFFFFFF;
-  }
-  __HAL_ADC_CLEAR_FLAG(hadc, ADC_FLAG_AWD1);
-}
-
-
-void ADC1_IRQHandler() {
-  HAL_ADC_LevelOutOfWindowCallback(&hadc1);
-}
-
-void __unused TIM3_IRQHandler() {
-  channelTrigger();
+  __HAL_TIM_ENABLE(&htim1);
 }
 
 void setupAdc() {
   HAL_ADC_Start_DMA(&hadc1, (uint32_t *) adc1_buffer, FRAME_SIZE * 2);
+  __HAL_ADC_DISABLE_IT(&hadc1,ADC_IT_OVR);
   HAL_TIM_Base_Start(&htim1);
 }
 
