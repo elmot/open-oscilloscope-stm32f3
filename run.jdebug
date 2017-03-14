@@ -15,7 +15,7 @@ void OnProjectLoad (void) {
   Project.SetTargetIF ("SWD");
   Project.SetTIFSpeed ("10 MHz");
   Project.AddSvdFile ("Cortex-M4.svd");
-  Project.AddSvdFile ("/opt/SEGGER/jlinkdebugger/2.14.9/Config/Peripherals/STM32F303x.svd");
+  Project.AddSvdFile ("/home/elmot/devtools/svd/STM32F303xE.svd");
   File.Open ("/home/elmot/projects/open-oscilloscope2/cmake-build-debug/f3-oscill.elf");
   Debug.Start();
   Project.SetSemihosting(1);

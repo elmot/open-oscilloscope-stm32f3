@@ -162,6 +162,7 @@ HAL_StatusTypeDef  HAL_PCDEx_PMAConfig(PCD_HandleTypeDef *hpcd,
   * @param   wNBytes: no. of bytes to be copied.
   * @retval None
   */
+/*
 void PCD_WritePMA(USB_TypeDef  *USBx, uint8_t *pbUsrBuf, uint16_t wPMABufAddr, uint16_t wNBytes)
 {
   uint32_t n =  ((uint32_t)((uint32_t)wNBytes + 1U)) >> 1U;
@@ -180,6 +181,7 @@ void PCD_WritePMA(USB_TypeDef  *USBx, uint8_t *pbUsrBuf, uint16_t wPMABufAddr, u
     pbUsrBuf++;
   }
 }
+*/
 
 /**
   * @brief Copy a buffer from user memory area to packet memory area (PMA)

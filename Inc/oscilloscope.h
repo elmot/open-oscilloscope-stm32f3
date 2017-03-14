@@ -9,6 +9,16 @@
 
 #define FRAME_SIZE ((size_t)1400)
 
+#define LED_DEBUG
+
+#ifdef LED_DEBUG
+#define LED_ON(pin) { pin ## _GPIO_Port->BSRR = pin ## _Pin; }
+#define LED_OFF(pin) { pin ## _GPIO_Port->BRR = pin ## _Pin; }
+#else
+#define LED_ON(pin)
+#define LED_OFF(pin)
+#endif
+
 #include <stdbool.h>
 #include <stm32f3xx_hal.h>
 #include <stddef.h>

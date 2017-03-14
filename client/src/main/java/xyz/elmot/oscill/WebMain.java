@@ -81,7 +81,7 @@ public class WebMain extends NanoHTTPD {
             byte[] frame = null;
             try {
                 if (commThread != null)
-                    frame = commThread.getQueue().poll(1200, TimeUnit.MILLISECONDS);
+                    frame = commThread.getQueue().poll(200, TimeUnit.MILLISECONDS);
             } catch (InterruptedException ignored) {
             }
             if (frame == null) return responseStatus(Status.NO_CONTENT);

@@ -291,6 +291,8 @@ bool processCommand(char buffer[]) {
 void ADC1_IRQHandler() {
   ADC_HandleTypeDef *hadc = &hadc1;
   if (triggerLevelReg2 == 0xFFFFFFFF) {
+    LED_ON(LD6)
+
 //    ongoingFrameClear = false; todo???
     __HAL_TIM_ENABLE(&htim3);
     hadc->Instance->CFGR &= ~ADC_CFGR_AWD1EN;
@@ -308,11 +310,12 @@ void __unused TIM3_IRQHandler() {
   size_t counter = hadc1.DMA_Handle->Instance->CNDTR;
 
   if (counter >= FRAME_SIZE) {
-//    copyDataToAvailableFrame(&adc1_buffer[2 * FRAME_SIZE - counter], FRAME_SIZE, NULL, true);
+    copyDataToAvailableFrame(&adc1_buffer[2 * FRAME_SIZE - counter], FRAME_SIZE, NULL, true);
   } else {
 //    copyDataToAvailableFrame(&adc1_buffer[2 * FRAME_SIZE - counter], counter, adc1_buffer, true);
 
   }
+  LED_OFF(LD6)
 
 
 

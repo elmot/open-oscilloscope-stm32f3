@@ -41,6 +41,7 @@
   ******************************************************************************
   */
 /* Includes ------------------------------------------------------------------*/
+#include <stm32f303xc.h>
 #include "main.h"
 #include "stm32f3xx_hal.h"
 #include "usb_device.h"
@@ -146,6 +147,19 @@ void __unused HardFault_Handler() {
 
 void initialise_monitor_handles(void );
 
+void PCD_WritePMA(USB_TypeDef  *USBx, uint8_t *pbUsrBuf, uint16_t wPMABufAddr, uint16_t wNBytes)
+{
+  int n = (wNBytes + 1) >> 1;   // n = (wNBytes + 1) / 2
+  __IO uint32_t *pdwVal = (uint32_t *)(wPMABufAddr * 2 + (uint32_t)USBx + 0x400);
+  uint16_t * pwUsrBuf = (uint16_t *) pbUsrBuf;
+  for (; n != 0; n--)
+  {
+    *pdwVal = *pwUsrBuf;
+    pwUsrBuf++;
+    pdwVal++;
+  }
+}
+
 /* USER CODE END 0 */
 
 int main(void)
@@ -204,6 +218,12 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
+    if(hUsbDeviceFS.dev_state != USBD_STATE_CONFIGURED) {
+      LED_ON(LD3);
+    } else {
+      LED_OFF(LD3);
+
+    }
     if(t > HAL_GetTick()) {
       HAL_GPIO_TogglePin(LD9_GPIO_Port, LD9_Pin);
       t = HAL_GetTick() + 30;
@@ -212,7 +232,9 @@ int main(void)
     if (getCommand(buffer, sizeof buffer)) {
       if (strcmp("FRAME", buffer) == 0) {
         if (debug_flag == DEBUG_ON)printf("FR REQ\n\r");
+        LED_ON(LD4)
         transmitFrame(lastFrame);
+        LED_OFF(LD4)
       } else
       if (buffer[0] == 'A' && buffer[1] == 'T' ) {
         if (debug_flag == DEBUG_ON)printf("PNP REQ: %s\n\r", buffer);

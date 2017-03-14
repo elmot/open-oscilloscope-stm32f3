@@ -21,10 +21,10 @@ void initOscilloscope();
   switch( MAJOR_DMA->ISR & (MAJOR_DMA_ISR_HTI_FLAG | MAJOR_DMA_ISR_TCI_FLAG))
   {
     case MAJOR_DMA_ISR_HTI_FLAG:
-      copyDataToAvailableFrame(adc1_buffer, FRAME_SIZE, NULL, false);
+//      copyDataToAvailableFrame(adc1_buffer, FRAME_SIZE, NULL, false);
       break;
     case MAJOR_DMA_ISR_TCI_FLAG:
-      copyDataToAvailableFrame(&adc1_buffer[FRAME_SIZE], FRAME_SIZE, NULL, false);
+//      copyDataToAvailableFrame(&adc1_buffer[FRAME_SIZE], FRAME_SIZE, NULL, false);
       break;
     default: break;// Too late IRQ, skip the frame
   }

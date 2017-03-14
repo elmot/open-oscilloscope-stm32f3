@@ -97,6 +97,12 @@ public abstract class CommThread<T> extends Thread {
                         for (String s; (s = cmdQueue.poll()) != null; ) {
                             cmdStream.write(s.getBytes(StandardCharsets.US_ASCII));
                             cmdStream.write(CRLF);
+                            cmdStream.flush();
+                            try {
+                                Thread.sleep(300);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
                             waitChar(inputStream, 'O');
                             waitChar(inputStream, 'K');
                             waitChar(inputStream, (char) 10);
@@ -105,6 +111,7 @@ public abstract class CommThread<T> extends Thread {
                         }
                         waitForCommand();
                         cmdStream.write("\nFRAME\n".getBytes());
+                        cmdStream.flush();
                         int head = read16(inputStream);
                         if ((head & 0x8000) == 0) {
                             sendStatus("Broken header", true);
