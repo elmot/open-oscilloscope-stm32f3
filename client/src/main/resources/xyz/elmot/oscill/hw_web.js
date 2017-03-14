@@ -50,7 +50,7 @@ function requestFrame() {
     oReq.send(null);
 }
 
-setInterval(requestFrame, 250);
+setInterval(requestFrame, 20);
 
 
 

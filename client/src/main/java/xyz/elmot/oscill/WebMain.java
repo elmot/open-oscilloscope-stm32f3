@@ -78,7 +78,6 @@ public class WebMain extends NanoHTTPD {
 
     private Response serveCommand(HTTPSession session) throws IOException {
         if ("/frame".equals(session.getUri())) {
-            //todo different commands
             byte[] frame = null;
             try {
                 if (commThread != null)

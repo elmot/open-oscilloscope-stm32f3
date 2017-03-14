@@ -101,6 +101,7 @@ public abstract class CommThread<T> extends Thread {
                             waitChar(inputStream, 'K');
                             waitChar(inputStream, (char) 10);
                             waitChar(inputStream, (char) 13);
+                            queue.clear();
                         }
                         waitForCommand();
                         cmdStream.write("\nFRAME\n".getBytes());
