@@ -309,9 +309,10 @@ void __unused TIM3_IRQHandler() {
   __HAL_TIM_CLEAR_IT(&htim3, TIM_IT_UPDATE);
   size_t counter = hadc1.DMA_Handle->Instance->CNDTR;
 
-  if (counter >= FRAME_SIZE) {
-    copyDataToAvailableFrame(&adc1_buffer[2 * FRAME_SIZE - counter], FRAME_SIZE, NULL, true);
+  if (counter <= FRAME_SIZE) {
+    copyDataToAvailableFrame(&adc1_buffer[FRAME_SIZE - counter], FRAME_SIZE, NULL, true);
   } else {
+//    copyDataToAvailableFrame(&adc1_buffer[ 2 * FRAME_SIZE - counter], FRAME_SIZE, adc1_buffer, true);
 //    copyDataToAvailableFrame(&adc1_buffer[2 * FRAME_SIZE - counter], counter, adc1_buffer, true);
 
   }
