@@ -98,15 +98,8 @@ public abstract class CommThread<T> extends Thread {
                             cmdStream.write(s.getBytes(StandardCharsets.US_ASCII));
                             cmdStream.write(CRLF);
                             cmdStream.flush();
-                            try {
-                                Thread.sleep(300);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                            waitChar(inputStream, 'O');
-                            waitChar(inputStream, 'K');
-                            waitChar(inputStream, (char) 10);
-                            waitChar(inputStream, (char) 13);
+                            sleepMe(50);
+                            //todo ack for the command
                             queue.clear();
                         }
                         waitForCommand();
@@ -128,14 +121,6 @@ public abstract class CommThread<T> extends Thread {
                     oscilloscope.close();
                 }
             }
-        }
-    }
-
-    private void waitChar(InputStream inputStream, char ch) throws IOException {
-        int b = inputStream.read();
-        if (b != ch) {
-            throw new IOException(
-                    String.format("Wrong reply: expected 0x%02X, received 0x%02X", (int) ch, b));
         }
     }
 

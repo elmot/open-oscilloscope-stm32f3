@@ -41,7 +41,6 @@
   ******************************************************************************
   */
 /* Includes ------------------------------------------------------------------*/
-#include <stm32f303xc.h>
 #include "main.h"
 #include "stm32f3xx_hal.h"
 #include "usb_device.h"
@@ -76,6 +75,7 @@ UART_HandleTypeDef huart2;
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 DMA_HandleTypeDef hdma_memtomem_dma1_channel2;
+DMA_HandleTypeDef hdma_memtomem_dma2_channel1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -224,14 +224,10 @@ int main(void)
       LED_OFF(LD3);
 
     }
-    if(t > HAL_GetTick()) {
-      HAL_GPIO_TogglePin(LD9_GPIO_Port, LD9_Pin);
-      t = HAL_GetTick() + 30;
-    }
     char buffer[100];
     if (getCommand(buffer, sizeof buffer)) {
       if (strcmp("FRAME", buffer) == 0) {
-        if (debug_flag == DEBUG_ON)printf("FR REQ\n\r");
+//        if (debug_flag == DEBUG_ON)printf("FR REQ\n\r");
         LED_ON(LD4)
         transmitFrame(lastFrame);
         LED_OFF(LD4)
@@ -241,7 +237,7 @@ int main(void)
         transmitString("FAIL\r\n");
       } else if (!processCommand(buffer)) {
         if (debug_flag == DEBUG_ON)printf("REQ:%s\n\r", buffer);
-        transmitString("OK\r\n");
+//        transmitString("OK\r\n");
       }
     }
   }
@@ -717,6 +713,7 @@ static void MX_USART2_UART_Init(void)
   * Enable DMA controller clock
   * Configure DMA for memory to memory transfers
   *   hdma_memtomem_dma1_channel2
+  *   hdma_memtomem_dma2_channel1
   */
 static void MX_DMA_Init(void) 
 {
@@ -729,11 +726,27 @@ static void MX_DMA_Init(void)
   hdma_memtomem_dma1_channel2.Init.Direction = DMA_MEMORY_TO_MEMORY;
   hdma_memtomem_dma1_channel2.Init.PeriphInc = DMA_PINC_ENABLE;
   hdma_memtomem_dma1_channel2.Init.MemInc = DMA_MINC_ENABLE;
-  hdma_memtomem_dma1_channel2.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
-  hdma_memtomem_dma1_channel2.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
+  hdma_memtomem_dma1_channel2.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+  hdma_memtomem_dma1_channel2.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
   hdma_memtomem_dma1_channel2.Init.Mode = DMA_NORMAL;
   hdma_memtomem_dma1_channel2.Init.Priority = DMA_PRIORITY_VERY_HIGH;
   if (HAL_DMA_Init(&hdma_memtomem_dma1_channel2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+        
+  
+
+  /* Configure DMA request hdma_memtomem_dma2_channel1 on DMA2_Channel1 */
+  hdma_memtomem_dma2_channel1.Instance = DMA2_Channel1;
+  hdma_memtomem_dma2_channel1.Init.Direction = DMA_MEMORY_TO_MEMORY;
+  hdma_memtomem_dma2_channel1.Init.PeriphInc = DMA_PINC_ENABLE;
+  hdma_memtomem_dma2_channel1.Init.MemInc = DMA_MINC_ENABLE;
+  hdma_memtomem_dma2_channel1.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+  hdma_memtomem_dma2_channel1.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+  hdma_memtomem_dma2_channel1.Init.Mode = DMA_NORMAL;
+  hdma_memtomem_dma2_channel1.Init.Priority = DMA_PRIORITY_VERY_HIGH;
+  if (HAL_DMA_Init(&hdma_memtomem_dma2_channel1) != HAL_OK)
   {
     Error_Handler();
   }

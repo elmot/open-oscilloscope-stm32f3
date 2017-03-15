@@ -220,10 +220,10 @@ static void setupTrigger() {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wsign-conversion"
     if (triggerType == 'R') {
-      hadc->Instance->TR1 = __HAL_ADC_TRX_HIGHTHRESHOLD(0xFFF) | triggerLevel;
+      hadc->Instance->TR1 = __HAL_ADC_TRX_HIGHTHRESHOLD(0xFFF) | triggerLevel - 50;//todo saturation!
       triggerLevelReg2 = __HAL_ADC_TRX_HIGHTHRESHOLD(triggerLevel);
     } else {
-      hadc->Instance->TR1 = __HAL_ADC_TRX_HIGHTHRESHOLD(triggerLevel);
+      hadc->Instance->TR1 = __HAL_ADC_TRX_HIGHTHRESHOLD(triggerLevel + 50 );//todo saturation!
       triggerLevelReg2 = __HAL_ADC_TRX_HIGHTHRESHOLD(0xFFF) | triggerLevel;
     }
 #pragma clang diagnostic pop
@@ -310,11 +310,9 @@ void __unused TIM3_IRQHandler() {
   size_t counter = hadc1.DMA_Handle->Instance->CNDTR;
 
   if (counter <= FRAME_SIZE) {
-    copyDataToAvailableFrame(&adc1_buffer[FRAME_SIZE - counter], FRAME_SIZE, NULL, true);
+//    copyDataToAvailableFrame(&adc1_buffer[FRAME_SIZE - counter], true);
   } else {
-//    copyDataToAvailableFrame(&adc1_buffer[ 2 * FRAME_SIZE - counter], FRAME_SIZE, adc1_buffer, true);
-//    copyDataToAvailableFrame(&adc1_buffer[2 * FRAME_SIZE - counter], counter, adc1_buffer, true);
-
+    copyDataToAvailableFrame2(&adc1_buffer[2 * FRAME_SIZE - counter], adc1_buffer, counter - FRAME_SIZE, true);
   }
   LED_OFF(LD6)
 

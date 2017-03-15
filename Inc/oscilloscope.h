@@ -72,7 +72,10 @@ void setupUsbComm();
 void initOscilloscope();
 
 /*__attribute__( ( long_call, section(".data") ) ) */void
-copyDataToAvailableFrame(uint16_t *src1, size_t size, uint16_t *src2, bool triggered);
+copyDataToAvailableFrame(uint16_t *src, bool triggered);
+
+/*__attribute__( ( long_call, section(".data") ) ) */void
+copyDataToAvailableFrame2(uint16_t *src1, uint16_t *src2, size_t size, bool triggered);
 
 /**
  *
