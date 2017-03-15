@@ -135,7 +135,7 @@ public abstract class CommThread<T> extends Thread {
         int b = inputStream.read();
         if (b != ch) {
             throw new IOException(
-                    String.format("Wrong reply: expected 0x%02X, receibed 0x%02X", (int) ch, b));
+                    String.format("Wrong reply: expected 0x%02X, received 0x%02X", (int) ch, b));
         }
     }
 
