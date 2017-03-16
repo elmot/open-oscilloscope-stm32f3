@@ -229,7 +229,7 @@ int main(void)
       if (strcmp("FRAME", buffer) == 0) {
 //        if (debug_flag == DEBUG_ON)printf("FR REQ\n\r");
         LED_ON(LD4)
-        transmitFrame(lastFrame);
+        transmitFrame();
         LED_OFF(LD4)
       } else
       if (buffer[0] == 'A' && buffer[1] == 'T' ) {

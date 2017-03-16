@@ -25,33 +25,38 @@ static void waitUntilTransmissed() {
   while (hcdc->TxState != 0);
 }
 
-static bool sendString(const char *s, int len) {
-  if (len == -1) len = strlen(s);
-  return sendBytes((uint8_t *) s, len);
-}
-
 void transmitString(char *str) {
   sendBytes((uint8_t *) str, strlen(str));
 }
 
-void transmitFrame(FRAME *frame) {
-  //todo
-  uint16_t length;
+void transmitFrame() {
   static const uint8_t NO_DATA[2] = {00, 0x80};
-  if(frame == NULL) {
+
+  uint16_t prioFlag;
+  volatile FRAME *frame;
+  __disable_irq();
+  if (frame1.prio > frame1.prio) {
+    frame = &frame1;
+  } else if (frame2.prio > frame2.prio) {
+    frame = &frame2;
+  } else {
+    frame = frame1.seq > frame2.seq ? &frame2 : &frame1;
+  }
+  if(frame->prio <= SENT) {
+    __enable_irq();
     sendBytes((uint8_t *) NO_DATA, 2);
     return;
   }
-  __disable_irq();
-  frame->busy = true;
+  prioFlag = (uint16_t) (frame->prio == TRIGGERED ? 0x4000 : 0);
+  frame->prio = BUSY;
   __enable_irq();
-  length = (uint16_t) (0x8000 | frame->dataLength | (frame->triggered ? 0x4000 : 0) | (0x1000 * NUM_CHANNELS));
-  uint8_t buffer[2] = {(uint8_t) (length & 0xff), (uint8_t) (length >> 8)};
-  sendBytes(buffer, 2);
+  uint16_t head = (uint16_t) (FRAME_SIZE | 0x8000 | (0x1000 * NUM_CHANNELS) | prioFlag);
+
+  sendBytes((uint8_t *) &head, 2);
   waitUntilTransmissed();
-  sendBytes((uint8_t *) frame->bufferA, frame->dataLength * 2);
+  sendBytes((uint8_t *) frame->bufferA, FRAME_SIZE * 2);
   waitUntilTransmissed();
-  frame->busy = false;
+  frame->prio = SENT;
 
 }
 

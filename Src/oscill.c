@@ -11,11 +11,10 @@ void startDAC() {
 }
 
 // todo hw dividers
-//todo leds
 //todo gen
-// todo trigger
-// todo key frame
+//todo wait for enabling pretrigger
 //todo config
+//todo voltage and time values
 // todo three channels
 typedef struct {
     __IO uint32_t *div2ODR;
@@ -310,9 +309,9 @@ void __unused TIM3_IRQHandler() {
   size_t counter = hadc1.DMA_Handle->Instance->CNDTR;
 
   if (counter <= FRAME_SIZE) {
-//    copyDataToAvailableFrame(&adc1_buffer[FRAME_SIZE - counter], true);
+    copyDataToAvailableFrame(&adc1_buffer[FRAME_SIZE - counter], true);
   } else {
-    copyDataToAvailableFrame2(&adc1_buffer[2 * FRAME_SIZE - counter], adc1_buffer, counter - FRAME_SIZE, true);
+    copyDataToAvailableFrame2(&adc1_buffer[3 * FRAME_SIZE - counter], adc1_buffer, counter - FRAME_SIZE, true);
   }
   LED_OFF(LD6)
 
@@ -343,6 +342,8 @@ void setupAdc() {
 }
 
 void initOscilloscope() {
+  frame1.prio = SENT;
+  frame2.prio = SENT;
   startDAC();
   setupAdc();
   setupUsbComm();

@@ -11,7 +11,6 @@ extern DMA_HandleTypeDef hdma_memtomem_dma2_channel1;
 uint16_t adc1_buffer[FRAME_SIZE * 2];
 FRAME frame1;
 FRAME frame2;
-FRAME * lastFrame = NULL;
 
 /* USER CODE END PFP */
 
@@ -24,10 +23,10 @@ FRAME *getFreeFrame(bool triggered);
   switch( MAJOR_DMA->ISR & (MAJOR_DMA_ISR_HTI_FLAG | MAJOR_DMA_ISR_TCI_FLAG))
   {
     case MAJOR_DMA_ISR_HTI_FLAG:
-//      copyDataToAvailableFrame(adc1_buffer, FRAME_SIZE, NULL, false);
+      copyDataToAvailableFrame(adc1_buffer, false);
       break;
     case MAJOR_DMA_ISR_TCI_FLAG:
-//      copyDataToAvailableFrame(&adc1_buffer[FRAME_SIZE], FRAME_SIZE, NULL, false);
+      copyDataToAvailableFrame(&adc1_buffer[FRAME_SIZE], false);
       break;
     default: break;// Too late IRQ, skip the frame
   }
@@ -44,16 +43,11 @@ void copyDataToAvailableFrame(uint16_t *src, bool triggered) {
   busy = true;
   FRAME *frame = getFreeFrame(triggered);
   if (frame != NULL) {
-    if(!triggered && frame->triggered && !frame-> sent) return;
     HAL_DMA_Start(&hdma_memtomem_dma1_channel2, (uint32_t) src, (uint32_t) frame->bufferA, FRAME_SIZE );
-    frame->triggered = triggered;
-    frame->dataLength = FRAME_SIZE;
-    frame->sent = false;
     HAL_DMA_PollForTransfer(&hdma_memtomem_dma1_channel2, HAL_DMA_FULL_TRANSFER, 2000); // todo optimise awful ST code
-    frame->busy = false;
-    lastFrame = frame;
-    busy = false;
+    frame->prio = triggered ? TRIGGERED : NORMAL;
   }
+  busy = false;
 
 }
 
@@ -62,33 +56,52 @@ void copyDataToAvailableFrame2(uint16_t *src1, uint16_t *src2, size_t size1, boo
   busy = true;
   FRAME *frame = getFreeFrame(triggered);
   if (frame != NULL) {
-    HAL_DMA_Start(&hdma_memtomem_dma1_channel2, (uint32_t) src1, (uint32_t) frame->bufferA, size1);
-    HAL_DMA_Start(&hdma_memtomem_dma2_channel1, (uint32_t) src2, (uint32_t) &frame->bufferA[size1], FRAME_SIZE - size1);
-    frame->dataLength = FRAME_SIZE;
-    frame->sent = false;
-    HAL_DMA_PollForTransfer(&hdma_memtomem_dma1_channel2, HAL_DMA_FULL_TRANSFER, 2000); // todo optimise awful ST code
-    HAL_DMA_PollForTransfer(&hdma_memtomem_dma2_channel1, HAL_DMA_FULL_TRANSFER, 2000); // todo optimise awful ST code
-    frame->busy = false;
-    lastFrame = frame;
-    busy = false;
+    if (size1 > 0)
+      HAL_DMA_Start(&hdma_memtomem_dma1_channel2, (uint32_t) src1, (uint32_t) frame->bufferA, size1);
+    size_t size2 = FRAME_SIZE - size1;
+    if (size2 > 0)
+      HAL_DMA_Start(&hdma_memtomem_dma2_channel1, (uint32_t) src2, (uint32_t) &frame->bufferA[size1], size2);
+    if (size1 > 0)
+      HAL_DMA_PollForTransfer(&hdma_memtomem_dma1_channel2, HAL_DMA_FULL_TRANSFER, 2000); // todo optimise awful ST code
+    if (size2 > 0)
+      HAL_DMA_PollForTransfer(&hdma_memtomem_dma2_channel1, HAL_DMA_FULL_TRANSFER, 2000); // todo optimise awful ST code
+    frame->prio = triggered ? TRIGGERED : NORMAL;
   }
+  busy = false;
+}
 
+size_t writePriority(FRAME_SEND_PRIORITY priority) {
+  switch (priority) {
+    case TRIGGERED :
+      return 1;
+    case NORMAL :
+      return 2;
+    case SLO_MO :
+      return 3;
+    case SENT :
+      return 4;
+    default:
+      return 0; //BUSY
+
+  }
 }
 
 FRAME *getFreeFrame(bool triggered) {
   FRAME *frame;
   __disable_irq();
-  if (!frame1.busy &&(triggered || !frame1.triggered || frame1.sent)) {
+  size_t dPrio = writePriority(frame1.prio) - writePriority(frame2.prio);
+  if (dPrio > 0) {
     frame = &frame1;
-    frame->busy = true;
-    frame->triggered = triggered;
-  } else if (!frame2.busy &&(triggered || !frame2.triggered || frame2.sent)) {
+  } else if (dPrio < 0) {
     frame = &frame2;
-    frame->busy = true;
-    frame->triggered = triggered;
   } else {
-    frame = NULL;
+    frame = frame1.seq > frame2.seq ? &frame2 : &frame1;
   }
+  if (frame->prio == BUSY || (!triggered && frame->prio == TRIGGERED)) {
+    __enable_irq();
+    return NULL;
+  }
+  frame->prio = BUSY;
   __enable_irq();
   return frame;
 }

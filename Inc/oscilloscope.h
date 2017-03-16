@@ -23,24 +23,28 @@
 #include <stm32f3xx_hal.h>
 #include <stddef.h>
 
-typedef enum FRAME_STATUS {
-    IDLE,
-    PREPARING,
-    READY,
-    TRANSMITTING
-} FRAME_STATUS;
 
 #define CMD_MAX_SIZE 128
 #define CMD_BUFFER 4
 #define NUM_CHANNELS 1
+
 extern uint16_t adc1_buffer[FRAME_SIZE * 2];
 
+typedef volatile enum FRAME_SEND_PRIORITY {
+    BUSY = 0,
+    SENT = 1,
+    SLO_MO = 2,
+    NORMAL = 3,
+    TRIGGERED = 4
+} FRAME_SEND_PRIORITY;
+
+
+size_t writePriority(FRAME_SEND_PRIORITY priority);
+
 typedef struct FRAME {
-    uint16_t bufferA[FRAME_SIZE];
-    size_t dataLength;
-    volatile bool triggered;
-    volatile bool busy;
-    volatile bool sent;
+    volatile uint16_t bufferA[FRAME_SIZE];
+    volatile FRAME_SEND_PRIORITY prio;
+    volatile uint8_t seq;
 } FRAME;
 
 extern OPAMP_HandleTypeDef hopamp1;
@@ -60,10 +64,7 @@ DMA_HandleTypeDef hdma_dac_ch1;
 
 extern FRAME frame1;
 extern FRAME frame2;
-extern FRAME * lastFrame;
-extern volatile int phase;
 
-void transmitFrame(FRAME * frame);
 
 void transmitString(char *str);
 
@@ -71,11 +72,13 @@ void setupUsbComm();
 
 void initOscilloscope();
 
-/*__attribute__( ( long_call, section(".data") ) ) */void
-copyDataToAvailableFrame(uint16_t *src, bool triggered);
+/*__attribute__( ( long_call, section(".data") ) ) */
+void copyDataToAvailableFrame(uint16_t *src, bool triggered);
 
-/*__attribute__( ( long_call, section(".data") ) ) */void
-copyDataToAvailableFrame2(uint16_t *src1, uint16_t *src2, size_t size, bool triggered);
+/*__attribute__( ( long_call, section(".data") ) ) */
+void copyDataToAvailableFrame2(uint16_t *src1, uint16_t *src2, size_t size, bool triggered);
+
+void transmitFrame(void);
 
 /**
  *

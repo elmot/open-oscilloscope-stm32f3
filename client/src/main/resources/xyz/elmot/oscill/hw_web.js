@@ -17,7 +17,12 @@ oReq.onload = function (oEvent) {
     for(var i = 0; i < shortArray.length;i++)
         shortArray[i] = dView.getUint16(i * 2 + 2, true);
     if(shortArray.length >0) {
-        drawData([shortArray]);
+        if((header & 0x4000) != 0) {
+            data[1] = shortArray
+        } else {
+            data[0] = shortArray
+        }
+        drawData(data);
     }
     document.getElementById("device-info").innerHTML = "";
   }
@@ -28,7 +33,7 @@ oReq.onload = function (oEvent) {
  */
 
 
-//var data = [null, null, null, null, null, null];
+var data = [null, null/*todo channels, null, null, null, null*/];
 
 
 function setParam(name, value) {
