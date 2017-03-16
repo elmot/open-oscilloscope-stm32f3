@@ -215,7 +215,9 @@ public abstract class CommThread<T> extends Thread {
             data[0] = (byte) head;
             data[1] = (byte) (head >> 8);
             for (int i = 2; i < data.length; i++) {
-                data[i] = (byte) inputStream.read();
+                int b = inputStream.read();
+                if(b < 0) throw new IOException("Data frame error");
+                data[i] = (byte)b;
             }
 
             try {
