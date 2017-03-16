@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stm32f303xc.h>
+#include <stdlib.h>
 #include "oscilloscope.h"
 
 //
@@ -21,6 +22,15 @@ typedef struct {
     __IO uint32_t *div30ODR;
     uint32_t div30mask;
 } VoltDivBits;
+
+typedef struct {
+    const char prefix[20];
+    const size_t prefix_len;
+    char value[20];
+
+    bool (*const parser)(char *strValue);
+} COMMON_PARAM;
+
 
 static const VoltDivBits divBits[3] = {
         {
@@ -162,9 +172,11 @@ static const TimeCoeff timing[TIMING_COUNT] =
                 {0,   14,    ADC_SAMPLETIME_1CYCLE_5}          // R => 5MHz
         };
 
-void setTiming(char t) {
-  if (t < 'A') t = 0; else t -= 'A';
-  if (t >= TIMING_COUNT) t = TIMING_COUNT - 1;
+bool setTiming(char *strT) {
+  char t = strT[0];
+  if (t < 'A' || t > 'R') return false;
+  t -= 'A';
+  if (t >= TIMING_COUNT) return false;
   __HAL_TIM_DISABLE(&htim1);
   htim1.Instance->PSC = timing[t].prescaler;
   htim1.Instance->ARR = timing[t].arr;
@@ -185,7 +197,7 @@ void setTiming(char t) {
   //TODO config ADC3
   //TODO config ADC4
   __HAL_TIM_ENABLE(&htim1);
-
+  return true;
 }
 
 char triggerType = 'R';
@@ -219,10 +231,10 @@ static void setupTrigger() {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wsign-conversion"
     if (triggerType == 'R') {
-      hadc->Instance->TR1 = __HAL_ADC_TRX_HIGHTHRESHOLD(0xFFF) | triggerLevel - 50;//todo saturation!
+      hadc->Instance->TR1 = __HAL_ADC_TRX_HIGHTHRESHOLD(0xFFF) | triggerLevel - 15;//todo saturation!
       triggerLevelReg2 = __HAL_ADC_TRX_HIGHTHRESHOLD(triggerLevel);
     } else {
-      hadc->Instance->TR1 = __HAL_ADC_TRX_HIGHTHRESHOLD(triggerLevel + 50 );//todo saturation!
+      hadc->Instance->TR1 = __HAL_ADC_TRX_HIGHTHRESHOLD(triggerLevel + 15 );//todo saturation!
       triggerLevelReg2 = __HAL_ADC_TRX_HIGHTHRESHOLD(0xFFF) | triggerLevel;
     }
 #pragma clang diagnostic pop
@@ -246,45 +258,65 @@ void postponedTriggerEnable() {
   }
 }
 
-void setTriggerType(char sign) {
-  triggerType = sign;
-  setupTrigger();
+bool setTriggerType(char *sign) {
+  if (*sign != 'R' && *sign != 'F')
+    return false;
+  triggerType = *sign;
+  return true;
 }
 
-void setTriggerChannel(char sign) {
-  triggerChannel = sign;
-  setupTrigger();
+bool setTriggerChannel(char *sign) {
+  char c = *sign;
+  if (c != 'A' && c != 'B' && c != 'C' && c != 'N' && c != 'Z')
+    return false;
+  triggerChannel = c;
+  return true;
 }
 
-void setTriggerLevel(char *value, size_t length) {
-  triggerLevel = parseDecimal(value, length);
-  setupTrigger();
+bool setTriggerLevel(char *value) {
+  int i = atoi(value);
+  if (i < 0 || i > 4095)
+    return false;
+  triggerLevel = i;
+  return true;
 }
 
-void setTriggerTimeShift(char *value, size_t length) {
-  triggerTimeShift = parseDecimal(value, length);
-  if (triggerTimeShift >= (int) FRAME_SIZE) {
-    triggerTimeShift = (int) FRAME_SIZE - 1;
-  } else if (triggerTimeShift <= -(int) FRAME_SIZE) {
-    triggerTimeShift = 1 - (int) FRAME_SIZE;
-  }
-  setupTrigger();
+bool setTriggerTimeShift(char *value) {
+  int i = atoi(value);
+  if (i >= (int) FRAME_SIZE ||
+      (i <= -(int) FRAME_SIZE))
+    return false;
+    triggerTimeShift = i;
+  return true;
 }
+
+
+COMMON_PARAM common_params[] = {
+        {"t=",          2,  "M",   setTiming},
+        {"trig.type=",  10, "R",   setTriggerType},
+        {"trig.ch=",    8,  "A",   setTriggerChannel},
+        {"trig.level=", 11, "700", setTriggerLevel},
+        {"trig.time=",  10, "0",   setTriggerTimeShift}
+};
 
 bool processCommand(char buffer[]) {
+  for (COMMON_PARAM *p = common_params; p->parser != NULL; p++) {
+    if (strncmp(p->prefix, buffer, p->prefix_len) == 0) {
+      char *strValue = &buffer[p->prefix_len];
+      if (p->parser(strValue)) {
+        strncpy(p->value, strValue, sizeof p->value);
+        setupTrigger();
+        return true;
+      }
+    }
+  }
+/*
   if (buffer[0] == 't' && buffer[1] == '=') {
     setTiming(buffer[2]);
     return true;
   }
-  //s.c.range=F/2
-  if (buffer[0] == 's' && buffer[1] == '.' && strncmp(&buffer[3], ".range=", 7) == 0) {
-    setGain(buffer[2], buffer[10]);
-    setDiv(buffer[2], buffer[12]);
-    return true;
-  }
-
 //trig.type=R/F
-  if (strncmp(buffer, "trig.type=", 10) == 0) {
+  if (strncmp(buffer, "", 10) == 0) {
     setTriggerType(buffer[10]);
     return true;
   }
@@ -303,6 +335,15 @@ bool processCommand(char buffer[]) {
     setTriggerTimeShift(&buffer[10], 89);
     return true;
   }
+*/
+
+  //s.c.range=F/2
+  if (buffer[0] == 's' && buffer[1] == '.' && strncmp(&buffer[3], ".range=", 7) == 0) {
+    setGain(buffer[2], buffer[10]);
+    setDiv(buffer[2], buffer[12]);
+    return true;
+  }
+
   return false;
 }
 
@@ -312,7 +353,6 @@ void ADC1_IRQHandler() {
   if (triggerLevelReg2 == 0xFFFFFFFF) {
     LED_ON(LD6)
 
-//    ongoingFrameClear = false; todo???
     __HAL_TIM_ENABLE(&htim3);
     hadc->Instance->CFGR &= ~ADC_CFGR_AWD1EN;
   } else {
@@ -335,22 +375,6 @@ void __unused TIM3_IRQHandler() {
   }
   LED_OFF(LD6)
 
-
-
-//  memcpy(&bufferAT[1],&bufferA[FRAME_SIZE - counter + 1], counter * 2);
-//  memcpy(&bufferAT[counter + 1],&bufferA[1], (FRAME_SIZE - counter) * 2);
-//  memcpy(&bufferBT[1],&bufferB[FRAME_SIZE - counter + 1], counter * 2);
-//  memcpy(&bufferBT[counter + 1],&bufferB[1], (FRAME_SIZE - counter) * 2);
-//  memcpy(&bufferCT[1],&bufferC[FRAME_SIZE - counter + 1], counter * 2);
-//  memcpy(&bufferCT[counter + 1],&bufferC[1], (FRAME_SIZE - counter) * 2);
-//  bufferAT[0] = FLAG_NEW | FLAG_TRIGGERED;
-//  bufferBT[0] = FLAG_NEW | FLAG_TRIGGERED;
-//  bufferCT[0] = FLAG_NEW | FLAG_TRIGGERED;
-//  if( ongoingFrameClear) {
-//    bufferAT[0] |= FLAG_CLEAR;
-//    bufferBT[0] |= FLAG_CLEAR;
-//    bufferCT[0] |= FLAG_CLEAR;
-//  }
   setupTrigger();
   __HAL_TIM_ENABLE(&htim1);
 }
