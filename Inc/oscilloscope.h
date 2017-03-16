@@ -68,9 +68,12 @@ extern FRAME frame2;
 
 void transmitString(char *str);
 
-void setupUsbComm();
+void setupUsbComm(void);
 
-void initOscilloscope();
+void initOscilloscope(void);
+
+void postponedTriggerEnable(void);
+
 
 /*__attribute__( ( long_call, section(".data") ) ) */
 void copyDataToAvailableFrame(uint16_t *src, bool triggered);

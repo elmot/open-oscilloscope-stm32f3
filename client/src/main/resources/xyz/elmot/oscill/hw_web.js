@@ -18,7 +18,7 @@ oReq.onload = function (oEvent) {
         shortArray[i] = dView.getUint16(i * 2 + 2, true);
     if(shortArray.length >0) {
         if((header & 0x4000) != 0) {
-            data[1] = shortArray
+            data = [null,shortArray]
         } else {
             data[0] = shortArray
         }
@@ -31,10 +31,12 @@ oReq.onload = function (oEvent) {
 /**
  @type {CanvasRenderingContext2D}
  */
-
-
-var data = [null, null/*todo channels, null, null, null, null*/];
-
+var data
+function initData()
+{
+    data = [null, null/*todo channels, null, null, null, null*/];
+}
+initData();
 
 function setParam(name, value) {
 var cReq = new XMLHttpRequest();
@@ -47,6 +49,7 @@ var cReq = new XMLHttpRequest();
     cReq.open("POST", "/cmd", true);
     cReq.onload = null
     cReq.send(name + "=" + value);
+    initData();
 }
 
 function requestFrame() {

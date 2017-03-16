@@ -1,14 +1,11 @@
 #include <stdint.h>
 #include <string.h>
+#include <stm32f303xc.h>
 #include "oscilloscope.h"
 
 //
 // Created by elmot on 11.3.2017.
 //
-void startDAC() {
-  HAL_TIM_Base_Start(&htim2);
-  HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
-}
 
 // todo hw dividers
 //todo gen
@@ -44,6 +41,13 @@ static const VoltDivBits divBits[3] = {
 };
 
 void clearKeyFrames();
+
+void triggerEnable(ADC_HandleTypeDef *hadc);
+
+void startDAC() {
+  HAL_TIM_Base_Start(&htim2);
+  HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
+}
 
 int parseDecimal(char *buf, size_t len) {
   bool minus = false;
@@ -188,6 +192,7 @@ char triggerType = 'R';
 char triggerChannel = 'A';
 int triggerTimeShift = 0;
 int triggerLevel = 700;
+static volatile int postponedTriggerStart;// for pre-trigger
 volatile uint32_t triggerLevelReg2 = 0xFFFFFFFF;//todo make that AWD2?
 
 ADC_HandleTypeDef *getTriggerADC() {
@@ -206,13 +211,8 @@ static void setupTrigger() {
   hadc3.Instance->CFGR &= ~ADC_CFGR_AWD1EN;
   hadc4.Instance->CFGR &= ~ADC_CFGR_AWD1EN;
   if (triggerChannel == 'Z') {
-//    bufferA[0] |= FLAG_TRIGGERED;
-//    bufferB[0] |= FLAG_TRIGGERED;
-//    bufferC[0] |= FLAG_TRIGGERED;
+    //todo EXT trigger
   } else if (triggerChannel != 'N') {
-//    bufferA[0] &= ~FLAG_TRIGGERED;
-//    bufferB[0] &= ~FLAG_TRIGGERED;
-//    bufferC[0] &= ~FLAG_TRIGGERED;
             __HAL_TIM_SetAutoreload(&htim3, FRAME_SIZE - triggerTimeShift);
             __HAL_TIM_SetCounter(&htim3, 0);
     ADC_HandleTypeDef *hadc = getTriggerADC();
@@ -226,8 +226,23 @@ static void setupTrigger() {
       triggerLevelReg2 = __HAL_ADC_TRX_HIGHTHRESHOLD(0xFFF) | triggerLevel;
     }
 #pragma clang diagnostic pop
-    hadc->Instance->CFGR |= ADC_CFGR_AWD1EN;
+    if (triggerTimeShift > 0) {
+      postponedTriggerStart = 1;
+    } else {
+      triggerEnable(hadc);
+    }
     __HAL_TIM_ENABLE_IT(&htim3, TIM_IT_UPDATE);
+  }
+}
+
+void triggerEnable(ADC_HandleTypeDef *hadc) {
+  hadc->Instance->CFGR |= ADC_CFGR_AWD1EN;
+  postponedTriggerStart = 0;
+}
+
+void postponedTriggerEnable() {
+  if (postponedTriggerStart-- > 0) {
+    triggerEnable(getTriggerADC());
   }
 }
 
@@ -248,6 +263,11 @@ void setTriggerLevel(char *value, size_t length) {
 
 void setTriggerTimeShift(char *value, size_t length) {
   triggerTimeShift = parseDecimal(value, length);
+  if (triggerTimeShift >= (int) FRAME_SIZE) {
+    triggerTimeShift = (int) FRAME_SIZE - 1;
+  } else if (triggerTimeShift <= -(int) FRAME_SIZE) {
+    triggerTimeShift = 1 - (int) FRAME_SIZE;
+  }
   setupTrigger();
 }
 
@@ -306,7 +326,7 @@ void __unused TIM3_IRQHandler() {
   __HAL_TIM_DISABLE(&htim1);
   __HAL_TIM_DISABLE(&htim3);
   __HAL_TIM_CLEAR_IT(&htim3, TIM_IT_UPDATE);
-  size_t counter = hadc1.DMA_Handle->Instance->CNDTR;
+  size_t counter = __HAL_DMA_GET_COUNTER(hadc1.DMA_Handle);
 
   if (counter <= FRAME_SIZE) {
     copyDataToAvailableFrame(&adc1_buffer[FRAME_SIZE - counter], true);

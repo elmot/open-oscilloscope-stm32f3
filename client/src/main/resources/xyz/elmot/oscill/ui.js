@@ -86,8 +86,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function wheelChange(event) {
         if (event.target.value) {
-            var delta = event.deltaX + deltaY;
-            if(event.deltaMode == 0) delta = event.delta/50;
+            var delta = event.deltaX + event.deltaY;
+            if(event.deltaMode == 0) delta = delta/10;
             var v = event.target.value - delta;
             if (v < event.target.min) v = event.target.min;
             if (v > event.target.max) v = event.target.max;

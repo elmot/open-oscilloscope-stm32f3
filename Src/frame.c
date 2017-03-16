@@ -20,6 +20,8 @@ FRAME *getFreeFrame(bool triggered);
 
 /*__attribute__( ( long_call, section(".data") ) ) */void __unused DMA1_Channel1_IRQHandler(void)
 {
+  postponedTriggerEnable();
+
   switch( MAJOR_DMA->ISR & (MAJOR_DMA_ISR_HTI_FLAG | MAJOR_DMA_ISR_TCI_FLAG))
   {
     case MAJOR_DMA_ISR_HTI_FLAG:
