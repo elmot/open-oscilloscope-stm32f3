@@ -9,8 +9,9 @@ body {
 }
 
 #device-info {
-    color: lightcyan;
+    color: red;
     position: absolute;
+    font-size: 3vh;
 }
 
 canvas {
