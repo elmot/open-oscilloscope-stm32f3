@@ -1,11 +1,14 @@
 <!DOCTYPE html>
+<!--TODO measurements-->
+<!--TODO snap mode-->
+<!--TODO export -->
+<!--TODO grid -->
+<!--TODO pictures -->
 <html>
 <head>
     <title>STM32F3 Oscilloscope</title>
     <link rel="stylesheet" href="oscilloscope.css">
-    <link rel="icon" type="image/png" href="/icon.png" />
-    <link rel="shortcut icon" type="image/png" href="/icon.png" />
-    <link rel="fluid-icon" type="image/png" href="/icon.png" />
+    <link rel="shortcut icon" type="image/png" href="data:image/png;base64,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"/>
 </head>
 <body>
 <span id="device-info">
@@ -79,8 +82,8 @@
         <label for="trig.type" class="control-title">Trigger</label>
 
         <select id="trig.type" name="trig.type" class="paramInput wheelSelect">
-            <option value="R" selected="selected">&#x2b0f;</option>
-            <option value="F">&#x2b0e;</option>
+            <option value="F">&darr;</option>
+            <option value="R" selected="selected">&uarr;</option>
         </select>
         <select id="trig.ch" name="trig.ch" class="paramInput wheelSelect">
             <!--<option value="Z">Auto</option>-->
@@ -107,8 +110,8 @@
         <label class="control-title" for="gen.shape">Sign. Gen</label>
         <select name="gen.shape" id="gen.shape" class="paramInput wheelSelect">
             <option value="N">Off</option>
-            <option value="-">&#x2501;</option>
-            <option value="M" selected="selected">&#x238D;</option>
+            <option value="-">&mdash;&mdash;</option>
+            <option value="M" selected="selected">_&mdash;_</option>
             <option value="T">&Lambda;</option>
             <!--<option value="S">&#8767;</option>-->
             <option value="J">&#x2571;&#x2502;</option>
@@ -146,26 +149,26 @@
         <select name="x.zoom" id="x.zoom" class="paramScreen wheelSelect">
             <!--<option value="20">20</option>-->
             <!--<option value="10">10</option>-->
-            <option value="5">5</option>
-            <option value="2">2</option>
+            <option value="5">5:1</option>
+            <option value="2">2:1</option>
             <option value="1" >1:1</option>
-            <option value="0.5" selected="selected">1/2</option>
-            <option value="0.2">1/5</option>
-            <option value="0.1">1/10</option>
-            <option value="0.05">1/20</option>
+            <option value="0.5" selected="selected">1:2</option>
+            <option value="0.2">1:5</option>
+            <option value="0.1">1:10</option>
+            <option value="0.05">1:20</option>
         </select>
 
         <label for="y.zoom" >Ampl.</label>
         <select name="y.zoom" id="y.zoom" class="paramScreen wheelSelect">
             <!--<option value="20">20</option>-->
             <!--<option value="10">10</option>-->
-            <option value="5">5</option>
-            <option value="2">2</option>
+            <option value="5">5:1</option>
+            <option value="2">2:1</option>
             <option value="1" >1:1</option>
-            <option value="0.5">1/2</option>
-            <option value="0.2">1/5</option>
-            <option value="0.1" selected="selected">1/10</option>
-            <option value="0.05">1/20</option>
+            <option value="0.5">1:2</option>
+            <option value="0.2">1:5</option>
+            <option value="0.1" selected="selected">1:10</option>
+            <option value="0.05">1:20</option>
         </select>
 
         <!--
