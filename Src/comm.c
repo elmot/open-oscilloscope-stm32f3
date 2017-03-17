@@ -30,7 +30,7 @@ void transmitString(char *str) {
 }
 
 void transmitFrame() {
-  static const uint8_t NO_DATA[2] = {00, 0x80};
+  static const uint16_t NO_DATA = 0x8000;
 
   uint16_t prioFlag;
   volatile FRAME *frame;
@@ -44,15 +44,17 @@ void transmitFrame() {
   }
   if(frame->prio <= SENT) {
     __enable_irq();
-    sendBytes((uint8_t *) NO_DATA, 2);
+    sendBytes((uint8_t *) &NO_DATA, 2);
     return;
   }
   prioFlag = (uint16_t) (frame->prio == TRIGGERED ? 0x4000 : 0);
   frame->prio = BUSY;
   __enable_irq();
-  uint16_t head = (uint16_t) (FRAME_SIZE | 0x8000 | (0x1000 * NUM_CHANNELS) | prioFlag);
+  uint16_t head[2] = {0x8000 | (2 + /*3 * todo 3ch */ 2* FRAME_SIZE),
+      (uint16_t) (FRAME_SIZE | (0x1000 * NUM_CHANNELS) | prioFlag)
+  };
 
-  sendBytes((uint8_t *) &head, 2);
+  sendBytes((uint8_t *) head, 4);
   waitUntilTransmissed();
   sendBytes((uint8_t *) frame->bufferA, FRAME_SIZE * 2);
   waitUntilTransmissed();

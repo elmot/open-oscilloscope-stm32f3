@@ -1,6 +1,7 @@
 package xyz.elmot.oscill;
 
 import purejavacomm.*;
+import xyz.elmot.oscill.FrameData.TYPE;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -90,9 +91,10 @@ public abstract class CommThread<T> extends Thread {
                 }
                 try (InputStream inputStream = oscilloscope.getInputStream();
                      OutputStream cmdStream = oscilloscope.getOutputStream()) {
+                    /* ***  Skip garbage if any *** */
                     try {
                         //noinspection StatementWithEmptyBody
-                        while (inputStream.read() >= 0) ;//skip garbage if any
+                        while (inputStream.read() >= 0) ;
                     } catch (IOException ignored) {
                     }
 
@@ -110,12 +112,12 @@ public abstract class CommThread<T> extends Thread {
                         waitForCommand();
                         cmdStream.write("\nFRAME\n".getBytes());
                         cmdStream.flush();
-                        int head = read16(inputStream);
-                        if ((head & 0x8000) == 0) {
+                        int length = read16(inputStream);
+                        if ((length & 0x8000) == 0 || (length&0x7fff) < 600) {
                             sendStatus("Broken header", true);
                             break;
                         }
-                        readResponseData(inputStream, head);
+                        readResponseData(inputStream, length);
                     }
                 } catch (IOException e) {
                     sendStatus("Port exchange error:" + e.getMessage(), false);
@@ -129,7 +131,7 @@ public abstract class CommThread<T> extends Thread {
         }
     }
 
-    protected abstract void readResponseData(InputStream inputStream, int head) throws IOException;
+    protected abstract void readResponseData(InputStream inputStream, int lenBytes) throws IOException;
 
     @SuppressWarnings("WeakerAccess")
     protected void waitForCommand() {
@@ -185,20 +187,21 @@ public abstract class CommThread<T> extends Thread {
     }
 
     public static class Frame extends CommThread<FrameData> {
-        private static final int N_CHANNELS = 1;/*todo*/
+        private static final int N_CHANNELS = 1;/*todo calculate*/
 
         @SuppressWarnings("WeakerAccess")
         public Frame(String portName, BiConsumer<String, Boolean> portStatusConsumer, int queueDepth, int delay) {
             super(portName, portStatusConsumer, queueDepth, delay);
         }
 
-        protected void readResponseData(InputStream inputStream, int head) throws IOException {
-            int len = (head & 0xfff) / N_CHANNELS;
-            short data[] = new short[len];
+        protected void readResponseData(InputStream inputStream, int byteLen) throws IOException {
+            int len = ((byteLen & 0x7fff)) / N_CHANNELS;
+            short data[] = new short[len - 2];
+            short head = read16(inputStream);
             for (int i = 0; i < data.length; i++) {
                 data[i] = read16(inputStream);
             }
-            FrameData.TYPE type = Math.random() < 0.1 ? FrameData.TYPE.NORMAL : FrameData.TYPE.TRIGGERED;
+            TYPE type = (head & 0x4000) != 0 ? TYPE.TRIGGERED : TYPE.NORMAL;
             FrameData frameData = new FrameData(type, N_CHANNELS,
                     len, 12, new short[][]{data});
             try {
@@ -214,14 +217,15 @@ public abstract class CommThread<T> extends Thread {
             super(portName, portStatusConsumer, queueDepth, delay);
         }
 
-        protected void readResponseData(InputStream inputStream, int head) throws IOException {
-            int len = (head & 0xfff);
-            byte data[] = new byte[2 + 2 * len];
-            data[0] = (byte) head;
-            data[1] = (byte) (head >> 8);
+        protected void readResponseData(InputStream inputStream, int lenBytes) throws IOException {
+            int len = (lenBytes & 0x7fff);
+            byte data[] = new byte[len + 2];
+            data[0] = (byte) (lenBytes >> 8);
+            data[0] = (byte) (lenBytes & 0xff);
             for (int i = 2; i < data.length; i++) {
                 int b = inputStream.read();
-                if (b < 0) throw new IOException("Data frame error");
+                if (b < 0)
+                    throw new IOException("Data frame error");
                 data[i] = (byte) b;
             }
 
