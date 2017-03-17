@@ -7,60 +7,57 @@ oReq.ontimeout = function (oEvent) {
     document.getElementById("device-info").innerHTML = "<em>Communication timeout</em>";
 };
 oReq.responseType = "arraybuffer";
-oReq.onload = function (oEvent) {
-  var arrayBuffer = oReq.response; // Note: not oReq.responseText
-  if (arrayBuffer && arrayBuffer.byteLength > 2) {
-    var dView = new DataView(arrayBuffer);
-    var header = dView.getUint16(0, true);
-
-    var shortArray = new Uint16Array(arrayBuffer.byteLength / 2 - 1);
-    for(var i = 0; i < shortArray.length;i++)
-        shortArray[i] = dView.getUint16(i * 2 + 2, true);
-    if(shortArray.length >0) {
-        if ((header & 0x4000) !== 0) {
-            data = [null,shortArray]
-        } else {
-            data[0] = shortArray
-        }
-        drawData(data);
-    }
-    document.getElementById("device-info").innerHTML = "";
-  }
-};
 
 /**
  @type {CanvasRenderingContext2D}
  */
 var data;
-function initData()
-{
+var cmdQueue = [];
+function initData() {
     data = [null, null/*todo channels, null, null, null, null*/];
 }
 initData();
 
 function setParam(name, value) {
-        var cReq = new XMLHttpRequest();
-        cReq.onerror = function (oEvent) {
-            document.getElementById("device-info").innerHTML = "<em>Communication error</em>";
-        };
-        cReq.ontimeout = function (oEvent) {
-            document.getElementById("device-info").innerHTML = "<em>Communication timeout</em>";
-        };
-        cReq.open("POST", "/cmd", true);
-        cReq.onload = initData;
-    cReq.send(name + "=" + value);
-
-    }
-
-function requestFrame() {
-    if(oReq.readyState !==0 && oReq.readyState !==4 ) return;
-    oReq.open("POST", "/frame", true);
-    oReq.send(null);
+    cmdQueue.unshift(name + "=" + value);
 }
 
-setInterval(requestFrame, 20);
+function requestFrame() {
+    if (oReq.readyState !== 0 && oReq.readyState !== 4) return;
+    var cmd = cmdQueue.pop();
+    if (cmd != null) {
+        oReq.onload = new function () {
+            initData();
+            document.getElementById("device-info").innerHTML = "";
+        };
+        oReq.open("POST", "/cmd", true);
+        oReq.send(cmd);
+        return;
+    }
 
 
+    oReq.open("POST", "/frame", true);
+    oReq.send(null);
+    oReq.onload = function (oEvent) {
+        var arrayBuffer = oReq.response; // Note: not oReq.responseText
+        if (arrayBuffer && arrayBuffer.byteLength > 2) {
+            var dView = new DataView(arrayBuffer);
+            var header = dView.getUint16(0, true);
 
+            var shortArray = new Uint16Array(arrayBuffer.byteLength / 2 - 1);
+            for (var i = 0; i < shortArray.length; i++)
+                shortArray[i] = dView.getUint16(i * 2 + 2, true);
+            if (shortArray.length > 0) {
+                if ((header & 0x4000) !== 0) {
+                    data = [null, shortArray]
+                } else {
+                    data[0] = shortArray
+                }
+                drawData(data);
+            }
+            document.getElementById("device-info").innerHTML = "";
+        }
+    };
+}
 
-
+setInterval(requestFrame, 10);
