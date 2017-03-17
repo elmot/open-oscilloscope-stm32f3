@@ -84,12 +84,17 @@ public abstract class CommThread<T> extends Thread {
             }
             if (oscilloscope != null) {
                 try {
-                    oscilloscope.enableReceiveTimeout(500);
+                    oscilloscope.enableReceiveTimeout(200);
                 } catch (UnsupportedCommOperationException e) {
                     System.err.println("Timeout not supported");
                 }
                 try (InputStream inputStream = oscilloscope.getInputStream();
                      OutputStream cmdStream = oscilloscope.getOutputStream()) {
+                    try {
+                        //noinspection StatementWithEmptyBody
+                        while (inputStream.read() >= 0) ;//skip garbage if any
+                    } catch (IOException ignored) {
+                    }
 
                     sendStatus("Connected", true);
                     byteCounter.set(0);
@@ -216,8 +221,8 @@ public abstract class CommThread<T> extends Thread {
             data[1] = (byte) (head >> 8);
             for (int i = 2; i < data.length; i++) {
                 int b = inputStream.read();
-                if(b < 0) throw new IOException("Data frame error");
-                data[i] = (byte)b;
+                if (b < 0) throw new IOException("Data frame error");
+                data[i] = (byte) b;
             }
 
             try {
