@@ -9,8 +9,7 @@
 //
 
 // todo hw dividers
-//todo gen
-//todo wait for enabling pre-trigger
+//todo fix pre-trigger
 //todo config
 //todo voltage and time values
 // todo three channels
@@ -31,7 +30,6 @@ typedef struct {
     bool (*const parser)(char *strValue);
 } COMMON_PARAM;
 
-
 static const VoltDivBits divBits[3] = {
         {
                 &OSCILLOSCOPE_A2_GPIO_Port->ODR, OSCILLOSCOPE_A2_Pin,
@@ -49,7 +47,6 @@ static const VoltDivBits divBits[3] = {
                 &OSCILLOSCOPE_C30_GPIO_Port->ODR, OSCILLOSCOPE_C30_Pin
         }
 };
-#define GEN_DMA_LENGTH 720
 static uint16_t genDmaBuf[GEN_DMA_LENGTH];
 static char genShape = 'N';
 static char genBuff;
@@ -316,6 +313,10 @@ static void setupGen() {
     case '-'://const voltage
       genFillConst(genAmpl, genDmaBuf, GEN_DMA_LENGTH);
       break;
+    case 'S': //Meander
+      genSineWave(genAmpl, genDmaBuf);
+      break;
+
     case 'M': //Meander
       genFillConst(0, genDmaBuf, GEN_DMA_LENGTH / 2);
       genFillConst(genAmpl, &genDmaBuf[GEN_DMA_LENGTH / 2], GEN_DMA_LENGTH / 2);
@@ -339,9 +340,10 @@ static void setupGen() {
   HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t*)genDmaBuf, GEN_DMA_LENGTH, DAC_ALIGN_12B_R);
 }
 
+
 bool setGenShape(char *sShape) {
   char shape = *sShape;
-  if(shape != 'N' && shape != '-' && shape != 'M' && shape != 'T' && shape != 'J') {
+  if(shape != 'N' && shape != '-' && shape != 'M' && shape != 'T' && shape != 'S' && shape != 'J') {
     return false;
   }
   genShape = shape;

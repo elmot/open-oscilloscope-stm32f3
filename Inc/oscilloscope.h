@@ -65,6 +65,8 @@ DMA_HandleTypeDef hdma_dac_ch1;
 extern FRAME frame1;
 extern FRAME frame2;
 
+#define GEN_DMA_LENGTH 72
+void genSineWave(uint16_t ampl, uint16_t pInt[72]);
 
 void transmitString(char *str);
 
