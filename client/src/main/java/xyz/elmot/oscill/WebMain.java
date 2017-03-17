@@ -130,7 +130,7 @@ public class WebMain extends NanoHTTPD {
         //Create and set up the window.
         JFrame frame = new JFrame("Oscilloscope server");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setIconImage(Toolkit.getDefaultToolkit().getImage(WebMain.class.getResource("icon.png")));
+        frame.setIconImage(Toolkit.getDefaultToolkit().getImage(WebMain.class.getResource("icon_128.png")));
 
         JComboBox<String> portNames = new JComboBox<>(CommThread.ports());
 
