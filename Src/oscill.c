@@ -10,7 +10,7 @@
 
 // todo hw dividers
 //todo gen
-//todo wait for enabling pretrigger
+//todo wait for enabling pre-trigger
 //todo config
 //todo voltage and time values
 // todo three channels
@@ -51,25 +51,13 @@ static const VoltDivBits divBits[3] = {
 };
 
 void clearKeyFrames();
+static void setupTrigger();
 
 void triggerEnable(ADC_HandleTypeDef *hadc);
 
 void startDAC() {
   HAL_TIM_Base_Start(&htim2);
   HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
-}
-
-int parseDecimal(char *buf, size_t len) {
-  bool minus = false;
-  int val = 0;
-  for (int i = 0; i < len; i++) {
-    if (buf[i] == '-') {
-      minus = true;
-    } else if (buf[i] >= '0' && buf[i] <= '9') {
-      val = val * 10 + buf[i] - '0';
-    } else break;
-  }
-  return minus ? -val : val;
 }
 
 void setDiv(char channel_letter, char d) {
@@ -101,7 +89,7 @@ void setDiv(char channel_letter, char d) {
   clearKeyFrames();
 }
 
-void clearKeyFrames() {//todo
+void clearKeyFrames() {//todo nuke?
 
 }
 
@@ -197,6 +185,8 @@ bool setTiming(char *strT) {
   //TODO config ADC3
   //TODO config ADC4
   __HAL_TIM_ENABLE(&htim1);
+  setupTrigger();
+
   return true;
 }
 
@@ -270,6 +260,7 @@ bool setTriggerChannel(char *sign) {
   if (c != 'A' && c != 'B' && c != 'C' && c != 'N' && c != 'Z')
     return false;
   triggerChannel = c;
+  setupTrigger();
   return true;
 }
 
@@ -278,6 +269,7 @@ bool setTriggerLevel(char *value) {
   if (i < 0 || i > 4095)
     return false;
   triggerLevel = i;
+  setupTrigger();
   return true;
 }
 
@@ -287,16 +279,116 @@ bool setTriggerTimeShift(char *value) {
       (i <= -(int) FRAME_SIZE))
     return false;
     triggerTimeShift = i;
+  setupTrigger();
   return true;
 }
 
+//Generator
+#define GEN_DMA_LENGTH 720
+static uint16_t genDmaBuf[GEN_DMA_LENGTH];
+static char genShape='N';
+static char genBuff;
+static int genFreq;
+static uint16_t genAmpl;
+
+
+void genFillConst(uint16_t ampl, uint16_t * buffer, size_t len)
+{
+  for(size_t i = 0; i < len; i++) {
+    buffer[i] = ampl;
+  }
+}
+
+void genFillTriangle() {
+  for(size_t i = 0; i <= GEN_DMA_LENGTH / 2; i++) {
+    genDmaBuf[i] = genDmaBuf[GEN_DMA_LENGTH - i] = (uint16_t) ((genAmpl * i) / (GEN_DMA_LENGTH / 2));
+  }
+}
+
+void genFillSawtooth() {
+  for(size_t i = 0; i < GEN_DMA_LENGTH ; i++) {
+    genDmaBuf[i] = (uint16_t) ((genAmpl * i) / GEN_DMA_LENGTH);
+  }
+}
+
+static void setupGen() {
+  HAL_DAC_Stop(&hdac, DAC_CHANNEL_1);
+  switch(genShape) {
+    case '-'://const voltage
+      genFillConst(genAmpl, genDmaBuf, GEN_DMA_LENGTH);
+      break;
+    case 'M': //Meander
+      genFillConst(0, genDmaBuf, GEN_DMA_LENGTH / 2);
+      genFillConst(genAmpl, &genDmaBuf[GEN_DMA_LENGTH / 2], GEN_DMA_LENGTH / 2);
+      break;
+    case 'T': //Triangle
+      genFillTriangle();
+      break;
+    case 'J'://Sawtooth
+      genFillSawtooth();
+      break;
+    default: return;//case 'N'
+  }
+  htim2.Instance->ARR = (uint32_t) (100000 / genFreq);
+  htim2.Instance->CNT = 0;
+  if(genBuff == 't' || genBuff == 'T')
+  {
+    hdac.Instance->CR &= ~DAC_CR_BOFF1;
+  } else {
+    hdac.Instance->CR |= DAC_CR_BOFF1;
+  }
+  HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t*)genDmaBuf, GEN_DMA_LENGTH, DAC_ALIGN_12B_R);
+}
+
+bool setGenShape(char *sShape) {
+  char shape = *sShape;
+  if(shape != 'N' && shape != '-' && shape != 'M' && shape != 'T' && shape != 'J') {
+    return false;
+  }
+  genShape = shape;
+  setupGen();
+  return true;
+}
+
+bool setGenBuff(char *buff) {
+  if(*buff != 't' || *buff != 'f')
+    return false;
+  genBuff = *buff;
+  setupGen();
+  return true;
+}
+
+bool setGenFreq(char *value) {
+  int i = atoi(value);
+  if(i <2 || i> 10000)
+    return false;
+  genFreq = i;
+  setupGen();
+  return true;
+}
+bool setGenAmpl(char *value) {
+  int i = atoi(value);
+  if(i <36 || i> 4095)
+    return false;
+  genAmpl = (uint16_t) i;
+  setupGen();
+  return true;
+}
 
 COMMON_PARAM common_params[] = {
-        {"t=",          2,  "M",   setTiming},
-        {"trig.type=",  10, "R",   setTriggerType},
-        {"trig.ch=",    8,  "A",   setTriggerChannel},
-        {"trig.level=", 11, "700", setTriggerLevel},
-        {"trig.time=",  10, "0",   setTriggerTimeShift}
+        {"t=",          2,  "M",   setTiming},//t=A...R
+        {"trig.type=",  10, "R",   setTriggerType},//trig.type=R/F
+        {"trig.ch=",    8,  "A",   setTriggerChannel},//trig.ch=Z/A/B/C/E
+        {"trig.level=", 11, "700", setTriggerLevel},//trig.level=num
+        {"trig.time=",  10, "0",   setTriggerTimeShift},//trig.time=num
+
+
+        {"gen.shape=",  10, "M",   setGenShape},// N/-/M/T/S/J
+        {"gen.ampl=",  9, "63",   setGenAmpl},// 136-4095
+        {"gen.freq=",  9, "1000",   setGenFreq},//2..10000
+        {"gen.buff=",  9, "0",   setGenBuff},// t/f
+
+
 };
 
 bool processCommand(char buffer[]) {
@@ -305,37 +397,10 @@ bool processCommand(char buffer[]) {
       char *strValue = &buffer[p->prefix_len];
       if (p->parser(strValue)) {
         strncpy(p->value, strValue, sizeof p->value);
-        setupTrigger();
         return true;
       }
     }
   }
-/*
-  if (buffer[0] == 't' && buffer[1] == '=') {
-    setTiming(buffer[2]);
-    return true;
-  }
-//trig.type=R/F
-  if (strncmp(buffer, "", 10) == 0) {
-    setTriggerType(buffer[10]);
-    return true;
-  }
-//trig.ch=Z/A/B/C/E
-  if (strncmp(buffer, "trig.ch=", 8) == 0) {
-    setTriggerChannel(buffer[8]);
-    return true;
-  }
-//trig.level=num
-  if (strncmp(buffer, "trig.level=", 11) == 0) {
-    setTriggerLevel(&buffer[11], 89);
-    return true;
-  }
-//trig.time=num
-  if (strncmp(buffer, "trig.time=", 10) == 0) {
-    setTriggerTimeShift(&buffer[10], 89);
-    return true;
-  }
-*/
 
   //s.c.range=F/2
   if (buffer[0] == 's' && buffer[1] == '.' && strncmp(&buffer[3], ".range=", 7) == 0) {

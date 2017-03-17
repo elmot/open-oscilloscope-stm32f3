@@ -47,9 +47,9 @@ var cReq = new XMLHttpRequest();
         document.getElementById("device-info").innerHTML = "<em>Communication timeout</em>";
     };
     cReq.open("POST", "/cmd", true);
-    cReq.onload = null
+    cReq.onload = new function() {initData();}
     cReq.send(name + "=" + value);
-    initData();
+
 }
 
 function requestFrame() {
