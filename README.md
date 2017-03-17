@@ -1,4 +1,5 @@
-<img align="right" src="client/icon_128.png">
+<img align="right" width="200" src="client/icon.png">
+
 ## Open-Source Oscilloscope based on STM32F3-DISCOVERY board
 
 Some ideas got from Tomasz Ostrowski's [Miniscope](http://tomeko.net/miniscope_v4/index.php?lang=en).
