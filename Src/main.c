@@ -502,13 +502,6 @@ static void MX_DAC_Init(void)
     Error_Handler();
   }
 
-    /**Configure Triangle wave generation on DAC OUT1 
-    */
-  if (HAL_DACEx_TriangleWaveGenerate(&hdac, DAC_CHANNEL_1, DAC_TRIANGLEAMPLITUDE_511) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
 }
 
 /* OPAMP1 init function */
@@ -610,7 +603,7 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 0;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 100;
+  htim2.Init.Period = 0;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)

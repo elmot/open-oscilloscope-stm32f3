@@ -49,6 +49,12 @@ static const VoltDivBits divBits[3] = {
                 &OSCILLOSCOPE_C30_GPIO_Port->ODR, OSCILLOSCOPE_C30_Pin
         }
 };
+#define GEN_DMA_LENGTH 720
+static uint16_t genDmaBuf[GEN_DMA_LENGTH];
+static char genShape = 'N';
+static char genBuff;
+static int genFreq;
+static uint16_t genAmpl;
 
 void clearKeyFrames();
 static void setupTrigger();
@@ -57,7 +63,7 @@ void triggerEnable(ADC_HandleTypeDef *hadc);
 
 void startDAC() {
   HAL_TIM_Base_Start(&htim2);
-  HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
+  HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *) &genDmaBuf, GEN_DMA_LENGTH, DAC_ALIGN_12B_R);
 }
 
 void setDiv(char channel_letter, char d) {
@@ -284,13 +290,6 @@ bool setTriggerTimeShift(char *value) {
 }
 
 //Generator
-#define GEN_DMA_LENGTH 720
-static uint16_t genDmaBuf[GEN_DMA_LENGTH];
-static char genShape='N';
-static char genBuff;
-static int genFreq;
-static uint16_t genAmpl;
-
 
 void genFillConst(uint16_t ampl, uint16_t * buffer, size_t len)
 {

@@ -17,7 +17,7 @@ oReq.onload = function (oEvent) {
     for(var i = 0; i < shortArray.length;i++)
         shortArray[i] = dView.getUint16(i * 2 + 2, true);
     if(shortArray.length >0) {
-        if((header & 0x4000) != 0) {
+        if ((header & 0x4000) !== 0) {
             data = [null,shortArray]
         } else {
             data[0] = shortArray
@@ -31,7 +31,7 @@ oReq.onload = function (oEvent) {
 /**
  @type {CanvasRenderingContext2D}
  */
-var data
+var data;
 function initData()
 {
     data = [null, null/*todo channels, null, null, null, null*/];
@@ -39,21 +39,21 @@ function initData()
 initData();
 
 function setParam(name, value) {
-var cReq = new XMLHttpRequest();
-    cReq.onerror = function (oEvent) {
-        document.getElementById("device-info").innerHTML = "<em>Communication error</em>";
-    };
-    cReq.ontimeout = function (oEvent) {
-        document.getElementById("device-info").innerHTML = "<em>Communication timeout</em>";
-    };
-    cReq.open("POST", "/cmd", true);
-    cReq.onload = new function() {initData();}
+        var cReq = new XMLHttpRequest();
+        cReq.onerror = function (oEvent) {
+            document.getElementById("device-info").innerHTML = "<em>Communication error</em>";
+        };
+        cReq.ontimeout = function (oEvent) {
+            document.getElementById("device-info").innerHTML = "<em>Communication timeout</em>";
+        };
+        cReq.open("POST", "/cmd", true);
+        cReq.onload = initData;
     cReq.send(name + "=" + value);
 
-}
+    }
 
 function requestFrame() {
-    if(oReq.readyState !=0 && oReq.readyState !=4 ) return;
+    if(oReq.readyState !==0 && oReq.readyState !==4 ) return;
     oReq.open("POST", "/frame", true);
     oReq.send(null);
 }
