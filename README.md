@@ -1,6 +1,5 @@
+<img align="right" src="client/icon_128.png">
 ## Open-Source Oscilloscope based on STM32F3-DISCOVERY board
-
-<img style="float: right;" src="client/icon_128.png">
 
 Some ideas got from Tomasz Ostrowski's [Miniscope](http://tomeko.net/miniscope_v4/index.php?lang=en).
 Tomasz has a bunch of ready-to-use-devices, and I have the only preliminary schematics and raw prototype.
