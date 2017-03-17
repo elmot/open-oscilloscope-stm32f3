@@ -11,6 +11,7 @@
 // todo hw dividers
 //todo fix pre-trigger
 //todo config
+//todo init config
 //todo voltage and time values
 // todo three channels
 typedef struct {
@@ -30,6 +31,9 @@ typedef struct {
     bool (*const parser)(char *strValue);
 } COMMON_PARAM;
 
+char configText[500] = "";
+size_t configTextLen = 0;
+
 static const VoltDivBits divBits[3] = {
         {
                 &OSCILLOSCOPE_A2_GPIO_Port->ODR, OSCILLOSCOPE_A2_Pin,
@@ -38,8 +42,8 @@ static const VoltDivBits divBits[3] = {
         },
         {
                 &OSCILLOSCOPE_B2_GPIO_Port->ODR, OSCILLOSCOPE_B2_Pin,
-//                &OSCILLOSCOPE_B10_GPIO_Port->ODR, OSCILLOSCOPE_B10_Pin,
-//                &OSCILLOSCOPE_B30_GPIO_Port->ODR, OSCILLOSCOPE_B30_Pin
+                &OSCILLOSCOPE_B10_GPIO_Port->ODR, OSCILLOSCOPE_B10_Pin,
+                &OSCILLOSCOPE_B30_GPIO_Port->ODR, OSCILLOSCOPE_B30_Pin
         },
         {
                 &OSCILLOSCOPE_C2_GPIO_Port->ODR, OSCILLOSCOPE_C2_Pin,
@@ -63,8 +67,7 @@ void startDAC() {
   HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *) &genDmaBuf, GEN_DMA_LENGTH, DAC_ALIGN_12B_R);
 }
 
-void setDiv(char channel_letter, char d) {
-  int chIdx = channel_letter - 'a';
+void setDiv(uint8_t chIdx, char d) {
   if (chIdx >= 0 && chIdx < 4) {
     switch (d) {
       case '0':
@@ -96,16 +99,16 @@ void clearKeyFrames() {//todo nuke?
 
 }
 
-void setGain(char opamp_letter, char g) {
+void setGain(uint8_t idx, char g) {
   OPAMP_HandleTypeDef *opamp;
-  switch (opamp_letter) {
-    case 'a':
+  switch (idx) {
+    case 0:
       opamp = &hopamp1;
       break;
-    case 'b':
+    case 1:
       opamp = &hopamp3;
       break;
-    case 'c':
+    case 2:
       opamp = &hopamp4;
       break;
     default:
@@ -377,20 +380,40 @@ bool setGenAmpl(char *value) {
 }
 
 COMMON_PARAM common_params[] = {
-        {"t=",          2,  "M",   setTiming},//t=A...R
-        {"trig.type=",  10, "R",   setTriggerType},//trig.type=R/F
-        {"trig.ch=",    8,  "A",   setTriggerChannel},//trig.ch=Z/A/B/C/E
-        {"trig.level=", 11, "700", setTriggerLevel},//trig.level=num
-        {"trig.time=",  10, "0",   setTriggerTimeShift},//trig.time=num
+        {"t=",          2,  "M",    setTiming},//t=A...R
+        {"trig.type=",  10, "R",    setTriggerType},//trig.type=R/F
+        {"trig.ch=",    8,  "A",    setTriggerChannel},//trig.ch=Z/A/B/C/E
+        {"trig.level=", 11, "700",  setTriggerLevel},//trig.level=num
+        {"trig.time=",  10, "0",    setTriggerTimeShift},//trig.time=num
 
-
-        {"gen.shape=",  10, "M",   setGenShape},// N/-/M/T/S/J
-        {"gen.ampl=",  9, "63",   setGenAmpl},// 136-4095
-        {"gen.freq=",  9, "1000",   setGenFreq},//2..10000
-        {"gen.buff=",  9, "0",   setGenBuff},// t/f
-
-
+        {"gen.shape=",  10, "M",    setGenShape},// N/-/M/T/S/J
+        {"gen.ampl=",   9,  "63",   setGenAmpl},// 136-4095
+        {"gen.freq=",   9,  "1000", setGenFreq},//2..10000
+        {"gen.buff=",   9,  "0",    setGenBuff},// t/f
+        {"",            9,  "", NULL}
 };
+
+char gains[3] = {'F', 'F', 'F'};
+char divers[3] = {'1', '1', '1'};
+
+void updateConfigText() {
+  char *cPos = configText;
+  for (COMMON_PARAM *p = common_params; p->parser != NULL; p++) {
+    memcpy(cPos, p->prefix, p->prefix_len);
+    cPos += p->prefix_len;
+    size_t len = strlen(p->value);
+    memcpy(cPos, p->value, len);
+    cPos += len;
+    *(cPos++) = 10;
+    *(cPos++) = 13;
+    *(cPos) = 0;
+  }
+  for (char cc = 0; cc < 3; cc++) {
+    sprintf(cPos, "s.%c.range=%c/%c\n\r", cc + 'a', gains[cc], divers[cc]);
+    cPos += strlen(cPos);
+  }
+  configTextLen = cPos - configText;
+}
 
 bool processCommand(char buffer[]) {
   for (COMMON_PARAM *p = common_params; p->parser != NULL; p++) {
@@ -398,6 +421,7 @@ bool processCommand(char buffer[]) {
       char *strValue = &buffer[p->prefix_len];
       if (p->parser(strValue)) {
         strncpy(p->value, strValue, sizeof p->value);
+        updateConfigText();
         return true;
       }
     }
@@ -405,15 +429,32 @@ bool processCommand(char buffer[]) {
 
   //s.c.range=F/2
   if (buffer[0] == 's' && buffer[1] == '.' && strncmp(&buffer[3], ".range=", 7) == 0) {
-    setGain(buffer[2], buffer[10]);
-    setDiv(buffer[2], buffer[12]);
+    uint8_t channelIdx = (uint8_t) (buffer[2] - 'a');
+    if (channelIdx > 3) {
+      return false;
+    }
+    char gain = buffer[10];
+    gains[channelIdx] = gain;
+    setGain(channelIdx, gain);
+    char diver = buffer[12];
+    setDiv(channelIdx, diver);
+    divers[channelIdx] = diver;
+    updateConfigText();
     return true;
   }
 
   return false;
 }
 
-
+void setSavedParameters() {
+  for (COMMON_PARAM *p = common_params; p->parser != NULL; p++) {
+    p->parser(p->value);
+  }
+  for (uint8_t ch = 0; ch < 3; ch++) {
+    setGain(ch, gains[ch]);
+    setDiv(ch, divers[ch]);
+  }
+}
 void ADC1_IRQHandler() {
   ADC_HandleTypeDef *hadc = &hadc1;
   if (triggerLevelReg2 == 0xFFFFFFFF) {
@@ -457,6 +498,7 @@ void initOscilloscope() {
   startDAC();
   setupAdc();
   setupUsbComm();
+  setSavedParameters();
   HAL_OPAMP_Start(&hopamp1);
   setupTrigger();
 }
