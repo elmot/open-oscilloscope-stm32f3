@@ -105,6 +105,8 @@ public abstract class CommThread<T> extends Thread {
                             cmdStream.write(s.getBytes(StandardCharsets.US_ASCII));
                             cmdStream.write(CRLF);
                             cmdStream.flush();
+                            int length = read16(inputStream);
+                            int signature = read16(inputStream);
                             sleepMe(50);
                             //todo ack for the command
                             queue.clear();
@@ -113,7 +115,7 @@ public abstract class CommThread<T> extends Thread {
                         cmdStream.write("\nFRAME\n".getBytes());
                         cmdStream.flush();
                         int length = read16(inputStream);
-                        if ((length & 0x8000) == 0 || (length&0x7fff) < 600) {
+                        if ((length & 0x8000) == 0 || (length & 0x7fff) < 600) {
                             sendStatus("Broken header", true);
                             break;
                         }
@@ -196,11 +198,13 @@ public abstract class CommThread<T> extends Thread {
 
         protected void readResponseData(InputStream inputStream, int byteLen) throws IOException {
             int len = ((byteLen & 0x7fff)) / N_CHANNELS;
-            short data[] = new short[len - 2];
+            short data[] = new short[len / 2 - 2];
+            short signature = read16(inputStream);
             short head = read16(inputStream);
             for (int i = 0; i < data.length; i++) {
                 data[i] = read16(inputStream);
             }
+            if (signature != 0x5246) return;
             TYPE type = (head & 0x4000) != 0 ? TYPE.TRIGGERED : TYPE.NORMAL;
             FrameData frameData = new FrameData(type, N_CHANNELS,
                     len, 12, new short[][]{data});
@@ -221,14 +225,15 @@ public abstract class CommThread<T> extends Thread {
             int len = (lenBytes & 0x7fff);
             byte data[] = new byte[len + 2];
             data[0] = (byte) (lenBytes >> 8);
-            data[0] = (byte) (lenBytes & 0xff);
+            data[1] = (byte) (lenBytes & 0xff);
             for (int i = 2; i < data.length; i++) {
                 int b = inputStream.read();
                 if (b < 0)
                     throw new IOException("Data frame error");
                 data[i] = (byte) b;
             }
-
+            if (data[2] != 'F' || data[3] != 'R')
+                return;
             try {
                 queue.put(data);
             } catch (InterruptedException ignored) {

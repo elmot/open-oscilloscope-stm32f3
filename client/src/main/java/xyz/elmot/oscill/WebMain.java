@@ -1,8 +1,5 @@
 package xyz.elmot.oscill;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-
 import fi.iki.elonen.NanoHTTPD;
 import fi.iki.elonen.NanoHTTPD.Response.Status;
 import org.apache.commons.io.IOUtils;
@@ -13,14 +10,12 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
 
 /**
  * (c) elmot on 9.3.2017.
@@ -29,7 +24,7 @@ public class WebMain extends NanoHTTPD {
 
     private static final int PORT = 1515;
     private final static Map<String, Resource> staticResources = new TreeMap<>();
-    private CommThread<byte[]> commThread;
+    private CommFacility commFacility = new CommFacility();
     private JLabel connectStatus;
 
     private static void registerResource(String name, String mimeType) {
@@ -55,11 +50,6 @@ public class WebMain extends NanoHTTPD {
 
     }
 
-    private void openPort(String ttyACM0, BiConsumer<String, Boolean> portStatusConsumer) {
-        commThread = new CommThread.Bytes(ttyACM0, portStatusConsumer, 2, 0);
-        commThread.start();
-    }
-
     @Override
     public Response serve(IHTTPSession session) {
         try {
@@ -78,27 +68,24 @@ public class WebMain extends NanoHTTPD {
 
     private Response serveCommand(HTTPSession session) throws IOException {
         if ("/frame".equals(session.getUri())) {
-            byte[] frame = null;
-            try {
-                if (commThread != null)
-                    frame = commThread.getQueue().poll(200, TimeUnit.MILLISECONDS);
-            } catch (InterruptedException ignored) {
+            byte[] frame = commFacility.getResponse("FRAME");
+            if (frame == null) {
+                Response response = responseStatus(Status.NO_CONTENT);
+                response.addHeader("X-Comm-Status", connectStatus.getText());
+                return response;
+            } else {
+                return newFixedLengthResponse(Status.OK, "application/binary"
+                        , new ByteArrayInputStream(frame), frame.length);
             }
-            if (frame == null) return responseStatus(Status.NO_CONTENT);
-            return newFixedLengthResponse(Status.OK, "application/binary"
-                    , new ByteArrayInputStream(frame), frame.length);
         } else if ("/cmd".equals(session.getUri())) {
-            InputStream inputStream = session.getInputStream();
             long bodySize = session.getBodySize();
             if (bodySize >= 1000000) {
                 return responseStatus(Status.PAYLOAD_TOO_LARGE);
             }
             byte[] bytes = new byte[(int) bodySize];
-            IOUtils.read(inputStream, bytes);
-            if (commThread != null) {
-                commThread.sendCommand(new String(bytes, StandardCharsets.US_ASCII));
-            }
-            return responseStatus(Status.ACCEPTED);
+            IOUtils.read(session.getInputStream(), bytes);
+            byte[] frame = commFacility.getResponse(new String(bytes, StandardCharsets.US_ASCII));
+            return newFixedLengthResponse(Status.OK, "text/plain", new ByteArrayInputStream(frame), frame.length);
         } else return responseStatus(Status.METHOD_NOT_ALLOWED);
 
     }
@@ -155,16 +142,16 @@ public class WebMain extends NanoHTTPD {
                 GridBagConstraints.HORIZONTAL, new Insets(10, 10, 10, 10), 5, 5));
         connectStatus = new JLabel("Not Started");
         connectStatus.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+        commFacility.setPortStatusConsumer((text, q) -> SwingUtilities.invokeLater(() -> {
+                    connectStatus.setText(text);
+                    connectStatus.setForeground(q ? Color.GREEN.darker() : Color.RED.darker());
+                }
+        ));
         contentPane.add(connectStatus, new GridBagConstraints(0, 2, 2, 1, 1, 0, GridBagConstraints.SOUTHWEST,
                 GridBagConstraints.HORIZONTAL, new Insets(10, 10, 10, 10), 5, 5));
         portNames.addActionListener(e -> {
-                    if (commThread != null)
-                        commThread.giveUp();
-                    openPort((String) portNames.getSelectedItem(),
-                            (status, connected) -> SwingUtilities.invokeLater(() -> {
-                                connectStatus.setText(status);
-                                connectStatus.setForeground(connected ? Color.GREEN.darker() : Color.RED.darker());
-                            }));
+                    commFacility.close();
+                    commFacility.setPortName((String) portNames.getSelectedItem());
                 }
         );
         portNames.addPopupMenuListener(new PopupMenuListener() {

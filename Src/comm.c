@@ -11,7 +11,7 @@ static int writeBufferIndex = 0;
 static int writeCharIndex = 0;
 static int readBufferIndex = 0;
 
-static bool sendBytes(uint8_t *s, int len) {
+bool sendBytes(uint8_t *s, int len) {
   uint8_t transmitResult;
   if (len == 0) return true;
   do {
@@ -20,7 +20,7 @@ static bool sendBytes(uint8_t *s, int len) {
   return transmitResult == USBD_OK;
 }
 
-static void waitUntilTransmissed() {
+void waitUntilTransmissed() {
   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef *) hUsbDeviceFS.pClassData;
   while (hcdc->TxState != 0);
 }
@@ -50,11 +50,12 @@ void transmitFrame() {
   prioFlag = (uint16_t) (frame->prio == TRIGGERED ? 0x4000 : 0);
   frame->prio = BUSY;
   __enable_irq();
-  uint16_t head[2] = {0x8000 | (2 + /*3 * todo 3ch */ 2* FRAME_SIZE),
-      (uint16_t) (FRAME_SIZE | (0x1000 * NUM_CHANNELS) | prioFlag)
+  uint16_t head[3] = {0x8000 | (4 + /*3 * todo 3ch */ 2 * FRAME_SIZE),
+                      'F' + 'R' * 0x100,
+                      (uint16_t) (FRAME_SIZE | (0x1000 * NUM_CHANNELS) | prioFlag)
   };
 
-  sendBytes((uint8_t *) head, 4);
+  sendBytes((uint8_t *) head, 6);
   waitUntilTransmissed();
   sendBytes((uint8_t *) frame->bufferA, FRAME_SIZE * 2);
   waitUntilTransmissed();

@@ -83,7 +83,12 @@ void copyDataToAvailableFrame(uint16_t *src, bool triggered);
 /*__attribute__( ( long_call, section(".data") ) ) */
 void copyDataToAvailableFrame2(uint16_t *src1, uint16_t *src2, size_t size, bool triggered);
 
+bool sendBytes(uint8_t *s, int len);//low level
+
 void transmitFrame(void);
+
+void waitUntilTransmissed();
+
 
 /**
  *

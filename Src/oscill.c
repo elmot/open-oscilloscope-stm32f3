@@ -14,6 +14,7 @@
 //todo init config
 //todo voltage and time values
 // todo three channels
+// todo slo_mo frames
 typedef struct {
     __IO uint32_t *div2ODR;
     uint32_t div2mask;
@@ -372,9 +373,9 @@ bool setGenFreq(char *value) {
 }
 bool setGenAmpl(char *value) {
   int i = atoi(value);
-  if(i <36 || i> 4095)
+  if (i < 1 || i > 3000)
     return false;
-  genAmpl = (uint16_t) i;
+  genAmpl = (uint16_t) (i * 4095 / 3000);
   setupGen();
   return true;
 }
@@ -387,7 +388,7 @@ COMMON_PARAM common_params[] = {
         {"trig.time=",  10, "0",    setTriggerTimeShift},//trig.time=num
 
         {"gen.shape=",  10, "M",    setGenShape},// N/-/M/T/S/J
-        {"gen.ampl=",   9,  "63",   setGenAmpl},// 136-4095
+        {"gen.ampl=",   9,  "1000", setGenAmpl},// 136-4095
         {"gen.freq=",   9,  "1000", setGenFreq},//2..10000
         {"gen.buff=",   9,  "0",    setGenBuff},// t/f
         {"",            9,  "", NULL}
@@ -416,19 +417,19 @@ void updateConfigText() {
 }
 
 bool processCommand(char buffer[]) {
+  bool ok = false;
   for (COMMON_PARAM *p = common_params; p->parser != NULL; p++) {
     if (strncmp(p->prefix, buffer, p->prefix_len) == 0) {
       char *strValue = &buffer[p->prefix_len];
       if (p->parser(strValue)) {
         strncpy(p->value, strValue, sizeof p->value);
-        updateConfigText();
-        return true;
+        ok = true;
       }
     }
   }
 
   //s.c.range=F/2
-  if (buffer[0] == 's' && buffer[1] == '.' && strncmp(&buffer[3], ".range=", 7) == 0) {
+  if (!ok && buffer[0] == 's' && buffer[1] == '.' && strncmp(&buffer[3], ".range=", 7) == 0) {
     uint8_t channelIdx = (uint8_t) (buffer[2] - 'a');
     if (channelIdx > 3) {
       return false;
@@ -439,11 +440,17 @@ bool processCommand(char buffer[]) {
     char diver = buffer[12];
     setDiv(channelIdx, diver);
     divers[channelIdx] = diver;
-    updateConfigText();
-    return true;
+    ok = true;
   }
-
-  return false;
+  if (ok) {
+    updateConfigText();
+    uint16_t head[2] = {(uint16_t) (0x8000 | (2 + configTextLen)), 'C' + 0x100 * 'N'};
+    sendBytes((uint8_t *) head, 4);
+    waitUntilTransmissed();
+    sendBytes((uint8_t *) configText, configTextLen);
+    waitUntilTransmissed();
+  }
+  return ok;
 }
 
 void setSavedParameters() {
