@@ -26,7 +26,7 @@ public class BrowserMain extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        stage.getIcons().add(new Image(BrowserMain.class.getResourceAsStream("icon.png")));
+        stage.getIcons().add(new Image(BrowserMain.class.getResourceAsStream("icon_128.png")));
         AnimationTimer frameRateMeter = new AnimationTimer() {
 
             @Override
