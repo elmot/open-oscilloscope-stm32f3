@@ -1,6 +1,5 @@
 package xyz.elmot.oscill;
 
-import com.sun.istack.internal.NotNull;
 import purejavacomm.*;
 
 import java.io.IOException;
@@ -19,7 +18,7 @@ import java.util.function.BiConsumer;
  * (c) elmot on 2.3.2017.
  */
 public class CommFacility extends Thread implements AutoCloseable {
-    public static final byte[] EMPTY_RESPONSE = {};
+    private static final byte[] EMPTY_RESPONSE = {};
     private volatile String portName;
     private BiConsumer<String, Boolean> portStatusConsumer;
     //private final int delay;

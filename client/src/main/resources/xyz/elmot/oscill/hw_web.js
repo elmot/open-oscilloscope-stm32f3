@@ -21,14 +21,23 @@ function setParam(name, value) {
     cmdQueue.unshift(name + "=" + value);
 }
 
+var interConfigCount = 0;
 function requestFrame() {
     if (oReq.readyState !== 0 && oReq.readyState !== 4) return;
-    var cmd = cmdQueue.pop() || null;
+    var cmd;
+    if (interConfigCount++ === 0) {
+        cmd = "CONF";
+    } else {
+        if (interConfigCount >= 10) {
+            interConfigCount = 0;
+        }
+        cmd = cmdQueue.pop() || null;
+        if (cmd !== null) initData();
+    }
     if (cmd !== null) {
+        showStatus(oReq.getResponseHeader("X-Comm-Error") || "");
         oReq.onload = function () {
-            initData();
-            showStatus();
-            var lines = oReq.response.slice(2).match(/[^\r\n]+/g);
+            var lines = oReq.response.slice(2).match(/[^\r\n]+/g) || [];
 
             for(var i =0; i < lines.length;i++) {
                 var pair = lines[i].split("=");
@@ -42,6 +51,7 @@ function requestFrame() {
     }
 
     oReq.onload = function () {
+        showStatus(oReq.getResponseHeader("X-Comm-Error") || "");
         var arrayBuffer = oReq.response; // Note: not oReq.responseText
         if (arrayBuffer && arrayBuffer.byteLength > 2) {
             var dView = new DataView(arrayBuffer);
@@ -66,4 +76,6 @@ function requestFrame() {
     oReq.send("");
 }
 
-setInterval(requestFrame, 10);
+function initHW() {
+    setInterval(requestFrame, 10);
+}

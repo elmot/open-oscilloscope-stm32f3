@@ -10,7 +10,6 @@
 
 // todo hw dividers
 //todo fix pre-trigger
-//todo config
 //todo voltage and time values
 // todo three channels
 // todo slo_mo frames
@@ -61,6 +60,8 @@ void clearKeyFrames();
 static void setupTrigger();
 
 void triggerEnable(ADC_HandleTypeDef *hadc);
+
+void transmitConf();
 
 void startDAC() {
   HAL_TIM_Base_Start(&htim2);
@@ -380,7 +381,7 @@ bool setGenAmpl(char *value) {
 }
 
 COMMON_PARAM common_params[] = {
-        {"t=",          2,  "M",    setTiming},//t=A...R
+        {"t=",          2,  "N",    setTiming},//t=A...R
         {"trig.type=",  10, "R",    setTriggerType},//trig.type=R/F
         {"trig.ch=",    8,  "A",    setTriggerChannel},//trig.ch=Z/A/B/C/E
         {"trig.level=", 11, "700",  setTriggerLevel},//trig.level=num
@@ -389,12 +390,12 @@ COMMON_PARAM common_params[] = {
         {"gen.shape=",  10, "M",    setGenShape},// N/-/M/T/S/J
         {"gen.ampl=",   9,  "1000", setGenAmpl},// 136-4095
         {"gen.freq=",   9,  "1000", setGenFreq},//2..10000
-        {"gen.buff=",   9,  "0",    setGenBuff},// t/f
+        {"gen.buff=",   9,  "t",    setGenBuff},// t/f
         {"",            9,  "", NULL}
 };
 
-char gains[3] = {'F', 'F', 'F'};
-char divers[3] = {'1', '1', '1'};
+char gains[3] = {'0', '0', '0'};
+char divers[3] = {'0', '0', '0'};
 
 void updateConfigText() {
   char *cPos = configText;
@@ -415,8 +416,21 @@ void updateConfigText() {
   configTextLen = cPos - configText;
 }
 
+void transmitConf() {
+  updateConfigText();
+  uint16_t head[2] = {(uint16_t) (0x8000 | (2 + configTextLen)), 'C' + 0x100 * 'N'};
+  sendBytes((uint8_t *) head, 4);
+  waitUntilTransmissed();
+  sendBytes((uint8_t *) configText, configTextLen);
+  waitUntilTransmissed();
+}
+
 bool processCommand(char buffer[]) {
   bool ok = false;
+  if (strcmp(buffer, "CONF") == 0) {
+    transmitConf();
+    return true;
+  }
   for (COMMON_PARAM *p = common_params; p->parser != NULL; p++) {
     if (strncmp(p->prefix, buffer, p->prefix_len) == 0) {
       char *strValue = &buffer[p->prefix_len];
@@ -430,25 +444,21 @@ bool processCommand(char buffer[]) {
   //s.c.range=F/2
   if (!ok && buffer[0] == 's' && buffer[1] == '.' && strncmp(&buffer[3], ".range=", 7) == 0) {
     uint8_t channelIdx = (uint8_t) (buffer[2] - 'a');
-    if (channelIdx > 3) {
-      return false;
+    if (channelIdx >= 0 && channelIdx <= 3) {
+      char gain = buffer[10];
+      gains[channelIdx] = gain;
+      setGain(channelIdx, gain);
+      char diver = buffer[12];
+      setDiv(channelIdx, diver);
+      divers[channelIdx] = diver;
+      ok = true;
     }
-    char gain = buffer[10];
-    gains[channelIdx] = gain;
-    setGain(channelIdx, gain);
-    char diver = buffer[12];
-    setDiv(channelIdx, diver);
-    divers[channelIdx] = diver;
-    ok = true;
   }
-  if (ok) {
-    updateConfigText();
-    uint16_t head[2] = {(uint16_t) (0x8000 | (2 + configTextLen)), 'C' + 0x100 * 'N'};
-    sendBytes((uint8_t *) head, 4);
-    waitUntilTransmissed();
-    sendBytes((uint8_t *) configText, configTextLen);
-    waitUntilTransmissed();
-  }
+  updateConfigText();
+  //send empty response
+  static uint16_t emptyResponse[] = {0x8002,'0' + 0x100 * '0'};
+  sendBytes((uint8_t *) emptyResponse, 4);
+  waitUntilTransmissed();
   return ok;
 }
 
@@ -503,8 +513,9 @@ void initOscilloscope() {
   frame2.prio = SENT;
   startDAC();
   setupAdc();
-  setupUsbComm();
   setSavedParameters();
+  updateConfigText();
+  setupUsbComm();
   HAL_OPAMP_Start(&hopamp1);
   setupTrigger();
 }

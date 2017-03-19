@@ -26,7 +26,8 @@ public class WebMain extends NanoHTTPD {
     private final static Map<String, Resource> staticResources = new TreeMap<>();
     private CommFacility commFacility = new CommFacility();
     private JLabel connectStatus;
-    private String connectStatusText = "Not Started";
+    private String connectionStatusText = "Not Started";
+    private boolean connectionStatusError = true;
 
     private static void registerResource(String name, String mimeType) {
         registerResource(name, name, mimeType);
@@ -72,7 +73,9 @@ public class WebMain extends NanoHTTPD {
             byte[] frame = commFacility.getResponse("FRAME");
             if (frame == null) {
                 Response response = newFixedLengthResponse(Status.NO_CONTENT, NanoHTTPD.MIME_PLAINTEXT, "");
-                response.addHeader("X-Comm-Status", connectStatusText);
+                if(connectionStatusError) {
+                    response.addHeader("X-Comm-Error", connectionStatusText);
+                }
                 return response;
             } else {
                 return newFixedLengthResponse(Status.OK, "application/binary"
@@ -87,7 +90,11 @@ public class WebMain extends NanoHTTPD {
             IOUtils.read(session.getInputStream(), bytes);
             byte[] frame = commFacility.getResponse(new String(bytes, StandardCharsets.US_ASCII));
             if(frame == null) {
-                return responseStatus(Status.NO_CONTENT);
+                Response response = responseStatus(Status.NO_CONTENT);
+                if(connectionStatusError) {
+                    response.addHeader("X-Comm-Error", connectionStatusText);
+                }
+                return response;
             }
             return newFixedLengthResponse(Status.OK, "text/plain", new ByteArrayInputStream(frame), frame.length);
         } else return responseStatus(Status.METHOD_NOT_ALLOWED);
@@ -144,13 +151,14 @@ public class WebMain extends NanoHTTPD {
 
         contentPane.add(button, new GridBagConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.NORTHWEST,
                 GridBagConstraints.HORIZONTAL, new Insets(10, 10, 10, 10), 5, 5));
-        connectStatus = new JLabel(connectStatusText);
+        connectStatus = new JLabel(connectionStatusText);
         connectStatus.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
         commFacility.setPortStatusConsumer((text, q) -> {
-                    connectStatusText = text;
+                    connectionStatusText = text;
+                    connectionStatusError = !q;
                     SwingUtilities.invokeLater(() ->
                             {
-                                connectStatus.setText(connectStatusText);
+                                connectStatus.setText(connectionStatusText);
                                 connectStatus.setForeground(q ? Color.GREEN.darker() : Color.RED.darker());
                             }
                     );

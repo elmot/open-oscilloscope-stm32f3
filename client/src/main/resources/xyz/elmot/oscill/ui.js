@@ -143,6 +143,7 @@ document.addEventListener('DOMContentLoaded', function () {
     _addListener(".wheelChange", "wheel", wheelChange);
 
     setZoom();
+    initHW();
 });
 
 function updateGuiControl(name, value) {
