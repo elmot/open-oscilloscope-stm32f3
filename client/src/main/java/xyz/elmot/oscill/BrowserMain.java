@@ -4,6 +4,7 @@ import com.sun.javafx.webkit.WebConsoleListener;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -17,12 +18,12 @@ import netscape.javascript.JSObject;
  * (c) elmot on 9.2.2017.
  */
 public class BrowserMain extends Application {
-
-    private static CommThread.Frame commThread;
+    private final static CommFacility commFacility = new CommFacility();
     private final long[] frameTimes = new long[20];
     private int frameTimeIndex = 0;
     private boolean arrayFilled = false;
     private WebEngine webEngine;
+    private Oscilloscope oscilloscope;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -49,7 +50,7 @@ public class BrowserMain extends Application {
 
         stage.setOnCloseRequest(event -> {
             try {
-                commThread.giveUp();
+                commFacility.giveUp();
                 stop();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -79,12 +80,12 @@ public class BrowserMain extends Application {
         webEngine.setOnAlert(event -> System.out.println("Alert: " + event.getData()));
         webEngine.setJavaScriptEnabled(true);
 
-        webEngine.getLoadWorker().stateProperty().addListener((ov, oldState, newState) -> {
+        webEngine.getLoadWorker().stateProperty().addListener((ObservableValue<? extends Worker.State> ov, Worker.State oldState, Worker.State newState) -> {
 
             if (newState == Worker.State.SUCCEEDED) {
-                System.out.println("READY");
                 JSObject jsobj = (JSObject) webEngine.executeScript("window");
-                jsobj.setMember("osc", new OscilloscopeBridge());
+                oscilloscope = new Oscilloscope();
+                jsobj.setMember("osc", oscilloscope);
             }
 
         });
@@ -103,15 +104,13 @@ public class BrowserMain extends Application {
 
     public static void main(String[] args) {
 
-        commThread = new CommThread.Frame("ttyACM0",
-                (text, connected) -> System.err.println(text),
-
-                2, 25);
-        commThread.start();
+        commFacility.setPortName("ttyACM0");
+        commFacility.setPortStatusConsumer(
+                (text, connected) -> System.err.println(text));
         try {
             launch(args);
         } finally {
-            commThread.giveUp();
+            commFacility.giveUp();
         }
 
     }
@@ -125,14 +124,18 @@ public class BrowserMain extends Application {
 
             JSObject dataToDraw = (JSObject) webEngine.executeScript("[]");
             try {
-                FrameData take = commThread.getQueue().take();
-                int serieIndex = take.type == FrameData.TYPE.TRIGGERED ? 1 : 0;
-                for (int i = 0; i < take.data.length; i++) {
-                    int index = i * 2 + serieIndex;
-                    dataToDraw.setSlot(index, take.data[i]);
+                byte[] frame = commFacility.getResponse("FRAME");
+                if (frame != null) {
+                    FrameData take = new FrameData(frame);
+
+                    int serieIndex = take.type == FrameData.TYPE.TRIGGERED ? 1 : 0;
+                    for (int i = 0; i < take.data.length; i++) {
+                        int index = i * 2 + serieIndex;
+                        dataToDraw.setSlot(index, take.data[i]);
+                    }
+                    JSObject jsWindow = (JSObject) webEngine.executeScript("window");
+                    jsWindow.call("drawData", dataToDraw);
                 }
-                JSObject jsWindow = (JSObject) webEngine.executeScript("window");
-                jsWindow.call("drawData", dataToDraw);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -143,23 +146,11 @@ public class BrowserMain extends Application {
         }
     }
 
-    public class OscilloscopeBridge {
-        private Object statusChange;
-
+    public class Oscilloscope {
 
         @SuppressWarnings("unused")
-        public Object getStatusChange() {
-            return statusChange;
-        }
-
-        @SuppressWarnings("unused")
-        public void setStatusChange(Object statusChange) {
-            this.statusChange = statusChange;
-        }
-
-        @SuppressWarnings("unused")
-        public void sendCommand(String name, String value) {
-            System.out.printf("%s: %s\n", name, value);
+        public void sendCommand(String cmd) {
+            System.out.println("command:" + cmd);
         }
     }
 }

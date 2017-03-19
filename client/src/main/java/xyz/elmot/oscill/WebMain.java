@@ -130,7 +130,7 @@ public class WebMain extends NanoHTTPD {
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setIconImage(Toolkit.getDefaultToolkit().getImage(WebMain.class.getResource("icon_128.png")));
 
-        JComboBox<String> portNames = new JComboBox<>(CommThread.ports());
+        JComboBox<String> portNames = new JComboBox<>(CommFacility.ports());
 
         Container contentPane = frame.getContentPane();
         contentPane.setLayout(new GridBagLayout());
@@ -175,7 +175,7 @@ public class WebMain extends NanoHTTPD {
             @Override
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
 
-                DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>(CommThread.ports());
+                DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>(CommFacility.ports());
                 model.setSelectedItem(portNames.getSelectedItem());
                 portNames.setModel(model);
             }
