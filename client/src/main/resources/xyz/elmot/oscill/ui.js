@@ -4,16 +4,16 @@ var colors = ["#226622", "#222266", "#666622", "#44FF44", "#4444FF", "#FFFF44"];
  */
 var canvasCtx = document.getElementById("canvas").getContext("2d");
 
-function showStatus(text) {
-    document.getElementById("device-info").innerHTML = text;
+function showStatus(status) {
+    document.getElementById("device-info").innerHTML = status || "";
 }
 
 function drawData(data) {
     canvasCtx.fillStyle = "#000000";
     canvasCtx.fillRect(0, 0, canvasCtx.canvas.width, canvasCtx.canvas.height);
     for (var j = 0; j < data.length; j++) {
-        var array = data[j];
-        if (array == null) continue;
+        var array = data[j] || null;
+        if (array === null) continue;
         canvasCtx.strokeStyle = colors[j];
         canvasCtx.beginPath();
         var zx = canvasCtx.canvas.width / array.length;
@@ -28,7 +28,7 @@ function drawData(data) {
     }
     canvasCtx.beginPath();
     var trigLevel = document.getElementById("trig.level");
-    if (trigLevel.value != null) {
+    if (trigLevel.value !== null) {
         var tY = canvasCtx.canvas.height * (1.0 - trigLevel.value / frameParam.h);
         canvasCtx.beginPath();
         canvasCtx.moveTo(0,tY);
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function wheelChange(event) {
         if (event.target.value) {
             var delta = event.deltaX + event.deltaY;
-            if(event.deltaMode == 0) delta = delta/10;
+            if (event.deltaMode === 0) delta = delta / 10;
             var v = event.target.value - delta;
             if (v < event.target.min) v = event.target.min;
             if (v > event.target.max) v = event.target.max;
@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function inputReset(event) {
         var elm = event.target;
         var valueElement = document.getElementById(elm.getAttribute("for"));
-        if (valueElement != null) {
+        if (valueElement !== null) {
             valueElement.value = elm.value;
             valueElement.dispatchEvent(new Event("change"))
         }
@@ -145,3 +145,6 @@ document.addEventListener('DOMContentLoaded', function () {
     setZoom();
 });
 
+function updateGuiControl(name, value) {
+    document.getElementById(name).value = value
+}

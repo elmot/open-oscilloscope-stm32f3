@@ -11,7 +11,6 @@
 // todo hw dividers
 //todo fix pre-trigger
 //todo config
-//todo init config
 //todo voltage and time values
 // todo three channels
 // todo slo_mo frames

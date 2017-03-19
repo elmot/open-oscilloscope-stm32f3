@@ -1,5 +1,6 @@
 package xyz.elmot.oscill;
 
+import com.sun.istack.internal.NotNull;
 import purejavacomm.*;
 
 import java.io.IOException;
@@ -18,6 +19,7 @@ import java.util.function.BiConsumer;
  * (c) elmot on 2.3.2017.
  */
 public class CommFacility extends Thread implements AutoCloseable {
+    public static final byte[] EMPTY_RESPONSE = {};
     private volatile String portName;
     private BiConsumer<String, Boolean> portStatusConsumer;
     //private final int delay;
@@ -130,9 +132,8 @@ public class CommFacility extends Thread implements AutoCloseable {
             }
         }
     }
-
     private byte[] doResponse(byte[] command) {
-        if (!connect()) return null;
+        if (!connect()) return EMPTY_RESPONSE;
         try {
             cmdStream.write(CRLF);
             cmdStream.write(command);
@@ -153,7 +154,7 @@ public class CommFacility extends Thread implements AutoCloseable {
         } catch (IOException e) {
             sendStatus(e.getClass().getSimpleName() + ": " + e.getMessage(), false);
             close();
-            return new byte[]{};
+            return EMPTY_RESPONSE;
         }
     }
 

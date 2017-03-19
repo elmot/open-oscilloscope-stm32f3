@@ -1,15 +1,15 @@
 var frameParam = {w: 2047, h: 4096};
 var oReq = new XMLHttpRequest();
-oReq.onerror = function (oEvent) {
-    document.getElementById("device-info").innerHTML = "<em>Communication error</em>";
+oReq.onerror = function () {
+    showStatus("<em>Communication error</em>");
 };
-oReq.ontimeout = function (oEvent) {
-    document.getElementById("device-info").innerHTML = "<em>Communication timeout</em>";
+oReq.onabort = function () {
+    showStatus("<em>Communication broken</em>");
+};
+oReq.ontimeout = function () {
+    showStatus("<em>Communication timeout</em>");
 };
 
-/**
- @type {CanvasRenderingContext2D}
- */
 var data;
 var cmdQueue = [];
 function initData() {
@@ -23,16 +23,16 @@ function setParam(name, value) {
 
 function requestFrame() {
     if (oReq.readyState !== 0 && oReq.readyState !== 4) return;
-    var cmd = cmdQueue.pop();
-    if (cmd != null) {
+    var cmd = cmdQueue.pop() || null;
+    if (cmd !== null) {
         oReq.onload = function () {
             initData();
-            document.getElementById("device-info").innerHTML = "";
+            showStatus();
             var lines = oReq.response.slice(2).match(/[^\r\n]+/g);
 
             for(var i =0; i < lines.length;i++) {
                 var pair = lines[i].split("=");
-                document.getElementById(pair[0]).value = pair[1]
+                updateGuiControl(pair[0], pair[1]);
             }
         };
         oReq.open("POST", "/cmd", true);
@@ -41,11 +41,11 @@ function requestFrame() {
         return;
     }
 
-    oReq.onload = function (oEvent) {
+    oReq.onload = function () {
         var arrayBuffer = oReq.response; // Note: not oReq.responseText
         if (arrayBuffer && arrayBuffer.byteLength > 2) {
             var dView = new DataView(arrayBuffer);
-            var signature = dView.getUint16(0, true);
+            dView.getUint16(0, true);//Signature todo take in account
             var header = dView.getUint16(2, true);
             var shortArray = new Uint16Array(arrayBuffer.byteLength / 2 - 2);
             for (var i = 0; i < shortArray.length; i++)
@@ -58,7 +58,7 @@ function requestFrame() {
                 }
                 drawData(data);
             }
-            document.getElementById("device-info").innerHTML = "";
+            showStatus("");
         }
     };
     oReq.open("POST", "/frame", true);
