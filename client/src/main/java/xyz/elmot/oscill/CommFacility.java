@@ -117,7 +117,7 @@ public class CommFacility extends Thread implements AutoCloseable {
     }
 
     @SuppressWarnings({"unused", "WeakerAccess"})
-    public synchronized byte[] getResponse(String command) {
+    public byte[] getResponse(String command) {
         if (portName == null) return null;
         if ("FRAME".equals(command)) {
             return frames.poll();

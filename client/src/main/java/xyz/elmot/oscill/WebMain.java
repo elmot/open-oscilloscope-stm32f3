@@ -71,7 +71,7 @@ public class WebMain extends NanoHTTPD {
         if ("/frame".equals(session.getUri())) {
             byte[] frame = commFacility.getResponse("FRAME");
             if (frame == null) {
-                Response response = responseStatus(Status.NO_CONTENT);
+                Response response = newFixedLengthResponse(Status.NO_CONTENT, NanoHTTPD.MIME_PLAINTEXT, "");
                 response.addHeader("X-Comm-Status", connectStatusText);
                 return response;
             } else {
