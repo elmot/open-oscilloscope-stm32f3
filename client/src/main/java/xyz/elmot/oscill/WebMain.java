@@ -86,6 +86,9 @@ public class WebMain extends NanoHTTPD {
             byte[] bytes = new byte[(int) bodySize];
             IOUtils.read(session.getInputStream(), bytes);
             byte[] frame = commFacility.getResponse(new String(bytes, StandardCharsets.US_ASCII));
+            if(frame == null) {
+                return responseStatus(Status.NO_CONTENT);
+            }
             return newFixedLengthResponse(Status.OK, "text/plain", new ByteArrayInputStream(frame), frame.length);
         } else return responseStatus(Status.METHOD_NOT_ALLOWED);
 
