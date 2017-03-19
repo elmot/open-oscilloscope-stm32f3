@@ -10,17 +10,18 @@ import static xyz.elmot.oscill.FrameData.TYPE.TRIGGERED;
 /**
  * (c) elmot on 2.3.2017.
  */
+@SuppressWarnings("WeakerAccess")
 public class FrameData {
     enum TYPE {
         NORMAL,
         TRIGGERED
     }
 
-    final int len;
-    final int channels;
-    final int bits;
-    final short[][] data;
-    final TYPE type;
+    public final int len;
+    public final int channels;
+    public final int bits;
+    public final short[][] data;
+    public final TYPE type;
 
     public static FrameData newFrameData(byte[] binary) {
         if(binary == null || binary.length == 0) return null;

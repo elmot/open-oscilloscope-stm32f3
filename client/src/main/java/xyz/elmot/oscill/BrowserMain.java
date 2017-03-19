@@ -1,14 +1,19 @@
 package xyz.elmot.oscill;
 
+import com.sun.javafx.collections.ObservableListWrapper;
 import com.sun.javafx.webkit.WebConsoleListener;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
@@ -17,6 +22,7 @@ import netscape.javascript.JSObject;
 import java.io.BufferedReader;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  * (c) elmot on 9.2.2017.
@@ -66,11 +72,23 @@ public class BrowserMain extends Application {
         stage.setTitle("Oscilloscope");
         stage.setFullScreenExitKeyCombination(KeyCombination.keyCombination("F11"));
         WebView webView = createWebView();
-        Scene scene = new Scene(webView);
+        ChoiceBox<String> ports = new ChoiceBox<>();
+        listPortsToChoiceBox(ports);
+        ports.setValue("ttyACM0");
+        ports.onShowingProperty().set(e ->
+                listPortsToChoiceBox(ports));
+        BorderPane root = new BorderPane(webView, ports, null, null, null);
+        Scene scene = new Scene(root);
         decorateStage(stage, scene);
         stage.setScene(scene);
         stage.setOnCloseRequest(event -> Platform.exit());
         stage.show();
+    }
+
+    private void listPortsToChoiceBox(ChoiceBox<String> ports) {
+        ports.setItems(
+                new ObservableListWrapper<>(Arrays.asList(CommFacility.ports())
+                ));
     }
 
     private WebView createWebView() {
@@ -160,8 +178,6 @@ public class BrowserMain extends Application {
                 byte[] frame = commFacility.getResponse("FRAME");
                 FrameData take = FrameData.newFrameData(frame);
                 if (take != null) {
-
-
                     int serieIndex = take.type == FrameData.TYPE.TRIGGERED ? 1 : 0;
                     for (int i = 0; i < take.data.length; i++) {
                         int index = i * 2 + serieIndex;
@@ -172,9 +188,8 @@ public class BrowserMain extends Application {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
+            Thread.yield();
             Platform.runLater(this);
-
 
         }
     }

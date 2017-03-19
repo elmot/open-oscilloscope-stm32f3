@@ -46,7 +46,7 @@ public class CommFacility extends Thread implements AutoCloseable {
         start();
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "WeakerAccess"})
     public void giveUp() {
         running = false;
         interrupt();
