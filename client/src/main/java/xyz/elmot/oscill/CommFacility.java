@@ -8,14 +8,17 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 
 /**
  * (c) elmot on 2.3.2017.
  */
-public class CommFacility implements AutoCloseable {
-    private String portName;
+public class CommFacility extends Thread implements AutoCloseable {
+    private volatile String portName;
     private BiConsumer<String, Boolean> portStatusConsumer;
     //private final int delay;
     private String status;
@@ -27,10 +30,56 @@ public class CommFacility implements AutoCloseable {
     private InputStream inputStream;
     private OutputStream cmdStream;
 
+    private volatile boolean running = false;
+
+    private SynchronousQueue<byte[]> cmdQueue = new SynchronousQueue<>();
+    private SynchronousQueue<byte[]> cmdRespQueue = new SynchronousQueue<>();
+    private ArrayBlockingQueue<byte[]> frames = new ArrayBlockingQueue<>(3);
+
     @SuppressWarnings("WeakerAccess")
     public CommFacility(BiConsumer<String, Boolean> portStatusConsumer) {
+        super("Com port runner");
         this.portStatusConsumer = portStatusConsumer;
         sendStatus("Not started", false);
+        setDaemon(true);
+        start();
+    }
+
+    @SuppressWarnings("unused")
+    public void giveUp() {
+        running = false;
+        interrupt();
+    }
+
+    @Override
+    public void run() {
+        running = true;
+        while (running) {
+            while (portName == null) {
+                try {
+                    synchronized (this) {
+                        wait();
+                    }
+                } catch (InterruptedException ignored) {
+                }
+            }
+            while (running && portName != null) {
+                byte[] cmd = cmdQueue.poll();
+                if (cmd == null) break;
+                byte[] response = doResponse(cmd);
+                try {
+                    cmdRespQueue.offer(response, 500, TimeUnit.MILLISECONDS);
+                    frames.clear();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            byte[] frame = doResponse("FRAME".getBytes());
+            if (frame != null)
+                frames.offer(frame);
+
+        }
+        close();
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -46,6 +95,8 @@ public class CommFacility implements AutoCloseable {
     @SuppressWarnings("WeakerAccess")
     public void setPortName(String portName) {
         this.portName = portName;
+        close();
+        interrupt();
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -66,11 +117,25 @@ public class CommFacility implements AutoCloseable {
     }
 
     @SuppressWarnings({"unused", "WeakerAccess"})
-    public byte[] getResponse(String command) {
+    public synchronized byte[] getResponse(String command) {
+        if (portName == null) return null;
+        if ("FRAME".equals(command)) {
+            return frames.poll();
+        } else {
+            try {
+                cmdQueue.offer(command.getBytes(StandardCharsets.US_ASCII), 500, TimeUnit.MILLISECONDS);
+                return cmdRespQueue.poll(500, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                throw new RuntimeException();
+            }
+        }
+    }
+
+    private byte[] doResponse(byte[] command) {
         if (!connect()) return null;
         try {
             cmdStream.write(CRLF);
-            cmdStream.write(command.getBytes(StandardCharsets.US_ASCII));
+            cmdStream.write(command);
             cmdStream.write(CRLF);
             cmdStream.flush();
             short header = read16(inputStream);
@@ -88,7 +153,7 @@ public class CommFacility implements AutoCloseable {
         } catch (IOException e) {
             sendStatus(e.getClass().getSimpleName() + ": " + e.getMessage(), false);
             close();
-            return null;
+            return new byte[]{};
         }
     }
 
