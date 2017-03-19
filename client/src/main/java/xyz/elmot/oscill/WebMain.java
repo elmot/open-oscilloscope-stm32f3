@@ -26,6 +26,7 @@ public class WebMain extends NanoHTTPD {
     private final static Map<String, Resource> staticResources = new TreeMap<>();
     private CommFacility commFacility = new CommFacility();
     private JLabel connectStatus;
+    private String connectStatusText = "Not Started";
 
     private static void registerResource(String name, String mimeType) {
         registerResource(name, name, mimeType);
@@ -71,7 +72,7 @@ public class WebMain extends NanoHTTPD {
             byte[] frame = commFacility.getResponse("FRAME");
             if (frame == null) {
                 Response response = responseStatus(Status.NO_CONTENT);
-                response.addHeader("X-Comm-Status", connectStatus.getText());
+                response.addHeader("X-Comm-Status", connectStatusText);
                 return response;
             } else {
                 return newFixedLengthResponse(Status.OK, "application/binary"
@@ -140,13 +141,18 @@ public class WebMain extends NanoHTTPD {
 
         contentPane.add(button, new GridBagConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.NORTHWEST,
                 GridBagConstraints.HORIZONTAL, new Insets(10, 10, 10, 10), 5, 5));
-        connectStatus = new JLabel("Not Started");
+        connectStatus = new JLabel(connectStatusText);
         connectStatus.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-        commFacility.setPortStatusConsumer((text, q) -> SwingUtilities.invokeLater(() -> {
-                    connectStatus.setText(text);
-                    connectStatus.setForeground(q ? Color.GREEN.darker() : Color.RED.darker());
+        commFacility.setPortStatusConsumer((text, q) -> {
+                    connectStatusText = text;
+                    SwingUtilities.invokeLater(() ->
+                            {
+                                connectStatus.setText(connectStatusText);
+                                connectStatus.setForeground(q ? Color.GREEN.darker() : Color.RED.darker());
+                            }
+                    );
                 }
-        ));
+        );
         contentPane.add(connectStatus, new GridBagConstraints(0, 2, 2, 1, 1, 0, GridBagConstraints.SOUTHWEST,
                 GridBagConstraints.HORIZONTAL, new Insets(10, 10, 10, 10), 5, 5));
         portNames.addActionListener(e -> {
@@ -187,5 +193,10 @@ public class WebMain extends NanoHTTPD {
         WebMain webMain = new WebMain();
         webMain.start();
         javax.swing.SwingUtilities.invokeLater(webMain::createAndShowGUI);
+    }
+
+    @Override
+    protected boolean useGzipWhenAccepted(Response r) {
+        return false;
     }
 }
