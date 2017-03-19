@@ -107,7 +107,6 @@ document.addEventListener('DOMContentLoaded', function () {
             var elm = document.getElementById("trig.level");
             elm.value = value;
             elm.dispatchEvent(new Event("change"));
-            console.log(event)
         }
 
         function cancelPick() {

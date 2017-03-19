@@ -2,10 +2,9 @@ package xyz.elmot.oscill;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.ShortBuffer;
-import java.util.Arrays;
 
-import static xyz.elmot.oscill.FrameData.TYPE.*;
+import static xyz.elmot.oscill.FrameData.TYPE.NORMAL;
+import static xyz.elmot.oscill.FrameData.TYPE.TRIGGERED;
 
 
 /**
@@ -23,22 +22,25 @@ public class FrameData {
     final short[][] data;
     final TYPE type;
 
-    public FrameData(byte[] binary) {
+    public static FrameData newFrameData(byte[] binary) {
+        if(binary == null || binary.length == 0) return null;
         ByteBuffer byteBuffer = ByteBuffer.wrap(binary).order(ByteOrder.LITTLE_ENDIAN);
         if (byteBuffer.get(0) != 'F' ||
                 byteBuffer.get(1) != 'R') {
-            throw new RuntimeException("Frame error");
+            System.err.println("Frame error");
+            return null;
         }
         short head = byteBuffer.getShort(2);
-        bits = 12;
-        channels = 3;
-        len = head & 0xFFF;
-        type = ((head & 0x4000) != 0) ? TRIGGERED : NORMAL;
+        int bits = 12;
+        int channels = 3;
+        int len = head & 0xFFF;
+        TYPE type = ((head & 0x4000) != 0) ? TRIGGERED : NORMAL;
         short[] row = new short[len];
         for (int i = 0; i < row.length; i++) {
             row[i] = byteBuffer.getShort(4 + i * 2);
         }
-        data = new short[][]{row};
+        short[][]data = new short[][]{row};
+        return new FrameData(type,channels,len,bits, data);
     }
 
     public FrameData(TYPE type, int channels, int len, int bits, short[][] data) {

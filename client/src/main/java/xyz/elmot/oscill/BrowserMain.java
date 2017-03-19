@@ -14,6 +14,10 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import netscape.javascript.JSObject;
 
+import java.io.BufferedReader;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+
 /**
  * (c) elmot on 9.2.2017.
  */
@@ -24,6 +28,8 @@ public class BrowserMain extends Application {
     private boolean arrayFilled = false;
     private WebEngine webEngine;
     private Oscilloscope oscilloscope;
+    private JSObject jsDataToDraw;
+    private JSObject jsWindow;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -65,7 +71,6 @@ public class BrowserMain extends Application {
         stage.setScene(scene);
         stage.setOnCloseRequest(event -> Platform.exit());
         stage.show();
-        Platform.runLater(new FxUpdate());
     }
 
     private WebView createWebView() {
@@ -83,14 +88,25 @@ public class BrowserMain extends Application {
         webEngine.getLoadWorker().stateProperty().addListener((ObservableValue<? extends Worker.State> ov, Worker.State oldState, Worker.State newState) -> {
 
             if (newState == Worker.State.SUCCEEDED) {
-                JSObject jsobj = (JSObject) webEngine.executeScript("window");
+                jsWindow = (JSObject) webEngine.executeScript("window");
                 oscilloscope = new Oscilloscope();
-                jsobj.setMember("osc", oscilloscope);
+                jsWindow.setMember("osc", oscilloscope);
+                jsDataToDraw = (JSObject) webEngine.executeScript("[]");
+                commFacility.setPortStatusConsumer(this::showStatus);
+                Platform.runLater(new FxUpdate());
             }
 
         });
         webEngine.load(BrowserMain.class.getResource("content.html").toExternalForm());
         return webView;
+    }
+
+    private void showStatus(String text, Boolean connected) {
+        printStatus(text, connected);
+        Platform.runLater(() ->
+                jsWindow.call("showStatus", connected ? "" : text)
+        );
+
     }
 
 
@@ -103,10 +119,9 @@ public class BrowserMain extends Application {
     }
 
     public static void main(String[] args) {
-
+        System.setProperty("prism.order", "sw");
         commFacility.setPortName("ttyACM0");
-        commFacility.setPortStatusConsumer(
-                (text, connected) -> System.err.println(text));
+        commFacility.setPortStatusConsumer(BrowserMain::printStatus);
         try {
             launch(args);
         } finally {
@@ -115,26 +130,44 @@ public class BrowserMain extends Application {
 
     }
 
+    private static void printStatus(String text, boolean connected) {
+        System.err.println((connected ? "CONNECTED: " : "DISCONNECTED") + text);
+    }
+
     private class FxUpdate implements Runnable {
-        FxUpdate() {
-        }
+        private int configDelayCounter = 0;
 
         @Override
         public void run() {
 
-            JSObject dataToDraw = (JSObject) webEngine.executeScript("[]");
             try {
+                if (configDelayCounter++ == 10) {
+                    configDelayCounter = 0;
+                    byte[] confs = commFacility.getResponse("CONF");
+                    if (confs != null && confs.length > 2) {
+                        String conf = new String(confs, 2, confs.length - 2, StandardCharsets.US_ASCII);
+                        try (BufferedReader reader = new BufferedReader(new StringReader(conf))) {
+                            for (String s; (s = reader.readLine()) != null; ) {
+                                int eqPos = s.indexOf('=');
+                                if (eqPos < 1) continue;
+                                String name = s.substring(0, eqPos);
+                                String value = s.substring(eqPos + 1);
+                                jsWindow.call("updateGuiControl", name, value);
+                            }
+                        }
+                    }
+                }
                 byte[] frame = commFacility.getResponse("FRAME");
-                if (frame != null) {
-                    FrameData take = new FrameData(frame);
+                FrameData take = FrameData.newFrameData(frame);
+                if (take != null) {
+
 
                     int serieIndex = take.type == FrameData.TYPE.TRIGGERED ? 1 : 0;
                     for (int i = 0; i < take.data.length; i++) {
                         int index = i * 2 + serieIndex;
-                        dataToDraw.setSlot(index, take.data[i]);
+                        jsDataToDraw.setSlot(index, take.data[i]);
                     }
-                    JSObject jsWindow = (JSObject) webEngine.executeScript("window");
-                    jsWindow.call("drawData", dataToDraw);
+                    jsWindow.call("drawData", jsDataToDraw);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -150,7 +183,7 @@ public class BrowserMain extends Application {
 
         @SuppressWarnings("unused")
         public void sendCommand(String cmd) {
-            System.out.println("command:" + cmd);
+            byte[] response = commFacility.getResponse(cmd);
         }
     }
 }
