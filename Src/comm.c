@@ -35,9 +35,9 @@ void transmitFrame() {
   uint16_t prioFlag;
   volatile FRAME *frame;
   __disable_irq();
-  if (frame1.prio > frame1.prio) {
+  if (frame1.prio > frame2.prio) {
     frame = &frame1;
-  } else if (frame2.prio > frame2.prio) {
+  } else if (frame2.prio > frame1.prio) {
     frame = &frame2;
   } else {
     frame = frame1.seq > frame2.seq ? &frame2 : &frame1;

@@ -88,6 +88,7 @@ size_t writePriority(FRAME_SEND_PRIORITY priority) {
   }
 }
 
+static volatile uint8_t frameNo = 0;
 FRAME *getFreeFrame(bool triggered) {
   FRAME *frame;
   __disable_irq();
@@ -103,6 +104,7 @@ FRAME *getFreeFrame(bool triggered) {
     __enable_irq();
     return NULL;
   }
+  frame->seq = frameNo++;
   frame->prio = BUSY;
   __enable_irq();
   return frame;

@@ -454,11 +454,22 @@ bool processCommand(char buffer[]) {
       ok = true;
     }
   }
-  updateConfigText();
-  //send empty response
-  static uint16_t emptyResponse[] = {0x8002,'0' + 0x100 * '0'};
-  sendBytes((uint8_t *) emptyResponse, 4);
-  waitUntilTransmissed();
+  if (ok) {
+    puts("\n\rCMD: ");
+    puts(buffer);
+    puts("\n\r");
+    updateConfigText();
+    if(frame1.prio!=BUSY) {
+      frame1.prio = SENT;
+    }
+    if(frame2.prio!=BUSY) {
+      frame2.prio = SENT;
+    }
+    //send empty response
+    static uint16_t emptyResponse[] = {0x8002, '0' + 0x100 * '0'};
+    sendBytes((uint8_t *) emptyResponse, 4);
+    waitUntilTransmissed();
+  }
   return ok;
 }
 

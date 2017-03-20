@@ -62,7 +62,9 @@ public class CommFacility<T> extends Thread implements AutoCloseable {
                 if (cmd == null) break;
                 byte[] response = doResponse(cmd);
                 try {
-                    cmdRespQueue.offer(response, 500, TimeUnit.MILLISECONDS);
+                    frames.clear();
+                    if(!cmdRespQueue.offer(response, 500, TimeUnit.MILLISECONDS))
+                        System.err.println("Response protocol error: " + new String(cmd));
                     frames.clear();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -115,7 +117,7 @@ public class CommFacility<T> extends Thread implements AutoCloseable {
     }
 
     @SuppressWarnings({"unused", "WeakerAccess"})
-    public synchronized T getDataResponse() {
+    public  T getDataResponse() {
         if (portName == null) return null;
         return frames.poll();
     }
@@ -179,7 +181,7 @@ public class CommFacility<T> extends Thread implements AutoCloseable {
             }
             if (oscilloscope != null) {
                 try {
-                    oscilloscope.enableReceiveTimeout(200);
+                    oscilloscope.enableReceiveTimeout(1200);
                 } catch (UnsupportedCommOperationException e) {
                     System.err.println("Timeout not supported");
                 }
