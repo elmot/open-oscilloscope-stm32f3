@@ -24,7 +24,7 @@ public class WebMain extends NanoHTTPD {
 
     private static final int PORT = 1515;
     private final static Map<String, Resource> staticResources = new TreeMap<>();
-    private CommFacility commFacility = new CommFacility();
+    private CommFacility<byte[]> commFacility = new CommFacility<>(b -> b);
     private JLabel connectStatus;
     private String connectionStatusText = "Not Started";
     private boolean connectionStatusError = true;
@@ -70,10 +70,10 @@ public class WebMain extends NanoHTTPD {
 
     private Response serveCommand(HTTPSession session) throws IOException {
         if ("/frame".equals(session.getUri())) {
-            byte[] frame = commFacility.getResponse("FRAME");
+            byte[] frame = commFacility.getDataResponse();
             if (frame == null) {
                 Response response = newFixedLengthResponse(Status.NO_CONTENT, NanoHTTPD.MIME_PLAINTEXT, "");
-                if(connectionStatusError) {
+                if (connectionStatusError) {
                     response.addHeader("X-Comm-Error", connectionStatusText);
                 }
                 return response;
@@ -88,15 +88,16 @@ public class WebMain extends NanoHTTPD {
             }
             byte[] bytes = new byte[(int) bodySize];
             IOUtils.read(session.getInputStream(), bytes);
-            byte[] frame = commFacility.getResponse(new String(bytes, StandardCharsets.US_ASCII));
-            if(frame == null) {
+            String result = commFacility.getCommandResponse(new String(bytes, StandardCharsets.US_ASCII));
+            if (result.isEmpty()) {
                 Response response = responseStatus(Status.NO_CONTENT);
-                if(connectionStatusError) {
+                if (connectionStatusError) {
                     response.addHeader("X-Comm-Error", connectionStatusText);
                 }
                 return response;
+            } else {
+                return newFixedLengthResponse(Status.OK, "text/plain", result);
             }
-            return newFixedLengthResponse(Status.OK, "text/plain", new ByteArrayInputStream(frame), frame.length);
         } else return responseStatus(Status.METHOD_NOT_ALLOWED);
 
     }

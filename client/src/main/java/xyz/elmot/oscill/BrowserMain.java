@@ -7,13 +7,11 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
-import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
@@ -21,14 +19,13 @@ import netscape.javascript.JSObject;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
  * (c) elmot on 9.2.2017.
  */
 public class BrowserMain extends Application {
-    private final static CommFacility commFacility = new CommFacility();
+    private final static CommFacility<FrameData> commFacility = new CommFacility<>(FrameData::newFrameData);
     private final long[] frameTimes = new long[20];
     private int frameTimeIndex = 0;
     private boolean arrayFilled = false;
@@ -111,6 +108,7 @@ public class BrowserMain extends Application {
                 jsWindow.setMember("osc", oscilloscope);
                 jsDataToDraw = (JSObject) webEngine.executeScript("[]");
                 commFacility.setPortStatusConsumer(this::showStatus);
+                commFacility.setPortName("ttyACM0");
                 Platform.runLater(new FxUpdate());
             }
 
@@ -138,8 +136,6 @@ public class BrowserMain extends Application {
 
     public static void main(String[] args) {
         System.setProperty("prism.order", "sw");
-        commFacility.setPortName("ttyACM0");
-        commFacility.setPortStatusConsumer(BrowserMain::printStatus);
         try {
             launch(args);
         } finally {
@@ -149,7 +145,7 @@ public class BrowserMain extends Application {
     }
 
     private static void printStatus(String text, boolean connected) {
-        System.err.println((connected ? "CONNECTED: " : "DISCONNECTED") + text);
+        System.err.println((connected ? "CONNECTED: " : "DISCONNECTED: ") + text);
     }
 
     private class FxUpdate implements Runnable {
@@ -161,27 +157,23 @@ public class BrowserMain extends Application {
             try {
                 if (configDelayCounter++ == 10) {
                     configDelayCounter = 0;
-                    byte[] confs = commFacility.getResponse("CONF");
-                    if (confs != null && confs.length > 2) {
-                        String conf = new String(confs, 2, confs.length - 2, StandardCharsets.US_ASCII);
-                        try (BufferedReader reader = new BufferedReader(new StringReader(conf))) {
-                            for (String s; (s = reader.readLine()) != null; ) {
-                                int eqPos = s.indexOf('=');
-                                if (eqPos < 1) continue;
-                                String name = s.substring(0, eqPos);
-                                String value = s.substring(eqPos + 1);
-                                jsWindow.call("updateGuiControl", name, value);
-                            }
+                    String conf = commFacility.getCommandResponse("CONF");
+                    try (BufferedReader reader = new BufferedReader(new StringReader(conf))) {
+                        for (String s; (s = reader.readLine()) != null; ) {
+                            int eqPos = s.indexOf('=');
+                            if (eqPos < 1) continue;
+                            String name = s.substring(0, eqPos);
+                            String value = s.substring(eqPos + 1);
+                            jsWindow.call("updateGuiControl", name, value);
                         }
                     }
                 }
-                byte[] frame = commFacility.getResponse("FRAME");
-                FrameData take = FrameData.newFrameData(frame);
-                if (take != null) {
-                    int serieIndex = take.type == FrameData.TYPE.TRIGGERED ? 1 : 0;
-                    for (int i = 0; i < take.data.length; i++) {
+                FrameData  frame = commFacility.getDataResponse();
+                if (frame != null) {
+                    int serieIndex = frame.type == FrameData.TYPE.TRIGGERED ? 1 : 0;
+                    for (int i = 0; i < frame.data.length; i++) {
                         int index = i * 2 + serieIndex;
-                        jsDataToDraw.setSlot(index, take.data[i]);
+                        jsDataToDraw.setSlot(index, frame.data[i]);
                     }
                     jsWindow.call("drawData", jsDataToDraw);
                 }
@@ -198,7 +190,7 @@ public class BrowserMain extends Application {
 
         @SuppressWarnings("unused")
         public void sendCommand(String cmd) {
-            byte[] response = commFacility.getResponse(cmd);
+            commFacility.getCommandResponse(cmd);
         }
     }
 }

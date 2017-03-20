@@ -13,11 +13,12 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * (c) elmot on 2.3.2017.
  */
-public class CommFacility extends Thread implements AutoCloseable {
+public class CommFacility<T> extends Thread implements AutoCloseable {
     private static final byte[] EMPTY_RESPONSE = {};
     private volatile String portName;
     private BiConsumer<String, Boolean> portStatusConsumer;
@@ -30,21 +31,13 @@ public class CommFacility extends Thread implements AutoCloseable {
     private CommPortIdentifier portIdentifier;
     private InputStream inputStream;
     private OutputStream cmdStream;
+    private final Function<byte[], T> converter;
 
     private volatile boolean running = false;
 
     private SynchronousQueue<byte[]> cmdQueue = new SynchronousQueue<>();
     private SynchronousQueue<byte[]> cmdRespQueue = new SynchronousQueue<>();
-    private ArrayBlockingQueue<byte[]> frames = new ArrayBlockingQueue<>(3);
-
-    @SuppressWarnings("WeakerAccess")
-    public CommFacility(BiConsumer<String, Boolean> portStatusConsumer) {
-        super("Com port runner");
-        this.portStatusConsumer = portStatusConsumer;
-        sendStatus("Not started", false);
-        setDaemon(true);
-        start();
-    }
+    private ArrayBlockingQueue<T> frames = new ArrayBlockingQueue<>(3);
 
     @SuppressWarnings({"unused", "WeakerAccess"})
     public void giveUp() {
@@ -75,7 +68,7 @@ public class CommFacility extends Thread implements AutoCloseable {
                     e.printStackTrace();
                 }
             }
-            byte[] frame = doResponse("FRAME".getBytes());
+            T frame = converter.apply(doResponse("FRAME".getBytes()));
             if (frame != null)
                 frames.offer(frame);
 
@@ -84,8 +77,12 @@ public class CommFacility extends Thread implements AutoCloseable {
     }
 
     @SuppressWarnings("WeakerAccess")
-    public CommFacility() {
-        this(null);
+    public CommFacility(Function<byte[], T> converter) {
+        super("Com port runner");
+        sendStatus("Not started", false);
+        setDaemon(true);
+        this.converter = converter;
+        start();
     }
 
     @SuppressWarnings("unused")
@@ -118,19 +115,25 @@ public class CommFacility extends Thread implements AutoCloseable {
     }
 
     @SuppressWarnings({"unused", "WeakerAccess"})
-    public byte[] getResponse(String command) {
+    public synchronized T getDataResponse() {
         if (portName == null) return null;
-        if ("FRAME".equals(command)) {
-            return frames.poll();
-        } else {
-            try {
-                cmdQueue.offer(command.getBytes(StandardCharsets.US_ASCII), 500, TimeUnit.MILLISECONDS);
-                return cmdRespQueue.poll(500, TimeUnit.MILLISECONDS);
-            } catch (InterruptedException e) {
-                throw new RuntimeException();
-            }
+        return frames.poll();
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public synchronized String getCommandResponse(String command) {
+        if (portName == null) return "";
+        try {
+            cmdQueue.offer(command.getBytes(StandardCharsets.US_ASCII), 500, TimeUnit.MILLISECONDS);
+            byte[] poll = cmdRespQueue.poll(500, TimeUnit.MILLISECONDS);
+            if (poll == null || poll.length <= 2) return "";
+            String s = new String(poll, 2, poll.length - 2, StandardCharsets.US_ASCII);
+            return s;
+        } catch (InterruptedException e) {
+            throw new RuntimeException();
         }
     }
+
     private byte[] doResponse(byte[] command) {
         if (!connect()) return EMPTY_RESPONSE;
         try {
