@@ -111,7 +111,7 @@ public class BrowserMain extends Application {
                 jsDataToDraw = (JSObject) webEngine.executeScript("[]");
                 commFacility.setPortStatusConsumer(this::showStatus);
                 commFacility.setPortName(PORT_NAME);
-                Platform.runLater(new FxUpdate());
+                new FxUpdate().start();
             }
 
         });
@@ -149,11 +149,11 @@ public class BrowserMain extends Application {
         System.err.println((connected ? "CONNECTED: " : "DISCONNECTED: ") + text);
     }
 
-    private class FxUpdate implements Runnable {
+    private class FxUpdate extends AnimationTimer{
         private int configDelayCounter = 0;
 
         @Override
-        public void run() {
+        public void handle(long now) {
 
             try {
                 if (configDelayCounter++ == 10) {
@@ -181,8 +181,6 @@ public class BrowserMain extends Application {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            Platform.runLater(this);
-
         }
     }
 
