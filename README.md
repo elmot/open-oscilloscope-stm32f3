@@ -14,7 +14,7 @@ A special Java application or web browser is supposed to be a PC part of the sys
 
 **! WARNING !**
 
-Read [SAFETY DISCLAIMER](DISCLAIMER.txt) before using any of materials listed here.  
+Read [SAFETY DISCLAIMER](DISCLAIMER.md) before using any of materials listed here.  
 
 ### License:
 [MIT](license.txt)
@@ -29,7 +29,7 @@ Read [SAFETY DISCLAIMER](DISCLAIMER.txt) before using any of materials listed he
  * Input impedance ~1MOhm
 
 ### Usage HOWTO
-See [USAGE.txt](USAGE.txt)
+See [USAGE.md](USAGE.md)
 
 ### Build HOWTO
 
