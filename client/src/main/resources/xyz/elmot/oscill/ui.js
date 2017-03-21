@@ -146,5 +146,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function updateGuiControl(name, value) {
-    document.getElementById(name).value = value
+    var elm = document.getElementById(name)
+    if(elm != null) elm.value = value
 }
