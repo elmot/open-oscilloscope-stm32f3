@@ -29,8 +29,18 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Map=${PROJECT_SOURCE_
 
 set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
 set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)
+set(DFU_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.dfu)
+
+set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "${HEX_FILE};${BIN_FILE};${DFU_FILE}")
 
 add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
         COMMAND ${CMAKE_OBJCOPY} -Oihex $<TARGET_FILE:${PROJECT_NAME}.elf> ${HEX_FILE}
         COMMAND ${CMAKE_OBJCOPY} -Obinary $<TARGET_FILE:${PROJECT_NAME}.elf> ${BIN_FILE}
         COMMENT "Building ${HEX_FILE} \nBuilding ${BIN_FILE}")
+
+add_custom_target(dfu dfu-tool convert dfuse ${BIN_FILE} ${DFU_FILE}
+        COMMAND dfu-tool set-address ${DFU_FILE} 8000000
+        COMMAND dfu-tool set-product ${DFU_FILE} df11
+        COMMAND dfu-tool set-vendor ${DFU_FILE} 0483
+        COMMAND dfu-tool dump ${DFU_FILE}
+        DEPENDS ${PROJECT_NAME}.elf)
