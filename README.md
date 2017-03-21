@@ -8,7 +8,13 @@ Tomasz has a bunch of ready-to-use-devices, and I have the only preliminary sche
 The main idea is to build PC-oscilloscope. Hardware is ST Microelectronics development board
 [STM32F3-DISCOVERY](http://www.st.com/web/catalog/tools/FM116/SC959/SS1532/PF254044) plus small additional board with simple protection circuits and basic voltage dividers.
 
-A special Java web server + web browser is supposed to be a PC part of the system.
+A special Java application or web browser is supposed to be a PC part of the system.
+
+## DISCLAIMER
+
+**! WARNING !**
+
+Read [SAFETY DISCLAIMER](DISCLAIMER.txt) before using any of materials listed here.  
 
 ### License:
 [MIT](license.txt)
@@ -22,35 +28,32 @@ A special Java web server + web browser is supposed to be a PC part of the syste
  * Input voltage: 0..45V uni-polar
  * Input impedance ~1MOhm
 
-### Features(Milestone 0.x):
-* Something working 
-* PC connectivity - USB + java web server + browser
+### Usage HOWTO
+See [USAGE.txt](USAGE.txt)
 
-### Features(Milestone 1):
-* PC connectivity - USB
-* Platform independent desktop (Java app+browser)
-* Minimal voltage resolution 46&mu;V
-* Internal SYNC
-* Simple signal generator 
-* 12-bit sampling
-* Channel GAIN up to x16
-* One channel
-* Up to 5M samples/sec
+### Build HOWTO
 
-### Features(Milestone 2):
-* Three channels
+#### Required tools
+* cmake 3.7.x
+* arm-none-eabi-gcc 5.4 + binutils
+* java 8
+* maven 3.3
+* *[Optional]* dfu-tool 0.8.1 
 
-### Features(Milestone 3):
-* Wifi connectivity via ESP8266 instead of USB, 
-* Virtual ground
-* Battery power
+#### Build client
+* `cd client`
+* `mvn clean install`
 
-### Features(Milestone 4):
-* One or two channels
+Build firmware
+----
+* `mkdir build`
+* `cd build`
+    * `cmake -DCMAKE_TOOLCHAIN_FILE=STM32F303xC.cmake ..`
+* `make`
+* *[Optional step]* `make dfu`
 
-### Features(Milestone X):
-* Nucleo-F303RE board support
-* External SYNC
+### Roadmap
+See [ROADMAP.md](ROADMAP.md)
 
 ### Add-on board:
 ![Schematics](shematic_v1.png)
