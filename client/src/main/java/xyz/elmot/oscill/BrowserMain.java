@@ -21,6 +21,8 @@ import java.io.BufferedReader;
 import java.io.StringReader;
 import java.util.Arrays;
 
+import static xyz.elmot.oscill.Main.PORT_NAME;
+
 /**
  * (c) elmot on 9.2.2017.
  */
@@ -71,7 +73,7 @@ public class BrowserMain extends Application {
         WebView webView = createWebView();
         ChoiceBox<String> ports = new ChoiceBox<>();
         listPortsToChoiceBox(ports);
-        ports.setValue("ttyACM0");
+        ports.setValue(PORT_NAME);
         ports.onShowingProperty().set(e ->
                 listPortsToChoiceBox(ports));
         BorderPane root = new BorderPane(webView, ports, null, null, null);
@@ -108,7 +110,7 @@ public class BrowserMain extends Application {
                 jsWindow.setMember("osc", oscilloscope);
                 jsDataToDraw = (JSObject) webEngine.executeScript("[]");
                 commFacility.setPortStatusConsumer(this::showStatus);
-                commFacility.setPortName("ttyACM0");
+                commFacility.setPortName(PORT_NAME);
                 Platform.runLater(new FxUpdate());
             }
 
@@ -135,7 +137,6 @@ public class BrowserMain extends Application {
     }
 
     public static void main(String[] args) {
-        System.setProperty("prism.order", "sw");
         try {
             launch(args);
         } finally {

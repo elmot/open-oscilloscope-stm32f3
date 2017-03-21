@@ -39,12 +39,12 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
-                    <finalName>osc-web</finalName>
+                    <finalName>osc-client</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
                     <archive>
                         <manifest>
                             <addDefaultImplementationEntries/>
-                            <mainClass>xyz.elmot.oscill.WebMain</mainClass>
+                            <mainClass>xyz.elmot.oscill.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

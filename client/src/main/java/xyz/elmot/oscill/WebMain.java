@@ -17,6 +17,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static xyz.elmot.oscill.Main.PORT_NAME;
+
 /**
  * (c) elmot on 9.3.2017.
  */
@@ -191,7 +193,7 @@ public class WebMain extends NanoHTTPD {
 
             }
         });
-        portNames.setSelectedItem("ttyACM0");
+        portNames.setSelectedItem(PORT_NAME);
         //Display the window.
         frame.pack();
         frame.setLocationByPlatform(true);
@@ -199,11 +201,15 @@ public class WebMain extends NanoHTTPD {
 
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args){
         //Schedule a job for the event-dispatching thread:
         //creating and showing this application's GUI.
         WebMain webMain = new WebMain();
-        webMain.start();
+        try {
+            webMain.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         javax.swing.SwingUtilities.invokeLater(webMain::createAndShowGUI);
     }
 
