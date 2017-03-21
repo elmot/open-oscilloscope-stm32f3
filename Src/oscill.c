@@ -455,9 +455,6 @@ bool processCommand(char buffer[]) {
     }
   }
   if (ok) {
-    puts("\n\rCMD: ");
-    puts(buffer);
-    puts("\n\r");
     updateConfigText();
     if(frame1.prio!=BUSY) {
       frame1.prio = SENT;

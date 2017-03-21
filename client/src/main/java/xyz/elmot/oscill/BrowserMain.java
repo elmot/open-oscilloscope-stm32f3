@@ -181,7 +181,6 @@ public class BrowserMain extends Application {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            Thread.yield();
             Platform.runLater(this);
 
         }
