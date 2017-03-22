@@ -17,16 +17,16 @@ var disp = {
      @type {CanvasRenderingContext2D}
      */
     cCtx: document.getElementById("canvasc").getContext("2d"),
-    f: document.createElement("canvas"),
 
     init: function () {
+        this.f = document.createElement("canvas"),
         this.fCtx = this.f.getContext("2d");
     },
 
     setZoom: function (zx, zy) {
         var width = frameParam.w * zx;
         var height = frameParam.h * zy;
-        [this.a, this.b, this.c].map(function (canvas) {
+        [this.a, this.b, this.c, this.f].map(function (canvas) {
             canvas.width = width;
             canvas.style.width = width + "px";
             canvas.height = height;
@@ -40,7 +40,7 @@ var disp = {
             this.aCtx.moveTo(0, height * i / frameParam.horGridN);
             this.aCtx.lineTo(width, height * i / frameParam.horGridN);
         }
-        for (i = 1; i < frameParam.vertGridN -1 ; i++) {
+        for (i = 1; i < frameParam.vertGridN ; i++) {
             this.aCtx.moveTo(width * i / frameParam.vertGridN, 0);
             this.aCtx.lineTo(width * i / frameParam.vertGridN, height);
         }
