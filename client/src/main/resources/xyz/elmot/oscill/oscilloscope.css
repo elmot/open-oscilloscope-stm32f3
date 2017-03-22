@@ -12,19 +12,22 @@ body {
     color: red;
     position: absolute;
     font-size: 3vh;
+    top:0;
+    z-index:1000;
 }
 
+#canvasa {
+background-color: #121;
+}
 canvas {
-    background-color: aquamarine;
+    position:absolute;
     height: 500px;
     width: 1000px;
 }
 #screen {
-    background-color: #204020;
+    background-color: #010;
     overflow: scroll;
-//    float:left;
     height: 100%;
-//    width:60%;
 }
 #controls {
     float:right;

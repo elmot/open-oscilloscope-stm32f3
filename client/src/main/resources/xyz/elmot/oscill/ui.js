@@ -1,52 +1,98 @@
-var colors = ["#226622", "#222266", "#666622", "#44FF44", "#4444FF", "#FFFF44"];
-/**
- @type {CanvasRenderingContext2D}
- */
-var canvasCtx = document.getElementById("canvas").getContext("2d");
+var colors = ["#4c4", "#44c", "#cc4", "#8f8", "#88f", "#ff8"];
+
+
+var disp = {
+    a: document.getElementById("canvasa"),
+    /**
+     @type {CanvasRenderingContext2D}
+     */
+    aCtx: document.getElementById("canvasa").getContext("2d"),
+    b: document.getElementById("canvasb"),
+    /**
+     @type {CanvasRenderingContext2D}
+     */
+    bCtx: document.getElementById("canvasb").getContext("2d"),
+    c: document.getElementById("canvasc"),
+    /**
+     @type {CanvasRenderingContext2D}
+     */
+    cCtx: document.getElementById("canvasc").getContext("2d"),
+    f: document.createElement("canvas"),
+
+    init: function () {
+        this.fCtx = this.f.getContext("2d");
+    },
+
+    setZoom: function (zx, zy) {
+        var width = frameParam.w * zx;
+        var height = frameParam.h * zy;
+        [this.a, this.b, this.c].map(function (canvas) {
+            canvas.width = width;
+            canvas.style.width = width + "px";
+            canvas.height = height;
+            canvas.style.height = height + "px";
+        });
+        this.aCtx.globalAlpha = 0.3;
+        this.aCtx.strokeStyle = "#080";
+        this.aCtx.lineWidth = 2;
+        this.aCtx.beginPath();
+        for (var i = 1; i < frameParam.horGridN; i++) {
+            this.aCtx.moveTo(0, height * i / frameParam.horGridN);
+            this.aCtx.lineTo(width, height * i / frameParam.horGridN);
+        }
+        for (i = 1; i < frameParam.vertGridN -1 ; i++) {
+            this.aCtx.moveTo(width * i / frameParam.vertGridN, 0);
+            this.aCtx.lineTo(width * i / frameParam.vertGridN, height);
+        }
+        this.aCtx.stroke();
+        this.width = width;
+        this.height = height;
+}
+};
+
 
 function showStatus(status) {
     document.getElementById("device-info").innerHTML = status || "";
 }
 
 function drawData(data) {
-    canvasCtx.fillStyle = "#000000";
-    canvasCtx.fillRect(0, 0, canvasCtx.canvas.width, canvasCtx.canvas.height);
+    disp.bCtx.clearRect(0, 0, disp.width, disp.height);
+
     for (var j = 0; j < data.length; j++) {
         var array = data[j] || null;
         if (array === null) continue;
-        canvasCtx.strokeStyle = colors[j];
-        canvasCtx.beginPath();
-        var zx = canvasCtx.canvas.width / array.length;
-        var zy = canvasCtx.canvas.height / frameParam.h;
-        //var zx = zy = 1;
-        canvasCtx.moveTo(0, zy * (frameParam.h - array[1]));
-        for (var i = 2; i < array.length; i++) {
-            canvasCtx.lineTo(i * zx, (frameParam.h - array[i]) * zy);
+        disp.bCtx.lineWidth = 2;
+        disp.bCtx.strokeStyle = colors[j];
+        disp.bCtx.beginPath();
+        var zx = (disp.width - 4) / array.length;
+        var zy = (disp.height - 4) / frameParam.h;
+        disp.bCtx.moveTo(2, zy * (frameParam.h - array[0]) - 2);
+        for (var i = 1; i < array.length; i++) {
+            disp.bCtx.lineTo(2 + i * zx, (frameParam.h - array[i]) * zy - 2);
         }
-        canvasCtx.lineWidth = 2;
-        canvasCtx.stroke();
+        disp.bCtx.stroke();
     }
-    canvasCtx.beginPath();
+}
+function drawControls()
+{
+    disp.cCtx.clearRect(0,0,disp.width,disp.height);
     var trigLevel = document.getElementById("trig.level");
     if (trigLevel.value !== null) {
-        var tY = canvasCtx.canvas.height * (1.0 - trigLevel.value / frameParam.h);
-        canvasCtx.beginPath();
-        canvasCtx.moveTo(0,tY);
-        canvasCtx.lineTo(canvasCtx.canvas.width,tY);
-        canvasCtx.lineWidth = 1;
-        canvasCtx.strokeStyle = "#606060";
-        canvasCtx.stroke();
+        var tY = disp.height * (1.0 - trigLevel.value / frameParam.h);
+        disp.cCtx.beginPath();
+        disp.cCtx.moveTo(0,tY);
+        disp.cCtx.lineTo(disp.width,tY);
+        disp.cCtx.lineWidth = 1;
+        disp.cCtx.strokeStyle = "#999";
+        disp.cCtx.stroke();
     }
 }
 
 function setZoom() {
     var zx = document.getElementById("x.zoom").value;
     var zy = document.getElementById("y.zoom").value;
-    var canvas = document.getElementById("canvas");
-    canvas.width = frameParam.w * zx;
-    canvas.style.width = canvas.width + "px";
-    canvas.height = frameParam.h * zy;
-    canvas.style.height = canvas.height + "px";
+    disp.setZoom(zx, zy);
+    drawControls();
 }
 
 function scanControls() {
@@ -107,12 +153,13 @@ document.addEventListener('DOMContentLoaded', function () {
             var elm = document.getElementById("trig.level");
             elm.value = value;
             elm.dispatchEvent(new Event("change"));
+            drawControls();
         }
 
         function cancelPick() {
             elm.classList.remove("activated");
-            canvasCtx.canvas.classList.remove("aiming");
-            canvasCtx.canvas.removeEventListener("click", verticalPickClick)
+            disp.c.classList.remove("aiming");
+            disp.c.removeEventListener("click", verticalPickClick)
         }
 
 
@@ -120,8 +167,8 @@ document.addEventListener('DOMContentLoaded', function () {
             cancelPick();
         } else {
             elm.classList.add("activated");
-            canvasCtx.canvas.classList.add("aiming");
-            canvasCtx.canvas.addEventListener("click", verticalPickClick)
+            disp.c.classList.add("aiming");
+            disp.c.addEventListener("click", verticalPickClick)
         }
     }
 
@@ -141,11 +188,13 @@ document.addEventListener('DOMContentLoaded', function () {
     _addListener(".inputReset", "click", inputReset);
     _addListener(".wheelChange", "wheel", wheelChange);
 
+    disp.init();
     setZoom();
     initHW();
 });
 
 function updateGuiControl(name, value) {
-    var elm = document.getElementById(name)
-    if(elm != null) elm.value = value
+    var elm = document.getElementById(name) || null;
+    if (elm !== null) elm.value = value
+    drawControls();
 }
