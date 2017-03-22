@@ -49,31 +49,39 @@ public class CommFacility<T> extends Thread implements AutoCloseable {
     public void run() {
         running = true;
         while (running) {
-            while (portName == null) {
-                try {
-                    synchronized (this) {
-                        wait();
+            try {
+                while (portName == null) {
+                    try {
+                        synchronized (this) {
+                            wait();
+                        }
+                    } catch (InterruptedException ignored) {
                     }
-                } catch (InterruptedException ignored) {
                 }
-            }
-            while (running && portName != null) {
-                byte[] cmd = cmdQueue.poll();
-                if (cmd == null) break;
-                byte[] response = doResponse(cmd);
-                try {
-                    frames.clear();
-                    if(!cmdRespQueue.offer(response, 500, TimeUnit.MILLISECONDS))
-                        System.err.println("Response protocol error: " + new String(cmd));
-                    frames.clear();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                while (running && portName != null) {
+                    byte[] cmd = cmdQueue.poll();
+                    if (cmd == null) break;
+                    byte[] response = doResponse(cmd);
+                    try {
+                        frames.clear();
+                        if (!cmdRespQueue.offer(response, 500, TimeUnit.MILLISECONDS))
+                            System.err.println("Response protocol error: " + new String(cmd));
+                        frames.clear();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
-            T frame = converter.apply(doResponse("FRAME".getBytes()));
-            if (frame != null)
-                frames.offer(frame);
+                T frame = converter.apply(doResponse("FRAME".getBytes()));
+                if (frame != null)
+                    frames.offer(frame);
 
+
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+                close();
+                sendStatus("Communication error",false);
+                sleepMe(500);
+            }
         }
         close();
     }
@@ -117,7 +125,7 @@ public class CommFacility<T> extends Thread implements AutoCloseable {
     }
 
     @SuppressWarnings({"unused", "WeakerAccess"})
-    public  T getDataResponse() {
+    public T getDataResponse() {
         if (portName == null) return null;
         return frames.poll();
     }

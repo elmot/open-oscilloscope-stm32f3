@@ -76,6 +76,8 @@ public class BrowserMain extends Application {
         ports.setValue(PORT_NAME);
         ports.onShowingProperty().set(e ->
                 listPortsToChoiceBox(ports));
+        ports.onActionProperty().set(value->
+                commFacility.setPortName(ports.getValue()));
         BorderPane root = new BorderPane(webView, ports, null, null, null);
         Scene scene = new Scene(root);
         decorateStage(stage, scene);
@@ -171,9 +173,9 @@ public class BrowserMain extends Application {
                 }
                 FrameData  frame = commFacility.getDataResponse();
                 if (frame != null) {
-                    int serieIndex = frame.type == FrameData.TYPE.TRIGGERED ? 1 : 0;
+                    int serieIndex = frame.type == FrameData.TYPE.TRIGGERED ? frame.data.length : 0;
                     for (int i = 0; i < frame.data.length; i++) {
-                        int index = i * 2 + serieIndex;
+                        int index = i + serieIndex;
                         jsDataToDraw.setSlot(index, frame.data[i]);
                     }
                     jsWindow.call("drawData", jsDataToDraw);
