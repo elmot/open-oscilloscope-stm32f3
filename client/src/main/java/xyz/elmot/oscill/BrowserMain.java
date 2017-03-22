@@ -30,7 +30,6 @@ public class BrowserMain extends Application {
     private final static CommFacility<FrameData> commFacility = new CommFacility<>(FrameData::newFrameData);
     private final long[] frameTimes = new long[20];
     private int frameTimeIndex = 0;
-    private boolean arrayFilled = false;
     private WebEngine webEngine;
     private Oscilloscope oscilloscope;
     private JSObject jsDataToDraw;
@@ -47,9 +46,6 @@ public class BrowserMain extends Application {
                 frameTimes[frameTimeIndex] = now;
                 frameTimeIndex = (frameTimeIndex + 1) % frameTimes.length;
                 if (frameTimeIndex == 0) {
-                    arrayFilled = true;
-                }
-                if (arrayFilled) {
                     long elapsedNanos = now - oldFrameTime;
                     long elapsedNanosPerFrame = elapsedNanos / frameTimes.length;
                     double frameRate = 1_000_000_000.0 / elapsedNanosPerFrame;
