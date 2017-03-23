@@ -24,25 +24,28 @@ var disp = {
     },
 
     setZoom: function (zx, zy) {
-        var width = frameParam.w * zx;
-        var height = frameParam.h * zy;
+        var width = Math.round(frameParam.w * zx);
+        var height = Math.round(frameParam.h * zy);
         [this.a, this.b, this.c, this.f].map(function (canvas) {
             canvas.width = width;
             canvas.style.width = width + "px";
             canvas.height = height;
             canvas.style.height = height + "px";
         });
-        this.aCtx.globalAlpha = 0.3;
+//        this.aCtx.globalAlpha = 0.3;
+        this.aCtx.setLineDash([3, 17]);
         this.aCtx.strokeStyle = "#080";
-        this.aCtx.lineWidth = 2;
+        this.aCtx.lineWidth = 1;
         this.aCtx.beginPath();
         for (var i = 1; i < frameParam.horGridN; i++) {
-            this.aCtx.moveTo(0, height * i / frameParam.horGridN);
-            this.aCtx.lineTo(width, height * i / frameParam.horGridN);
+            var y = Math.round(height * i / frameParam.horGridN);
+            this.aCtx.moveTo(0, y);
+            this.aCtx.lineTo(width, y);
         }
         for (i = 1; i < frameParam.vertGridN ; i++) {
-            this.aCtx.moveTo(width * i / frameParam.vertGridN, 0);
-            this.aCtx.lineTo(width * i / frameParam.vertGridN, height);
+            var x = Math.round(width * i / frameParam.vertGridN);
+            this.aCtx.moveTo(x, 0);
+            this.aCtx.lineTo(x, height);
         }
         this.aCtx.stroke();
         this.width = width;
@@ -76,6 +79,7 @@ function drawData(data) {
 function drawControls()
 {
     disp.cCtx.clearRect(0,0,disp.width,disp.height);
+    disp.cCtx.setLineDash([15,5]);
     var trigLevel = document.getElementById("trig.level");
     if (trigLevel.value !== null) {
         var tY = disp.height * (1.0 - trigLevel.value / frameParam.h);
@@ -195,6 +199,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function updateGuiControl(name, value) {
     var elm = document.getElementById(name) || null;
-    if (elm !== null) elm.value = value
-    drawControls();
+    if (elm !== null) {
+        elm.value = value
+        drawControls();
+   }
 }

@@ -77,5 +77,5 @@ function requestFrame() {
 }
 
 function initHW() {
-    setInterval(requestFrame, 10);
+    setInterval(requestFrame, 100);
 }
