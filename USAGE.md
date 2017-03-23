@@ -44,7 +44,7 @@ To run the client software:
 * Install JRE (Java Runtime Environment) or JDK (Java Development Kit) version 8
 * connect *right-side* USB connector to your computer
 * run the command:
-`java -jar osc-client.jar [-options] [COM port name]`
+`java -jar osc-client-fx.jar [-options] [COM port name]`
 
 Supported options:
   

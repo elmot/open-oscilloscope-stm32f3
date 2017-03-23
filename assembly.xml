@@ -20,7 +20,8 @@
         <fileSet>
             <directory>client/target</directory>
             <includes>
-                <include>osc-client.jar</include>
+                <include>osc-client-fx.jar</include>
+                <include>osc-client-web.jar</include>
             </includes>
             <outputDirectory/>
         </fileSet>

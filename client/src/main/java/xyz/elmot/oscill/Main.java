@@ -31,6 +31,6 @@ public class Main {
     }
 
     private static void printUsage() {
-        System.out.println("Usage: java[w] -jar osc-client.jar [-web] [-opengl] [-help] [portname]");
+        System.out.println("Usage: java[w] -jar osc-client-fx.jar [-web] [-opengl] [-help] [portname]");
     }
 }
