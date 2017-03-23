@@ -40,15 +40,18 @@ See [USAGE.md](USAGE.md)
 * maven 3.3
 * *[Optional]* dfu-tool 0.8.1 
 
+#### Build everything
+* `mvn clean install`
+
 #### Build client
 * `cd client`
 * `mvn clean install`
 
 Build firmware
 ----
-* `mkdir build`
-* `cd build`
-    * `cmake -DCMAKE_TOOLCHAIN_FILE=STM32F303xC.cmake ..`
+* `mkdir target`
+* `cd target`
+* `cmake -DCMAKE_TOOLCHAIN_FILE=STM32F303xC.cmake ..`
 * `make`
 * *[Optional step]* `make dfu`
 
