@@ -29,8 +29,8 @@ var disp = {
         [this.a, this.b, this.c, this.f].map(function (canvas) {
             canvas.width = width;
             canvas.style.width = width + "px";
-            canvas.height = height;
-            canvas.style.height = height + "px";
+            canvas.height = height + 20;
+            canvas.style.height = (height + 20) + "px";
         });
 //        this.aCtx.globalAlpha = 0.3;
         this.aCtx.setLineDash([3, 17]);
@@ -48,6 +48,14 @@ var disp = {
             this.aCtx.lineTo(x, height);
         }
         this.aCtx.stroke();
+
+        this.aCtx.setLineDash([]);
+        this.aCtx.beginPath();
+        this.aCtx.strokeStyle = "#FFF";
+        this.aCtx.moveTo(0, height + 1);
+        this.aCtx.lineTo(width, height + 1);
+        this.aCtx.stroke();
+
         this.width = width;
         this.height = height;
 }
@@ -67,21 +75,38 @@ function drawData(data) {
         disp.bCtx.lineWidth = 2;
         disp.bCtx.strokeStyle = colors[j];
         disp.bCtx.beginPath();
-        var zx = (disp.width - 4) / array.length;
-        var zy = (disp.height - 4) / frameParam.h;
-        disp.bCtx.moveTo(2, zy * (frameParam.h - array[0]) - 2);
+        var zx = disp.width / array.length;
+        var zy = disp.height / frameParam.h;
+        disp.bCtx.moveTo(2, zy * (frameParam.h - array[0]));
         for (var i = 1; i < array.length; i++) {
-            disp.bCtx.lineTo(2 + i * zx, (frameParam.h - array[i]) * zy - 2);
+            disp.bCtx.lineTo(i * zx, (frameParam.h - array[i]) * zy);
         }
         disp.bCtx.stroke();
     }
+}
+function updateOSD() {
+    disp.cCtx.clearRect(0, disp.height + 1, disp.width, 19);
+    var selectedTiming = document.getElementById("t").options[document.getElementById("t").selectedIndex];
+
+    var text = "T: " + selectedTiming.getAttribute("prec") + selectedTiming.getAttribute("unit");
+    disp.cCtx.font = "19px Roboto serif";
+    disp.cCtx.textBaseline = "top";
+    disp.cCtx.fillStyle = "#FFF";
+    disp.cCtx.textAlign = "left";
+    disp.cCtx.fillText(text, 0, disp.height);
+    var textMetrics = disp.cCtx.measureText(text);
+
+    selectedTiming = document.getElementById("s.a.range").options[document.getElementById("s.a.range").selectedIndex];
+    text = "A: " + selectedTiming.getAttribute("prec") + selectedTiming.getAttribute("unit");
+    disp.cCtx.fillStyle = colors[1];
+    disp.cCtx.fillText(text, textMetrics.width + 20, disp.height);
 }
 function drawControls()
 {
     disp.cCtx.clearRect(0,0,disp.width,disp.height);
     disp.cCtx.setLineDash([15,5]);
     var trigLevel = document.getElementById("trig.level");
-    if (trigLevel.value !== null) {
+    if (trigLevel.value !== null && trigLevel.value != "") {
         var tY = disp.height * (1.0 - trigLevel.value / frameParam.h);
         disp.cCtx.beginPath();
         disp.cCtx.moveTo(0,tY);
@@ -90,6 +115,7 @@ function drawControls()
         disp.cCtx.strokeStyle = "#999";
         disp.cCtx.stroke();
     }
+    updateOSD();
 }
 
 function setZoom() {
@@ -110,6 +136,7 @@ function scanControls() {
 function updateExtVisuals(elm) {
     var nodeList = document.querySelectorAll(".input-value[for='" + elm.name + "']");
     for (var i = 0; i < nodeList.length; i++) nodeList[i].innerHTML = elm.value
+    updateOSD();
 }
 document.addEventListener('DOMContentLoaded', function () {
     function _addListener(selector, event, f) {

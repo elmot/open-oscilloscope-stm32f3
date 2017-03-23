@@ -15,14 +15,14 @@
     <div id="div--s.a.range" class="flex-control channelA">
         <label for="s.a.range" class="control-title">Range A</label>
         <select name="s.a.range" id="s.a.range" class="paramInput wheelSelect">
-            <option value="F/3">80V</option>
-            <option value="F/2">45V</option>
-            <option value="F/1">15V</option>
-            <option value="F/0">3V</option>
-            <option value="0/0" selected="selected">1.5V</option>
-            <option value="1/0">750mV</option>
-            <option value="2/0">350mV</option>
-            <option value="3/0">180mV</option>
+            <option value="F/3" prec="8" unit="V">80V</option>
+            <option value="F/2" prec="4.5" unit="V">45V</option>
+            <option value="F/1" prec="0.7" unit="V">7V</option>
+            <option value="F/0" prec="0.3" unit="V">3V</option>
+            <option value="0/0" prec="150" unit="mV" selected="selected">1.5V</option>
+            <option value="1/0" prec="75" unit="mV">750mV</option>
+            <option value="2/0" prec="35" unit="mV">350mV</option>
+            <option value="3/0" prec="18" unit="mV">180mV</option>
         </select>
     </div>
 <!--
@@ -57,24 +57,24 @@
         <label for="t" class="control-title">Sampling rate</label>
 
         <select id="t" name="t" class="paramInput wheelSelect">
-            <option value="R">5MHz</option>
-            <option value="Q">2MHz</option>
-            <option value="P">1MHz</option>
-            <option value="O">500kHz</option>
-            <option value="N" selected="selected">200kHz</option>
-            <option value="M">100kHz</option>
-            <option value="L">50kHz</option>
-            <option value="K">20kHz</option>
-            <option value="J">10kHz</option>
-            <option value="I">5kHz</option>
-            <option value="H">2kHz</option>
-            <option value="G">1kHz</option>
-            <option value="F">500Hz</option>
-            <option value="E">200Hz</option>
-            <option value="D">100Hz</option>
-            <option value="C">50Hz</option>
-            <option value="B">20Hz</option>
-            <option value="A">10Hz</option>
+            <option unit="&mu;s" prec="20" value="R">5MHz</option>
+            <option unit="&mu;s" prec="50" value="Q">2MHz</option>
+            <option unit="&mu;s" prec="100" value="P">1MHz</option>
+            <option unit="&mu;s" prec="200" value="O">500kHz</option>
+            <option unit="&mu;s" prec="500" value="N" selected="selected">200kHz</option>
+            <option unit="ms" prec="1" value="M">100kHz</option>
+            <option unit="ms" prec="2" value="L">50kHz</option>
+            <option unit="ms" prec="5" value="K">20kHz</option>
+            <option unit="ms" prec="10" value="J">10kHz</option>
+            <option unit="ms" prec="20" value="I">5kHz</option>
+            <option unit="ms" prec="50" value="H">2kHz</option>
+            <option unit="ms" prec="100" value="G">1kHz</option>
+            <option unit="ms" prec="200" value="F">500Hz</option>
+            <option unit="ms" prec="500" value="E">200Hz</option>
+            <option unit="s" prec="1" value="D">100Hz</option>
+            <option unit="s" prec="2" value="C">50Hz</option>
+            <option unit="s" prec="5" value="B">20Hz</option>
+            <option unit="s" prec="10" value="A">10Hz</option>
         </select>
     </div>
     <div id="div--trig" class="flex-control trigger">
