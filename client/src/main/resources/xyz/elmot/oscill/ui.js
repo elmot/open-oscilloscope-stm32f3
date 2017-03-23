@@ -107,6 +107,10 @@ function scanControls() {
     }
 }
 
+function updateExtVisuals(elm) {
+    var nodeList = document.querySelectorAll(".input-value[for='" + elm.name + "']");
+    for (var i = 0; i < nodeList.length; i++) nodeList[i].innerHTML = elm.value
+}
 document.addEventListener('DOMContentLoaded', function () {
     function _addListener(selector, event, f) {
         var list = document.querySelectorAll(selector);
@@ -117,8 +121,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function setParamFromInput(event) {
         var elm = event.target;
-        var nodeList = document.querySelectorAll(".input-value[for='" + elm.name + "']");
-        for (var i = 0; i < nodeList.length; i++) nodeList[i].innerHTML = elm.value
+        updateExtVisuals(elm);
         setParam(elm.name, elm.value)
     }
 
@@ -199,8 +202,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function updateGuiControl(name, value) {
     var elm = document.getElementById(name) || null;
-    if (elm !== null) {
-        elm.value = value
+    if (elm !== null && elm.value !== value) {
+        elm.value = value;
         drawControls();
+        updateExtVisuals(elm);
    }
 }
