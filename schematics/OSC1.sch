@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="7.4.0">
+<eagle version="7.7.0">
 <drawing>
 <settings>
 <setting alwaysvectorfont="no"/>
@@ -4198,22 +4198,22 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <part name="C" library="wirepad" deviceset="2,54/0,8" device="" value="0.01-80V"/>
 <part name="TRIGG" library="wirepad" deviceset="2,54/0,8" device="" value="0-3V"/>
 <part name="COM" library="wirepad" deviceset="2,54/0,8" device="" value="0V"/>
-<part name="R1" library="rcl" deviceset="R-EU_" device="R1206" value="910K"/>
-<part name="R2" library="rcl" deviceset="R-EU_" device="R1206" value="910K"/>
-<part name="R3" library="rcl" deviceset="R-EU_" device="R1206" value="910K"/>
+<part name="R1" library="rcl" deviceset="R-EU_" device="R1206" value="30K"/>
+<part name="R2" library="rcl" deviceset="R-EU_" device="R1206" value="30K"/>
+<part name="R3" library="rcl" deviceset="R-EU_" device="R1206" value="30K"/>
 <part name="R4" library="rcl" deviceset="R-EU_" device="R1206" value="20K"/>
 <part name="R5" library="rcl" deviceset="R-EU_" device="R1206" value="200R"/>
-<part name="R9" library="rcl" deviceset="R-EU_" device="R1206" value="30K"/>
-<part name="R10" library="rcl" deviceset="R-EU_" device="R1206" value="68K"/>
-<part name="R11" library="rcl" deviceset="R-EU_" device="R1206" value="820K"/>
-<part name="R12" library="rcl" deviceset="R-EU_" device="R1206" value="30K"/>
-<part name="R13" library="rcl" deviceset="R-EU_" device="R1206" value="68K"/>
-<part name="R14" library="rcl" deviceset="R-EU_" device="R1206" value="820K"/>
-<part name="R15" library="rcl" deviceset="R-EU_" device="R1206" value="30K"/>
-<part name="R16" library="rcl" deviceset="R-EU_" device="R1206" value="68K"/>
-<part name="R17" library="rcl" deviceset="R-EU_" device="R1206" value="820K"/>
+<part name="R9" library="rcl" deviceset="R-EU_" device="R1206" value="3.3K"/>
+<part name="R10" library="rcl" deviceset="R-EU_" device="R1206" value="N/A"/>
+<part name="R11" library="rcl" deviceset="R-EU_" device="R1206" value="N/A"/>
+<part name="R12" library="rcl" deviceset="R-EU_" device="R1206" value="3.3K"/>
+<part name="R13" library="rcl" deviceset="R-EU_" device="R1206" value="N/A"/>
+<part name="R14" library="rcl" deviceset="R-EU_" device="R1206" value="N/A"/>
+<part name="R15" library="rcl" deviceset="R-EU_" device="R1206" value="3.3K"/>
+<part name="R16" library="rcl" deviceset="R-EU_" device="R1206" value="N/A"/>
+<part name="R17" library="rcl" deviceset="R-EU_" device="R1206" value="N/A"/>
 <part name="GND3" library="supply1" deviceset="GND" device=""/>
-<part name="R18" library="rcl" deviceset="R-EU_" device="R1206" value="20K"/>
+<part name="R18" library="rcl" deviceset="R-EU_" device="R1206" value="3.3K"/>
 <part name="GEN" library="wirepad" deviceset="2,54/0,8" device="" value="0-3V"/>
 <part name="JP1" library="pinhead" deviceset="PINHD-2X19" device="" value="STM32F3-DISCO LEFT"/>
 </parts>
@@ -4395,18 +4395,16 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <pinref part="JP1" gate="G$1" pin="23"/>
 </segment>
 </net>
-<net name="A10" class="0">
+<net name="BAD_A10" class="0">
 <segment>
 <pinref part="R17" gate="G$1" pin="1"/>
 <pinref part="R16" gate="G$1" pin="2"/>
 <wire x1="25.4" y1="137.16" x2="25.4" y2="129.54" width="0.1524" layer="91"/>
 <wire x1="40.64" y1="129.54" x2="25.4" y2="129.54" width="0.1524" layer="91"/>
 <junction x="25.4" y="129.54"/>
-<label x="33.02" y="129.54" size="1.778" layer="95"/>
 </segment>
 <segment>
 <wire x1="124.46" y1="154.94" x2="104.14" y2="154.94" width="0.1524" layer="91"/>
-<label x="119.38" y="154.94" size="1.778" layer="95"/>
 <pinref part="JP1" gate="G$1" pin="8"/>
 </segment>
 </net>
@@ -4432,20 +4430,18 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <wire x1="25.4" y1="58.42" x2="40.64" y2="58.42" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="B2" class="0">
+<net name="BAD_B2" class="0">
 <segment>
 <pinref part="R14" gate="G$1" pin="2"/>
 <wire x1="40.64" y1="149.86" x2="17.78" y2="149.86" width="0.1524" layer="91"/>
 <wire x1="17.78" y1="149.86" x2="17.78" y2="147.32" width="0.1524" layer="91"/>
-<label x="33.02" y="149.86" size="1.778" layer="95"/>
 </segment>
 <segment>
 <wire x1="124.46" y1="134.62" x2="104.14" y2="134.62" width="0.1524" layer="91"/>
-<label x="119.38" y="134.62" size="1.778" layer="95"/>
 <pinref part="JP1" gate="G$1" pin="24"/>
 </segment>
 </net>
-<net name="B10" class="0">
+<net name="BAD_B10" class="0">
 <segment>
 <pinref part="R13" gate="G$1" pin="2"/>
 <pinref part="R14" gate="G$1" pin="1"/>
@@ -4453,11 +4449,9 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <wire x1="17.78" y1="132.08" x2="17.78" y2="137.16" width="0.1524" layer="91"/>
 <wire x1="40.64" y1="132.08" x2="17.78" y2="132.08" width="0.1524" layer="91"/>
 <junction x="17.78" y="132.08"/>
-<label x="33.02" y="132.08" size="1.778" layer="95"/>
 </segment>
 <segment>
 <wire x1="124.46" y1="139.7" x2="104.14" y2="139.7" width="0.1524" layer="91"/>
-<label x="119.38" y="139.7" size="1.778" layer="95"/>
 <pinref part="JP1" gate="G$1" pin="20"/>
 </segment>
 </net>
@@ -4468,7 +4462,7 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <wire x1="-10.16" y1="83.82" x2="-2.54" y2="83.82" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="C10" class="0">
+<net name="BAD_C10" class="0">
 <segment>
 <pinref part="R11" gate="G$1" pin="1"/>
 <pinref part="R10" gate="G$1" pin="2"/>
@@ -4476,19 +4470,16 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <wire x1="10.16" y1="134.62" x2="10.16" y2="129.54" width="0.1524" layer="91"/>
 <wire x1="40.64" y1="134.62" x2="10.16" y2="134.62" width="0.1524" layer="91"/>
 <junction x="10.16" y="134.62"/>
-<label x="33.02" y="134.62" size="1.778" layer="95"/>
 </segment>
 <segment>
 <wire x1="76.2" y1="116.84" x2="96.52" y2="116.84" width="0.1524" layer="91"/>
-<label x="78.74" y="116.84" size="1.778" layer="95"/>
 <pinref part="JP1" gate="G$1" pin="37"/>
 </segment>
 </net>
-<net name="A2" class="0">
+<net name="BAD_A2" class="0">
 <segment>
 <pinref part="R17" gate="G$1" pin="2"/>
 <wire x1="40.64" y1="147.32" x2="25.4" y2="147.32" width="0.1524" layer="91"/>
-<label x="30.48" y="147.32" size="1.778" layer="95"/>
 </segment>
 <segment>
 <wire x1="124.46" y1="157.48" x2="104.14" y2="157.48" width="0.1524" layer="91"/>
@@ -4496,16 +4487,14 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <pinref part="JP1" gate="G$1" pin="6"/>
 </segment>
 </net>
-<net name="C2" class="0">
+<net name="BAD_C2" class="0">
 <segment>
 <pinref part="R11" gate="G$1" pin="2"/>
 <wire x1="40.64" y1="152.4" x2="10.16" y2="152.4" width="0.1524" layer="91"/>
 <wire x1="10.16" y1="152.4" x2="10.16" y2="147.32" width="0.1524" layer="91"/>
-<label x="30.48" y="152.4" size="1.778" layer="95"/>
 </segment>
 <segment>
 <wire x1="124.46" y1="116.84" x2="104.14" y2="116.84" width="0.1524" layer="91"/>
-<label x="119.38" y="116.84" size="1.778" layer="95"/>
 <pinref part="JP1" gate="G$1" pin="38"/>
 </segment>
 </net>
@@ -4522,7 +4511,7 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <label x="78.74" y="86.36" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
-<net name="C30" class="0">
+<net name="C10" class="0">
 <segment>
 <pinref part="R9" gate="G$1" pin="2"/>
 <pinref part="R10" gate="G$1" pin="1"/>
@@ -4538,7 +4527,7 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <pinref part="JP1" gate="G$1" pin="35"/>
 </segment>
 </net>
-<net name="B30" class="0">
+<net name="B10" class="0">
 <segment>
 <wire x1="76.2" y1="139.7" x2="96.52" y2="139.7" width="0.1524" layer="91"/>
 <label x="78.74" y="139.7" size="1.778" layer="95"/>
@@ -4554,7 +4543,7 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <label x="33.02" y="114.3" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="A30" class="0">
+<net name="A10" class="0">
 <segment>
 <pinref part="R16" gate="G$1" pin="1"/>
 <pinref part="R15" gate="G$1" pin="2"/>

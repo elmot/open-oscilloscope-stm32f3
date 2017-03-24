@@ -21,12 +21,12 @@ Read [SAFETY DISCLAIMER](DISCLAIMER.md) before using any of materials listed her
 
 ### Hardware variants
 * Naked Discovery(Nucleo)
- * _No overvoltage protection_
- * Input voltage: 0..3V uni-polar
+  * _No overvoltage protection_
+  * Input voltage: 0..3V uni-polar
 * Shield board + Discovery(Nucleo)
- * Overvoltage protection
- * Input voltage: 0..45V uni-polar
- * Input impedance ~1MOhm
+  * Overvoltage protection
+  * Input voltage: 0..30V uni-polar
+  * Max. input impedance ~33kOhm
 
 ### Usage HOWTO
 See [USAGE.md](USAGE.md)
@@ -47,8 +47,7 @@ See [USAGE.md](USAGE.md)
 * `cd client`
 * `mvn clean install`
 
-Build firmware
-----
+#### Build firmware
 * `mkdir target`
 * `cd target`
 * `cmake -DCMAKE_TOOLCHAIN_FILE=STM32F303xC.cmake ..`
