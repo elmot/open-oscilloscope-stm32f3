@@ -261,6 +261,52 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
 
 }
 
+void HAL_COMP_MspInit(COMP_HandleTypeDef* hcomp)
+{
+
+  GPIO_InitTypeDef GPIO_InitStruct;
+  if(hcomp->Instance==COMP4)
+  {
+  /* USER CODE BEGIN COMP4_MspInit 0 */
+
+  /* USER CODE END COMP4_MspInit 0 */
+  
+    /**COMP4 GPIO Configuration    
+    PE7     ------> COMP4_INP 
+    */
+    GPIO_InitStruct.Pin = OSCILLOSCOPE_EXT_SYNC_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(OSCILLOSCOPE_EXT_SYNC_GPIO_Port, &GPIO_InitStruct);
+
+  /* USER CODE BEGIN COMP4_MspInit 1 */
+
+  /* USER CODE END COMP4_MspInit 1 */
+  }
+
+}
+
+void HAL_COMP_MspDeInit(COMP_HandleTypeDef* hcomp)
+{
+
+  if(hcomp->Instance==COMP4)
+  {
+  /* USER CODE BEGIN COMP4_MspDeInit 0 */
+
+  /* USER CODE END COMP4_MspDeInit 0 */
+  
+    /**COMP4 GPIO Configuration    
+    PE7     ------> COMP4_INP 
+    */
+    HAL_GPIO_DeInit(OSCILLOSCOPE_EXT_SYNC_GPIO_Port, OSCILLOSCOPE_EXT_SYNC_Pin);
+
+  }
+  /* USER CODE BEGIN COMP4_MspDeInit 1 */
+
+  /* USER CODE END COMP4_MspDeInit 1 */
+
+}
+
 void HAL_DAC_MspInit(DAC_HandleTypeDef* hdac)
 {
 

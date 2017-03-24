@@ -58,6 +58,8 @@ DMA_HandleTypeDef hdma_adc1;
 DMA_HandleTypeDef hdma_adc3;
 DMA_HandleTypeDef hdma_adc4;
 
+COMP_HandleTypeDef hcomp4;
+
 DAC_HandleTypeDef hdac;
 DMA_HandleTypeDef hdma_dac_ch1;
 
@@ -95,6 +97,7 @@ static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_COMP4_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -193,6 +196,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_USB_DEVICE_Init();
   MX_USART1_UART_Init();
+  MX_COMP4_Init();
 
   /* USER CODE BEGIN 2 */
   {
@@ -473,6 +477,27 @@ static void MX_ADC4_Init(void)
   sConfig.OffsetNumber = ADC_OFFSET_NONE;
   sConfig.Offset = 0;
   if (HAL_ADC_ConfigChannel(&hadc4, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+}
+
+/* COMP4 init function */
+static void MX_COMP4_Init(void)
+{
+
+  hcomp4.Instance = COMP4;
+  hcomp4.Init.InvertingInput = COMP_INVERTINGINPUT_VREFINT;
+  hcomp4.Init.NonInvertingInput = COMP_NONINVERTINGINPUT_IO2;
+  hcomp4.Init.Output = COMP_OUTPUT_NONE;
+  hcomp4.Init.OutputPol = COMP_OUTPUTPOL_NONINVERTED;
+  hcomp4.Init.Hysteresis = COMP_HYSTERESIS_HIGH;
+  hcomp4.Init.BlankingSrce = COMP_BLANKINGSRCE_NONE;
+  hcomp4.Init.Mode = COMP_MODE_HIGHSPEED;
+  hcomp4.Init.WindowMode = COMP_WINDOWMODE_DISABLE;
+  hcomp4.Init.TriggerMode = COMP_TRIGGERMODE_NONE;
+  if (HAL_COMP_Init(&hcomp4) != HAL_OK)
   {
     Error_Handler();
   }
@@ -768,12 +793,6 @@ static void MX_DMA_Init(void)
         * Output
         * EVENT_OUT
         * EXTI
-     PA5   ------> SPI1_SCK
-     PA6   ------> SPI1_MISO
-     PA7   ------> SPI1_MOSI
-     PE7   ------> COMP4_INP
-     PB6   ------> I2C1_SCL
-     PB7   ------> I2C1_SDA
 */
 static void MX_GPIO_Init(void)
 {
@@ -782,8 +801,8 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOE_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOF_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
@@ -794,11 +813,10 @@ static void MX_GPIO_Init(void)
                           |LD6_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, OSCILLOSCOPE_A2_Pin|OSCILLOSCOPE_A30_Pin|OSCILLOSCOPE_A10_Pin|OSCILLOSCOPE_B10_Pin 
-                          |OSCILLOSCOPE_B30_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, OSCILLOSCOPE_A10_Pin|OSCILLOSCOPE_B10_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, OSCILLOSCOPE_B2_Pin|OSCILLOSCOPE_C30_Pin|OSCILLOSCOPE_C2_Pin|OSCILLOSCOPE_C10_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(OSCILLOSCOPE_C10_GPIO_Port, OSCILLOSCOPE_C10_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : DRDY_Pin MEMS_INT3_Pin MEMS_INT4_Pin MEMS_INT1_Pin 
                            MEMS_INT2_Pin */
@@ -819,10 +837,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : OSCILLOSCOPE_A2_Pin OSCILLOSCOPE_A30_Pin OSCILLOSCOPE_A10_Pin OSCILLOSCOPE_B10_Pin 
-                           OSCILLOSCOPE_B30_Pin */
-  GPIO_InitStruct.Pin = OSCILLOSCOPE_A2_Pin|OSCILLOSCOPE_A30_Pin|OSCILLOSCOPE_A10_Pin|OSCILLOSCOPE_B10_Pin 
-                          |OSCILLOSCOPE_B30_Pin;
+  /*Configure GPIO pins : OSCILLOSCOPE_A10_Pin OSCILLOSCOPE_B10_Pin */
+  GPIO_InitStruct.Pin = OSCILLOSCOPE_A10_Pin|OSCILLOSCOPE_B10_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
@@ -834,34 +850,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : SPI1_SCK_Pin SPI1_MISO_Pin SPI1_MISOA7_Pin */
-  GPIO_InitStruct.Pin = SPI1_SCK_Pin|SPI1_MISO_Pin|SPI1_MISOA7_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : OSCILLOSCOPE_B2_Pin OSCILLOSCOPE_C30_Pin OSCILLOSCOPE_C2_Pin OSCILLOSCOPE_C10_Pin */
-  GPIO_InitStruct.Pin = OSCILLOSCOPE_B2_Pin|OSCILLOSCOPE_C30_Pin|OSCILLOSCOPE_C2_Pin|OSCILLOSCOPE_C10_Pin;
+  /*Configure GPIO pin : OSCILLOSCOPE_C10_Pin */
+  GPIO_InitStruct.Pin = OSCILLOSCOPE_C10_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : OSCILLOSCOPE_EXT_SYNC_Pin */
-  GPIO_InitStruct.Pin = OSCILLOSCOPE_EXT_SYNC_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(OSCILLOSCOPE_EXT_SYNC_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : I2C1_SCL_Pin I2C1_SDA_Pin */
-  GPIO_InitStruct.Pin = I2C1_SCL_Pin|I2C1_SDA_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(OSCILLOSCOPE_C10_GPIO_Port, &GPIO_InitStruct);
 
 }
 

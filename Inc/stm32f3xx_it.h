@@ -45,6 +45,8 @@
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 
+void SVC_Handler(void);
+void PendSV_Handler(void);
 void SysTick_Handler(void);
 void USB_LP_CAN_RX0_IRQHandler(void);
 void DMA2_Channel3_IRQHandler(void);

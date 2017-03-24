@@ -14,12 +14,8 @@
 // todo three channels
 // todo slo_mo frames
 typedef struct {
-    __IO uint32_t *div2ODR;
-    uint32_t div2mask;
     __IO uint32_t *div10ODR;
     uint32_t div10mask;
-    __IO uint32_t *div30ODR;
-    uint32_t div30mask;
 } VoltDivBits;
 
 typedef struct {
@@ -35,19 +31,13 @@ size_t configTextLen = 0;
 
 static const VoltDivBits divBits[3] = {
         {
-                &OSCILLOSCOPE_A2_GPIO_Port->ODR, OSCILLOSCOPE_A2_Pin,
                 &OSCILLOSCOPE_A10_GPIO_Port->ODR, OSCILLOSCOPE_A10_Pin,
-                &OSCILLOSCOPE_A30_GPIO_Port->ODR, OSCILLOSCOPE_A30_Pin
         },
         {
-                &OSCILLOSCOPE_B2_GPIO_Port->ODR, OSCILLOSCOPE_B2_Pin,
                 &OSCILLOSCOPE_B10_GPIO_Port->ODR, OSCILLOSCOPE_B10_Pin,
-                &OSCILLOSCOPE_B30_GPIO_Port->ODR, OSCILLOSCOPE_B30_Pin
         },
         {
-                &OSCILLOSCOPE_C2_GPIO_Port->ODR, OSCILLOSCOPE_C2_Pin,
                 &OSCILLOSCOPE_C10_GPIO_Port->ODR, OSCILLOSCOPE_C10_Pin,
-                &OSCILLOSCOPE_C30_GPIO_Port->ODR, OSCILLOSCOPE_C30_Pin
         }
 };
 static uint16_t genDmaBuf[GEN_DMA_LENGTH];
@@ -69,27 +59,19 @@ void startDAC() {
 }
 
 void setDiv(uint8_t chIdx, char d) {
-  if (chIdx >= 0 && chIdx < 4) {
+  if (chIdx >= 0 && chIdx <= 2) {
     switch (d) {
       case '0':
-        *divBits[chIdx].div2ODR |= divBits[chIdx].div2mask;
         *divBits[chIdx].div10ODR |= divBits[chIdx].div10mask;
-        *divBits[chIdx].div30ODR |= divBits[chIdx].div30mask;
         break;
       case '1':
-        *divBits[chIdx].div2ODR &= ~divBits[chIdx].div2mask;;
         *divBits[chIdx].div10ODR |= divBits[chIdx].div10mask;
-        *divBits[chIdx].div30ODR |= divBits[chIdx].div30mask;
         break;
       case '2':
-        *divBits[chIdx].div2ODR |= divBits[chIdx].div2mask;
         *divBits[chIdx].div10ODR &= ~divBits[chIdx].div10mask;
-        *divBits[chIdx].div30ODR |= divBits[chIdx].div30mask;
         break;
       default:
-        *divBits[chIdx].div2ODR |= divBits[chIdx].div2mask;
         *divBits[chIdx].div10ODR |= divBits[chIdx].div10mask;
-        *divBits[chIdx].div30ODR &= ~divBits[chIdx].div30mask;
         break;
     }
   }
@@ -444,7 +426,7 @@ bool processCommand(char buffer[]) {
   //s.c.range=F/2
   if (!ok && buffer[0] == 's' && buffer[1] == '.' && strncmp(&buffer[3], ".range=", 7) == 0) {
     uint8_t channelIdx = (uint8_t) (buffer[2] - 'a');
-    if (channelIdx >= 0 && channelIdx <= 3) {
+    if (channelIdx >= 0 && channelIdx <= 2) {
       char gain = buffer[10];
       gains[channelIdx] = gain;
       setGain(channelIdx, gain);
