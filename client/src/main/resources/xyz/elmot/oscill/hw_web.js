@@ -37,7 +37,7 @@ function requestFrame() {
     if (cmd !== null) {
         showStatus(oReq.getResponseHeader("X-Comm-Error") || "");
         oReq.onload = function () {
-            var lines = oReq.response.slice(2).match(/[^\r\n]+/g) || [];
+            var lines = oReq.response.match(/[^\r\n]+/g) || [];
 
             for(var i =0; i < lines.length;i++) {
                 var pair = lines[i].split("=");

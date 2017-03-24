@@ -96,8 +96,13 @@ function updateOSD() {
     disp.cCtx.fillText(text, 0, disp.height);
     var textMetrics = disp.cCtx.measureText(text);
 
-    selectedTiming = document.getElementById("s.a.range").options[document.getElementById("s.a.range").selectedIndex];
-    text = "A: " + selectedTiming.getAttribute("prec") + selectedTiming.getAttribute("unit");
+    selectedTiming = document.getElementById("s.a.range").options[document.getElementById("s.a.range").selectedIndex] || null;
+    if(selectedTiming !== null)
+    {
+        text = "A: " + selectedTiming.getAttribute("prec") + selectedTiming.getAttribute("unit");
+    } else {
+        text="A: ???";
+    }
     disp.cCtx.fillStyle = colors[1];
     disp.cCtx.fillText(text, textMetrics.width + 20, disp.height);
 }
@@ -182,8 +187,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function verticalPickClick(event) {
             cancelPick();
-            var value = frameParam.h * (1.0 - event.offsetY / event.target.offsetHeight);
-            value = Math.floor(value);
+            var value = frameParam.h * (1.0 - event.offsetY / disp.height );
+            value = Math.max(0,Math.floor(value));
             var elm = document.getElementById("trig.level");
             elm.value = value;
             elm.dispatchEvent(new Event("change"));
