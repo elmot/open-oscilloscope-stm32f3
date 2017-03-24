@@ -60,19 +60,10 @@ void startDAC() {
 
 void setDiv(uint8_t chIdx, char d) {
   if (chIdx >= 0 && chIdx <= 2) {
-    switch (d) {
-      case '0':
-        *divBits[chIdx].div10ODR |= divBits[chIdx].div10mask;
-        break;
-      case '1':
-        *divBits[chIdx].div10ODR |= divBits[chIdx].div10mask;
-        break;
-      case '2':
-        *divBits[chIdx].div10ODR &= ~divBits[chIdx].div10mask;
-        break;
-      default:
-        *divBits[chIdx].div10ODR |= divBits[chIdx].div10mask;
-        break;
+    if(d=='0') {//do not divide
+      *divBits[chIdx].div10ODR |= divBits[chIdx].div10mask;
+    } else {//divide
+      *divBits[chIdx].div10ODR &= ~divBits[chIdx].div10mask;
     }
   }
   clearKeyFrames();
@@ -338,7 +329,7 @@ bool setGenShape(char *sShape) {
 }
 
 bool setGenBuff(char *buff) {
-  if(*buff != 't' || *buff != 'f')
+  if(*buff != 't' && *buff != 'f')
     return false;
   genBuff = *buff;
   setupGen();
@@ -376,8 +367,8 @@ COMMON_PARAM common_params[] = {
         {"",            9,  "", NULL}
 };
 
-char gains[3] = {'0', '0', '0'};
-char divers[3] = {'0', '0', '0'};
+char gains[3] = {'1', '1', '1'};
+char divers[3] = {'1', '1', '1'};
 
 void updateConfigText() {
   char *cPos = configText;
@@ -499,9 +490,11 @@ void setupAdc() {
 }
 
 void initOscilloscope() {
+  HAL_ADCEx_Calibration_Start(&hadc1,ADC_SINGLE_ENDED);
   frame1.prio = SENT;
   frame2.prio = SENT;
   startDAC();
+  HAL_ADC_PollForConversion(&hadc1, 2000);
   setupAdc();
   setSavedParameters();
   updateConfigText();
