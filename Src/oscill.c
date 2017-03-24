@@ -363,7 +363,7 @@ COMMON_PARAM common_params[] = {
         {"gen.shape=",  10, "M",    setGenShape},// N/-/M/T/S/J
         {"gen.ampl=",   9,  "1000", setGenAmpl},// 136-4095
         {"gen.freq=",   9,  "1000", setGenFreq},//2..10000
-        {"gen.buff=",   9,  "t",    setGenBuff},// t/f
+        {"gen.buff=",   9,  "f",    setGenBuff},// t/f
         {"",            9,  "", NULL}
 };
 
