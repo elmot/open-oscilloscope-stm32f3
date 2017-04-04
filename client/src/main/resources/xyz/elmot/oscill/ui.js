@@ -174,32 +174,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
     }
 
+
+    function verticalPickClick(event) {
+        var value = frameParam.h * (1.0 - event.offsetY / disp.height );
+        value = Math.max(0,Math.floor(value));
+        var elm = document.getElementById("trig.level");
+        elm.value = value;
+        elm.dispatchEvent(new Event("change"));
+        drawControls();
+    }
+
     function pickVerticalTrigger(event) {
         var elm = event.target;
 
-        function verticalPickClick(event) {
-            cancelPick();
-            var value = frameParam.h * (1.0 - event.offsetY / disp.height );
-            value = Math.max(0,Math.floor(value));
-            var elm = document.getElementById("trig.level");
-            elm.value = value;
-            elm.dispatchEvent(new Event("change"));
-            drawControls();
-        }
-
-        function cancelPick() {
+        if (elm.classList.contains("activated")) {
             elm.classList.remove("activated");
             disp.c.classList.remove("aiming");
-            disp.c.removeEventListener("click", verticalPickClick)
-        }
-
-
-        if (elm.classList.contains("activated")) {
-            cancelPick();
+            disp.c.removeEventListener("click", verticalPickClick, true)
         } else {
             elm.classList.add("activated");
             disp.c.classList.add("aiming");
-            disp.c.addEventListener("click", verticalPickClick)
+            disp.c.addEventListener("click", verticalPickClick, true)
         }
     }
 
@@ -216,6 +211,7 @@ document.addEventListener('DOMContentLoaded', function () {
     _addListener(".paramScreen", "change", setZoom);
     _addListener(".wheelSelect", "wheel", wheelSelect);
     _addListener(".vertical-picker", "click", pickVerticalTrigger);
+    // _addListener(".measurement-picker", "click", pickMeasurer); todo unblocks
     _addListener(".inputReset", "click", inputReset);
     _addListener(".wheelChange", "wheel", wheelChange);
 
