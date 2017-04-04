@@ -85,33 +85,25 @@ function drawData(data) {
     }
 }
 function updateOSD() {
-    disp.cCtx.clearRect(0, disp.height + 1, disp.width, 19);
     var selectedTiming = document.getElementById("t").options[document.getElementById("t").selectedIndex];
 
     var text = "T: " + selectedTiming.getAttribute("prec") + selectedTiming.getAttribute("unit");
-    disp.cCtx.font = "19px Roboto serif";
-    disp.cCtx.textBaseline = "top";
-    disp.cCtx.fillStyle = "#FFF";
-    disp.cCtx.textAlign = "left";
-    disp.cCtx.fillText(text, 0, disp.height);
-    var textMetrics = disp.cCtx.measureText(text);
-
-    selectedTiming = document.getElementById("s.a.range").options[document.getElementById("s.a.range").selectedIndex] || null;
+    document.getElementById("t-text").innerHTML = text;
+    var range = document.getElementById("s.a.range").options[document.getElementById("s.a.range").selectedIndex] || null;
     if(selectedTiming !== null)
     {
-        text = "A: " + selectedTiming.getAttribute("prec") + selectedTiming.getAttribute("unit");
+        text = "A: " + range.getAttribute("prec") + range.getAttribute("unit");
     } else {
         text="A: ???";
     }
-    disp.cCtx.fillStyle = colors[1];
-    disp.cCtx.fillText(text, textMetrics.width + 20, disp.height);
+    document.getElementById("s-a-text").innerHTML = text
 }
 function drawControls()
 {
     disp.cCtx.clearRect(0,0,disp.width,disp.height);
     disp.cCtx.setLineDash([15,5]);
     var trigLevel = document.getElementById("trig.level");
-    if (trigLevel.value !== null && trigLevel.value != "") {
+    if (trigLevel.value !== null && trigLevel.value !== "") {
         var tY = disp.height * (1.0 - trigLevel.value / frameParam.h);
         disp.cCtx.beginPath();
         disp.cCtx.moveTo(0,tY);
@@ -182,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     }
 
-    function pickVertical(event) {
+    function pickVerticalTrigger(event) {
         var elm = event.target;
 
         function verticalPickClick(event) {
@@ -223,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function () {
     _addListener(".paramInput", "change", setParamFromInput);
     _addListener(".paramScreen", "change", setZoom);
     _addListener(".wheelSelect", "wheel", wheelSelect);
-    _addListener(".vertical-picker", "click", pickVertical);
+    _addListener(".vertical-picker", "click", pickVerticalTrigger);
     _addListener(".inputReset", "click", inputReset);
     _addListener(".wheelChange", "wheel", wheelChange);
 

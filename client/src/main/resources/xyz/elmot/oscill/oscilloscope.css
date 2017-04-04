@@ -113,3 +113,11 @@ button {
 .screen {
     background-color:#FFE
 }
+
+#s-a-text {
+    width: 50%;
+    color: #484;
+}
+#t-text{
+    width: 50%;
+}
