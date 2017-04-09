@@ -1,36 +1,41 @@
-var colors = ["#4c4", "#44c", "#cc4", "#8f8", "#88f", "#ff8"];
-
+var colors = ["#4c4", "#8f8", "#44c", "#88f", "#cc4", "#ff8"];
+var _e = function (id) {
+    return document.getElementById(id)
+};
+var _et = function (id,text) {
+    _e(id).innerHTML = text;
+};
 
 var disp = {
-    a: document.getElementById("canvasa"),
+    a: _e("canvasa"),
     /**
      @type {CanvasRenderingContext2D}
      */
-    aCtx: document.getElementById("canvasa").getContext("2d"),
-    b: document.getElementById("canvasb"),
+    aCtx: _e("canvasa").getContext("2d"),
+    b: _e("canvasb"),
     /**
      @type {CanvasRenderingContext2D}
      */
-    bCtx: document.getElementById("canvasb").getContext("2d"),
-    c: document.getElementById("canvasc"),
+    bCtx: _e("canvasb").getContext("2d"),
+    c: _e("canvasc"),
     /**
      @type {CanvasRenderingContext2D}
      */
-    cCtx: document.getElementById("canvasc").getContext("2d"),
+    cCtx: _e("canvasc").getContext("2d"),
 
     init: function () {
-        this.f = document.createElement("canvas"),
+        this.f = document.createElement("canvas");
         this.fCtx = this.f.getContext("2d");
     },
 
     setZoom: function (zx, zy) {
-        var width = Math.round(frameParam.w * zx);
-        var height = Math.round(frameParam.h * zy);
+        var w = Math.round(frameParam.w * zx);
+        var h = Math.round(frameParam.h * zy);
         [this.a, this.b, this.c, this.f].map(function (canvas) {
-            canvas.width = width;
-            canvas.style.width = width + "px";
-            canvas.height = height + 20;
-            canvas.style.height = (height + 20) + "px";
+            canvas.width = w;
+            canvas.style.width = w + "px";
+            canvas.height = h + 20;
+            canvas.style.height = (h + 20) + "px";
         });
 //        this.aCtx.globalAlpha = 0.3;
         this.aCtx.setLineDash([3, 17]);
@@ -38,36 +43,36 @@ var disp = {
         this.aCtx.lineWidth = 1;
         this.aCtx.beginPath();
         for (var i = 1; i < frameParam.horGridN; i++) {
-            var y = Math.round(height * i / frameParam.horGridN);
+            var y = Math.round(h * i / frameParam.horGridN);
             this.aCtx.moveTo(0, y);
-            this.aCtx.lineTo(width, y);
+            this.aCtx.lineTo(w, y);
         }
-        for (i = 1; i < frameParam.vertGridN ; i++) {
-            var x = Math.round(width * i / frameParam.vertGridN);
+        for (i = 1; i < frameParam.vertGridN; i++) {
+            var x = Math.round(w * i / frameParam.vertGridN);
             this.aCtx.moveTo(x, 0);
-            this.aCtx.lineTo(x, height);
+            this.aCtx.lineTo(x, h);
         }
         this.aCtx.stroke();
 
         this.aCtx.setLineDash([]);
         this.aCtx.beginPath();
         this.aCtx.strokeStyle = "#FFF";
-        this.aCtx.moveTo(0, height + 1);
-        this.aCtx.lineTo(width, height + 1);
+        this.aCtx.moveTo(0, h + 1);
+        this.aCtx.lineTo(w, h + 1);
         this.aCtx.stroke();
 
-        this.width = width;
-        this.height = height;
-}
+        this.w = w;
+        this.h = h;
+    }
 };
 
 
 function showStatus(status) {
-    document.getElementById("device-info").innerHTML = status || "";
+    _et("device-info", status || "");
 }
 
 function drawData(data) {
-    disp.bCtx.clearRect(0, 0, disp.width, disp.height);
+    disp.bCtx.clearRect(0, 0, disp.w, disp.h);
 
     for (var j = 0; j < data.length; j++) {
         var array = data[j] || null;
@@ -75,8 +80,8 @@ function drawData(data) {
         disp.bCtx.lineWidth = 2;
         disp.bCtx.strokeStyle = colors[j];
         disp.bCtx.beginPath();
-        var zx = disp.width / array.length;
-        var zy = disp.height / frameParam.h;
+        var zx = disp.w/ array.length;
+        var zy = disp.h / frameParam.h;
         disp.bCtx.moveTo(2, zy * (frameParam.h - array[0]));
         for (var i = 1; i < array.length; i++) {
             disp.bCtx.lineTo(i * zx, (frameParam.h - array[i]) * zy);
@@ -85,29 +90,64 @@ function drawData(data) {
     }
 }
 function updateOSD() {
-    var selectedTiming = document.getElementById("t").options[document.getElementById("t").selectedIndex];
+    var selectedTiming = _e("t").options[_e("t").selectedIndex];
 
-    var text = "T: " + selectedTiming.getAttribute("prec") + selectedTiming.getAttribute("unit");
-    document.getElementById("t-text").innerHTML = text;
-    var range = document.getElementById("s.a.range").options[document.getElementById("s.a.range").selectedIndex] || null;
-    if(selectedTiming !== null)
-    {
-        text = "A: " + range.getAttribute("prec") + range.getAttribute("unit");
+    var prec = selectedTiming.getAttribute("prec");
+    var unit = selectedTiming.getAttribute("unit");
+    var text = "T: " + prec + unit;
+    _et("t-text",text);
+
+    if (points[0] !== null && points[1] !== null) {
+        text = "&Delta;T: " +
+            (Math.abs(points[1].x - points[0].x) / 100.0 * parseFloat(prec)).toPrecision(4)
+            + unit;
+        _et("d-t-text", text);
+    } else _et("d-t-text","&Delta;T: ----");
+
+    var range = _e("s.a.range").options[_e("s.a.range").selectedIndex] || null;
+    var deltaText = "&Delta;A: ----";
+    if (range !== null) {
+        prec = range.getAttribute("prec");
+        unit = range.getAttribute("unit");
+        text = "A: " + prec + unit;
+        if (points[0] !== null && points[1] !== null) {
+            deltaText = "&Delta;A: " +
+                (Math.abs(points[1].y - points[0].y) / frameParam.h * 10.0 * parseFloat(prec))
+                    .toPrecision(4) + unit;
+        }
+
     } else {
-        text="A: ???";
+        text = "A: ----";
     }
-    document.getElementById("s-a-text").innerHTML = text
+    _et("s-a-text", text);
+    _et("d-a-text", deltaText);
+    disp.cCtx.beginPath();
+    disp.cCtx.strokeStyle = "#AAA";
+    disp.cCtx.lineWidth = 1;
+    disp.cCtx.setLineDash([5, 10]);
+    for (var i = 0; i < 2; i++) {
+        if (points[i] !== null) {
+            var x = disp.w * points[i].x / frameParam.w;
+            var y = disp.h - disp.h * points[i].y / frameParam.h;
+            disp.cCtx.moveTo(x, 0);
+            disp.cCtx.lineTo(x, disp.h);
+            disp.cCtx.moveTo(0, y);
+            disp.cCtx.lineTo(disp.w, y);
+        }
+
+    }
+    disp.cCtx.stroke();
 }
-function drawControls()
-{
-    disp.cCtx.clearRect(0,0,disp.width,disp.height);
-    disp.cCtx.setLineDash([15,5]);
-    var trigLevel = document.getElementById("trig.level");
+
+function drawControls() {
+    disp.cCtx.clearRect(0, 0, disp.w, disp.h);
+    disp.cCtx.setLineDash([15, 5]);
+    var trigLevel = _e("trig.level");
     if (trigLevel.value !== null && trigLevel.value !== "") {
-        var tY = disp.height * (1.0 - trigLevel.value / frameParam.h);
+        var tY = disp.h * (1.0 - trigLevel.value / frameParam.h);
         disp.cCtx.beginPath();
-        disp.cCtx.moveTo(0,tY);
-        disp.cCtx.lineTo(disp.width,tY);
+        disp.cCtx.moveTo(0, tY);
+        disp.cCtx.lineTo(disp.w, tY);
         disp.cCtx.lineWidth = 1;
         disp.cCtx.strokeStyle = "#999";
         disp.cCtx.stroke();
@@ -116,8 +156,8 @@ function drawControls()
 }
 
 function setZoom() {
-    var zx = document.getElementById("x.zoom").value;
-    var zy = document.getElementById("y.zoom").value;
+    var zx = _e("x.zoom").value;
+    var zy = _e("y.zoom").value;
     disp.setZoom(zx, zy);
     drawControls();
 }
@@ -175,32 +215,53 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    function verticalPickClick(event) {
-        var value = frameParam.h * (1.0 - event.offsetY / disp.height );
-        value = Math.max(0,Math.floor(value));
-        var elm = document.getElementById("trig.level");
-        elm.value = value;
-        elm.dispatchEvent(new Event("change"));
+    function pickClick(event) {
+        var valueY = frameParam.h * (1.0 - event.offsetY / disp.h);
+        valueY = Math.max(0, Math.floor(valueY));
+
+        var valueX = frameParam.w * (event.offsetX / disp.w);
+        valueX = Math.max(0, Math.floor(valueX));
+
+        var activatedButtons = document.getElementsByClassName("button-activated");
+        if (activatedButtons.length === 0) return;
+        switch (activatedButtons[0].id) {
+            case "trig.level":
+                var elm = _e("trig.level");
+                elm.value = valueY;
+                elm.dispatchEvent(new Event("change"));
+                break;
+            case "point-1":
+                measure(0, valueX, valueY);
+                break;
+            case "point-2":
+                measure(1, valueX, valueY);
+                break;
+        }
         drawControls();
     }
 
-    function pickVerticalTrigger(event) {
+    function commonPicker(event) {
         var elm = event.target;
 
-        if (elm.classList.contains("activated")) {
-            elm.classList.remove("activated");
+        var activated = elm.classList.contains("button-activated");
+        var allActivated = document.getElementsByClassName("button-activated");
+        for (var i = 0; i < allActivated.length; i++) {
+            allActivated[i].classList.remove("button-activated");
+        }
+        if (activated) {
             disp.c.classList.remove("aiming");
-            disp.c.removeEventListener("click", verticalPickClick, true)
+            disp.c.removeEventListener("click", pickClick, true)
         } else {
-            elm.classList.add("activated");
+            elm.classList.add("button-activated");
             disp.c.classList.add("aiming");
-            disp.c.addEventListener("click", verticalPickClick, true)
+            disp.c.addEventListener("click", pickClick, true)
         }
     }
 
+
     function inputReset(event) {
         var elm = event.target;
-        var valueElement = document.getElementById(elm.getAttribute("for"));
+        var valueElement = _e(elm.getAttribute("for"));
         if (valueElement !== null) {
             valueElement.value = elm.value;
             valueElement.dispatchEvent(new Event("change"))
@@ -210,8 +271,8 @@ document.addEventListener('DOMContentLoaded', function () {
     _addListener(".paramInput", "change", setParamFromInput);
     _addListener(".paramScreen", "change", setZoom);
     _addListener(".wheelSelect", "wheel", wheelSelect);
-    _addListener(".vertical-picker", "click", pickVerticalTrigger);
-    // _addListener(".measurement-picker", "click", pickMeasurer); todo unblocks
+    _addListener(".vertical-picker", "click", commonPicker);
+    _addListener(".measurement-picker", "click", commonPicker);
     _addListener(".inputReset", "click", inputReset);
     _addListener(".wheelChange", "wheel", wheelChange);
 
@@ -221,10 +282,16 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function updateGuiControl(name, value) {
-    var elm = document.getElementById(name) || null;
+    var elm = _e(name) || null;
     if (elm !== null && elm.value !== value) {
         elm.value = value;
         drawControls();
         updateExtVisuals(elm);
-   }
+    }
+}
+
+var points = [null, null];
+function measure(number, valueX, valueY) {
+    points[number] = {x: valueX, y: valueY};
+    updateOSD();
 }

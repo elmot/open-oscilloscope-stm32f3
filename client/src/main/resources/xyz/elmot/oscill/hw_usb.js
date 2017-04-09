@@ -1,7 +1,7 @@
 var usbConnection = null;
 var openDevice = null;
 var cmdQueue = [];
-var frameParam = {w: 2047, h: 4096};
+var frameParam = {w: 1400, h: 4096};
 var encoder = new TextEncoder();
 
 /**

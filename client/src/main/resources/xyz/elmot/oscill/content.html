@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<!--TODO measurements-->
 <!--TODO snap mode-->
 <!--TODO control update postpone-->
-<!--TODO units-->
 <!--TODO export -->
+<!--TODO fix vertical units-->
+<!--TODO remove bottom stripe -->
 <html>
 <head>
     <title>STM32F3 Oscilloscope</title>
@@ -204,7 +204,11 @@
         <div class="control-title">Measurements</div>
         <span id="s-a-text">?</span>
         <span id="t-text">?</span>
-        <button>&oplus;</button>
+        <button class="measurement-picker" id="point-1" accesskey="A">&oplus; 1</button>
+        <button class="measurement-picker" id="point-2" accesskey="B">&oplus; 2</button>
+        <hr/>
+        <span id="d-a-text">&Delta;A: ----</span>
+        <span id="d-t-text">&Delta;T: ----</span>
     </div>
 
 </div>

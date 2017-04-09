@@ -1,4 +1,4 @@
-var frameParam = {w: 2047, h: 4096, vertGridN: 14, horGridN: 10};
+var frameParam = {w: 1400, h: 4096, vertGridN: 14, horGridN: 10};
 
 /**
  @type {CanvasRenderingContext2D}
