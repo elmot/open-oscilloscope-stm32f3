@@ -22,7 +22,7 @@ include_directories(Middlewares/ST/STM32_USB_Device_Library/Core/Inc)
 include_directories(Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc)
 
 
-add_executable(${PROJECT_NAME}.elf ${USER_SOURCES} ${HAL_SOURCES} ${USB_SOURCES} ${LINKER_SCRIPT} Src/oscill.c Src/sine.c Inc/my_gpio.h)
+add_executable(${PROJECT_NAME}.elf ${USER_SOURCES} ${HAL_SOURCES} ${USB_SOURCES} ${LINKER_SCRIPT} Src/oscill.c Src/sine.c)
 
 target_link_libraries(${PROJECT_NAME}.elf CMSIS )
 

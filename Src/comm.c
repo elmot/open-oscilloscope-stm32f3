@@ -76,8 +76,10 @@ void setupUsbComm() {
  */
 bool getCommand(char *buffer, size_t maxLength) {
   if(readBufferIndex == writeBufferIndex) return false;
+  __disable_irq();
   strncpy(buffer, (const char *) &ringBuffer[readBufferIndex], maxLength);
   readBufferIndex = (readBufferIndex + 1) % CMD_BUFFER;
+  __enable_irq();
   return true;
 }
 
