@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.5.0)
 
 add_definitions(-DSTM32F303xC)
 
-file(GLOB_RECURSE USER_SOURCES "Src/*.c" "Inc/*.h")
+file(GLOB_RECURSE USER_SOURCES "Src/*.c" "Inc/*.h" "SVD_Inc/*.h")
 file(GLOB_RECURSE HAL_SOURCES "Drivers/STM32F3xx_HAL_Driver/Inc/*.h" "Drivers/STM32F3xx_HAL_Driver/Src/*.c")
 file(GLOB_RECURSE USB_SOURCES "Middlewares/ST/STM32_USB_Device_Library/Core/Inc/*.h"
         "Middlewares/ST/STM32_USB_Device_Library/Core/Src/*.c"
@@ -13,6 +13,7 @@ file(GLOB_RECURSE USB_SOURCES "Middlewares/ST/STM32_USB_Device_Library/Core/Inc/
 add_library(CMSIS startup/startup_stm32f303xc.s)
 
 include_directories(Inc)
+include_directories(SVD_Inc)
 include_directories(Drivers/STM32F3xx_HAL_Driver/Inc)
 include_directories(Drivers/CMSIS/Include)
 include_directories(Drivers/CMSIS/Device/ST/STM32F3xx/Include)
@@ -21,7 +22,7 @@ include_directories(Middlewares/ST/STM32_USB_Device_Library/Core/Inc)
 include_directories(Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc)
 
 
-add_executable(${PROJECT_NAME}.elf ${USER_SOURCES} ${HAL_SOURCES} ${USB_SOURCES} ${LINKER_SCRIPT} Src/oscill.c Src/sine.c)
+add_executable(${PROJECT_NAME}.elf ${USER_SOURCES} ${HAL_SOURCES} ${USB_SOURCES} ${LINKER_SCRIPT} Src/oscill.c Src/sine.c Inc/my_gpio.h)
 
 target_link_libraries(${PROJECT_NAME}.elf CMSIS )
 
