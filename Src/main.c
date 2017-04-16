@@ -201,13 +201,14 @@ int main(void)
   /* USER CODE BEGIN 2 */
   {
     resetLD10();
-    if (debug_flag == DEBUG_CHECK) {
+/*    if (debug_flag == DEBUG_CHECK) {
       debug_flag = DEBUG_OFF;
     } else {
       debug_flag = DEBUG_CHECK;
       initialise_monitor_handles();
       debug_flag = DEBUG_ON;
-    }
+    }*/
+    debug_flag = DEBUG_OFF;
   }
   initOscilloscope();
   /* USER CODE END 2 */
@@ -223,9 +224,9 @@ int main(void)
 
   /* USER CODE BEGIN 3 */
     if(hUsbDeviceFS.dev_state != USBD_STATE_CONFIGURED) {
-      LED_ON(LD3);
+      LED_ON(LD5);
     } else {
-      LED_OFF(LD3);
+      LED_OFF(LD5);
 
     }
     char buffer[100];
