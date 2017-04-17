@@ -78,6 +78,7 @@
       unsigned int BG: 1; // Break generation
       unsigned int : 24; // Reserved
 } EGR;
+  union {
 // capture/compare mode register (output mode)
  struct {
       unsigned int CC1S: 2; // Capture/Compare 1 selection
@@ -95,6 +96,17 @@
       unsigned int OC2M_3: 1; // Output Compare 2 mode bit 3
       unsigned int : 7; // Reserved
 } CCMR1_Output;
+// capture/compare mode register 1 (input mode)
+ struct {
+      unsigned int CC1S: 2; // Capture/Compare 1 selection
+      unsigned int IC1PSC: 2; // Input capture 1 prescaler
+      unsigned int IC1F: 4; // Input capture 1 filter
+      unsigned int CC2S: 2; // Capture/Compare 2 selection
+      unsigned int IC2PSC: 2; // Input capture 2 prescaler
+      unsigned int IC2F: 4; // Input capture 2 filter
+      unsigned int : 16; // Reserved
+} CCMR1_Input;
+  } CCMR1_Output_CCMR1_Input;
       unsigned int : 32; // Reserved
 // capture/compare enable register
  struct {

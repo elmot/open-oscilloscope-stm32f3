@@ -89,7 +89,6 @@ public class Register extends NamedElement implements Comparable<Register> {
         int size = this.size == null ? defaults.size : this.size;
         int sizeBytes = size / 8;
         if (currentAddressOffset > this.addressOffset) {
-            //TODO generate unions
             System.err.printf("WARNING!!! Overlapping register: %s(%s). Skipping.\n", name, alternateRegister);
             return currentAddressOffset;
         }

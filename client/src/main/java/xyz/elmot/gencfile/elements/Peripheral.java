@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * (c) elmot on 16.4.2017.
@@ -98,11 +99,37 @@ public class Peripheral extends NamedElement {
 
             Collections.sort(registers);
             long offsetAddress = 0;
-            for (Register register : registers) {
-                offsetAddress = register.write(offsetAddress, defaults, writer);
+            List<Register> overlappings = new ArrayList<>();
+            for (int i = 0; i < registers.size(); i++) {
+                Register register = registers.get(i);
+                if (!overlappings.isEmpty()
+                        && overlappings.get(0).getAddressOffset() != register.getAddressOffset()) {
+                    offsetAddress = writeRegisterGroup(offsetAddress, overlappings, defaults, writer);
+                    overlappings.clear();
+                }
+                overlappings.add(register);
             }
+            writeRegisterGroup(offsetAddress, overlappings, defaults, writer);
             writer.printf("} SVD_%s;\nasm(\".equ SVD_%s, 0x%08x\");\n", name, name, baseAddress);
         }
+    }
+
+    private long writeRegisterGroup(long offsetAddress, List<Register> overlappings, Device.Defaults defaults, PrintWriter writer) {
+        switch (overlappings.size()) {
+            case 0:
+                return offsetAddress;
+            case 1:
+                return overlappings.get(0).write(offsetAddress, defaults, writer);
+
+        }
+        long newOffsetAddress = offsetAddress;
+        writer.println("  union {");
+        for (Register overlapping : overlappings) {
+            newOffsetAddress = Math.max(offsetAddress, overlapping.write(offsetAddress, defaults, writer));
+        }
+        String name = overlappings.stream().map(Register::getName).collect(Collectors.joining("_"));
+        writer.printf("  } %s;\n", name);
+        return newOffsetAddress;
     }
 
     public static Peripheral copyOf(Peripheral derivedFrom) {

@@ -23,6 +23,7 @@
 #include <stm32f3xx_hal.h>
 #include <stddef.h>
 #include "GPIOE.h"
+#include "TIM1.h"
 
 
 #define CMD_MAX_SIZE 128
