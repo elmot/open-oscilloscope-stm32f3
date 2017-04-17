@@ -109,6 +109,7 @@
 #define MEMS_INT1_GPIO_Port GPIOE
 #define MEMS_INT2_Pin GPIO_PIN_1
 #define MEMS_INT2_GPIO_Port GPIOE
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

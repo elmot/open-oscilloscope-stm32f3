@@ -458,6 +458,8 @@ static void MX_ADC4_Init(void)
   hadc4.Init.ScanConvMode = ADC_SCAN_DISABLE;
   hadc4.Init.ContinuousConvMode = DISABLE;
   hadc4.Init.DiscontinuousConvMode = DISABLE;
+  hadc4.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc4.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc4.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc4.Init.NbrOfConversion = 1;
   hadc4.Init.DMAContinuousRequests = ENABLE;

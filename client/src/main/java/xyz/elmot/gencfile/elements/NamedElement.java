@@ -33,6 +33,6 @@ public abstract class  NamedElement extends CommonElement implements Copyable{
     @Override
     public void copyFrom(Copyable o) {
         name = ((NamedElement)o).name;
-        description = ((NamedElement)o).name;
+        description = ((NamedElement)o).description;
     }
 }

@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * @file           : usbd_conf.c
-  * @version        : v1.0_Cube
+  * @version        : v2.0_Cube
   * @brief          : This file implements the board support package for the USB device library
   ******************************************************************************
   *
@@ -737,7 +737,7 @@ void *USBD_static_malloc(uint32_t size)
 
 /**
   * @brief  Dummy memory free
-  * @param  *p pointer to allocated  memory address
+  * @param  p pointer to allocated  memory address
   * @retval None
   */
 void USBD_static_free(void *p)
