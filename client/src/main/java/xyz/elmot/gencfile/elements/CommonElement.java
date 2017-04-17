@@ -5,6 +5,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
@@ -14,7 +15,7 @@ import static org.junit.Assert.assertEquals;
  * (c) elmot on 16.4.2017.
  */
 @SuppressWarnings("WeakerAccess")
-public abstract class CommonElement {
+public abstract class CommonElement implements Serializable{
 
     private final String tagName;
 

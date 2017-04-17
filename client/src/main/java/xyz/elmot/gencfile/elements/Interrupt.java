@@ -7,7 +7,7 @@ import javax.xml.stream.events.StartElement;
 /**
  * (c) elmot on 16.4.2017.
  */
-public class Interrupt extends NamedElement implements Copyable {
+public class Interrupt extends NamedElement {
     int value;
 
     public int getValue() {

@@ -7,7 +7,7 @@ import javax.xml.stream.events.StartElement;
 /**
  * (c) elmot on 16.4.2017.
  */
-public abstract class  NamedElement extends CommonElement implements Copyable{
+public abstract class  NamedElement extends CommonElement{
     public NamedElement(String tagName) {
         super(tagName);
     }
@@ -30,9 +30,4 @@ public abstract class  NamedElement extends CommonElement implements Copyable{
         return description;
     }
 
-    @Override
-    public void copyFrom(Copyable o) {
-        name = ((NamedElement)o).name;
-        description = ((NamedElement)o).description;
-    }
 }

@@ -1,6 +1,6 @@
-// ADC1
+// Analog-to-Digital Converter
  extern struct {
-// ISR
+// interrupt and status register
  struct {
       unsigned int ADRDY: 1; // ADRDY
       unsigned int EOSMP: 1; // EOSMP
@@ -15,7 +15,7 @@
       unsigned int JQOVF: 1; // JQOVF
       unsigned int : 21; // Reserved
 } ISR;
-// IER
+// interrupt enable register
  struct {
       unsigned int ADRDYIE: 1; // ADRDYIE
       unsigned int EOSMPIE: 1; // EOSMPIE
@@ -30,7 +30,7 @@
       unsigned int JQOVFIE: 1; // JQOVFIE
       unsigned int : 21; // Reserved
 } IER;
-// CR
+// control register
  struct {
       unsigned int ADEN: 1; // ADEN
       unsigned int ADDIS: 1; // ADDIS
@@ -44,7 +44,7 @@
       unsigned int ADCALDIF: 1; // ADCALDIF
       unsigned int ADCAL: 1; // ADCAL
 } CR;
-// CFGR
+// configuration register
  struct {
       unsigned int DMAEN: 1; // DMAEN
       unsigned int DMACFG: 1; // DMACFG
@@ -69,7 +69,7 @@
       unsigned int : 1; // Reserved
 } CFGR;
       unsigned int : 32; // Reserved
-// SMPR1
+// sample time register 1
  struct {
       unsigned int : 3; // Reserved
       unsigned int SMP1: 3; // SMP1
@@ -83,7 +83,7 @@
       unsigned int SMP9: 3; // SMP9
       unsigned int : 2; // Reserved
 } SMPR1;
-// SMPR2
+// sample time register 2
  struct {
       unsigned int SMP10: 3; // SMP10
       unsigned int SMP11: 3; // SMP11
@@ -97,21 +97,21 @@
       unsigned int : 5; // Reserved
 } SMPR2;
       unsigned int : 32; // Reserved
-// TR1
+// watchdog threshold register 1
  struct {
       unsigned int LT1: 12; // LT1
       unsigned int : 4; // Reserved
       unsigned int HT1: 12; // HT1
       unsigned int : 4; // Reserved
 } TR1;
-// TR2
+// watchdog threshold register
  struct {
       unsigned int LT2: 8; // LT2
       unsigned int : 8; // Reserved
       unsigned int HT2: 8; // HT2
       unsigned int : 8; // Reserved
 } TR2;
-// TR3
+// watchdog threshold register 3
  struct {
       unsigned int LT3: 8; // LT3
       unsigned int : 8; // Reserved
@@ -119,7 +119,7 @@
       unsigned int : 8; // Reserved
 } TR3;
       unsigned int : 32; // Reserved
-// SQR1
+// regular sequence register 1
  struct {
       unsigned int L3: 4; // L3
       unsigned int : 2; // Reserved
@@ -132,7 +132,7 @@
       unsigned int SQ4: 5; // SQ4
       unsigned int : 3; // Reserved
 } SQR1;
-// SQR2
+// regular sequence register 2
  struct {
       unsigned int SQ5: 5; // SQ5
       unsigned int : 1; // Reserved
@@ -145,7 +145,7 @@
       unsigned int SQ9: 5; // SQ9
       unsigned int : 3; // Reserved
 } SQR2;
-// SQR3
+// regular sequence register 3
  struct {
       unsigned int SQ10: 5; // SQ10
       unsigned int : 1; // Reserved
@@ -158,21 +158,21 @@
       unsigned int SQ14: 5; // SQ14
       unsigned int : 3; // Reserved
 } SQR3;
-// SQR4
+// regular sequence register 4
  struct {
       unsigned int SQ15: 5; // SQ15
       unsigned int : 1; // Reserved
       unsigned int SQ16: 5; // SQ16
       unsigned int : 21; // Reserved
 } SQR4;
-// DR
+// regular Data Register
  struct {
       unsigned int regularDATA: 16; // regularDATA
       unsigned int : 16; // Reserved
 } DR;
       unsigned int : 32; // Reserved
       unsigned int : 32; // Reserved
-// JSQR
+// injected sequence register
  struct {
       unsigned int JL: 2; // JL
       unsigned int JEXTSEL: 4; // JEXTSEL
@@ -190,28 +190,28 @@
       unsigned int : 32; // Reserved
       unsigned int : 32; // Reserved
       unsigned int : 32; // Reserved
-// OFR1
+// offset register 1
  struct {
       unsigned int OFFSET1: 12; // OFFSET1
       unsigned int : 14; // Reserved
       unsigned int OFFSET1_CH: 5; // OFFSET1_CH
       unsigned int OFFSET1_EN: 1; // OFFSET1_EN
 } OFR1;
-// OFR2
+// offset register 2
  struct {
       unsigned int OFFSET2: 12; // OFFSET2
       unsigned int : 14; // Reserved
       unsigned int OFFSET2_CH: 5; // OFFSET2_CH
       unsigned int OFFSET2_EN: 1; // OFFSET2_EN
 } OFR2;
-// OFR3
+// offset register 3
  struct {
       unsigned int OFFSET3: 12; // OFFSET3
       unsigned int : 14; // Reserved
       unsigned int OFFSET3_CH: 5; // OFFSET3_CH
       unsigned int OFFSET3_EN: 1; // OFFSET3_EN
 } OFR3;
-// OFR4
+// offset register 4
  struct {
       unsigned int OFFSET4: 12; // OFFSET4
       unsigned int : 14; // Reserved
@@ -222,22 +222,22 @@
       unsigned int : 32; // Reserved
       unsigned int : 32; // Reserved
       unsigned int : 32; // Reserved
-// JDR1
+// injected data register 1
  struct {
       unsigned int JDATA1: 16; // JDATA1
       unsigned int : 16; // Reserved
 } JDR1;
-// JDR2
+// injected data register 2
  struct {
       unsigned int JDATA2: 16; // JDATA2
       unsigned int : 16; // Reserved
 } JDR2;
-// JDR3
+// injected data register 3
  struct {
       unsigned int JDATA3: 16; // JDATA3
       unsigned int : 16; // Reserved
 } JDR3;
-// JDR4
+// injected data register 4
  struct {
       unsigned int JDATA4: 16; // JDATA4
       unsigned int : 16; // Reserved
@@ -246,13 +246,13 @@
       unsigned int : 32; // Reserved
       unsigned int : 32; // Reserved
       unsigned int : 32; // Reserved
-// AWD2CR
+// Analog Watchdog 2 Configuration Register
  struct {
       unsigned int : 1; // Reserved
       unsigned int AWD2CH: 18; // AWD2CH
       unsigned int : 13; // Reserved
 } AWD2CR;
-// AWD3CR
+// Analog Watchdog 3 Configuration Register
  struct {
       unsigned int : 1; // Reserved
       unsigned int AWD3CH: 18; // AWD3CH
@@ -260,14 +260,14 @@
 } AWD3CR;
       unsigned int : 32; // Reserved
       unsigned int : 32; // Reserved
-// DIFSEL
+// Differential Mode Selection Register 2
  struct {
       unsigned int : 1; // Reserved
-      unsigned int DIFSEL_1_15: 15; // DIFSEL_1_15
-      unsigned int DIFSEL_16_18: 3; // DIFSEL_16_18
+      unsigned int DIFSEL_1_15: 15; // Differential mode for channels 15 to 1
+      unsigned int DIFSEL_16_18: 3; // Differential mode for channels 18 to 16
       unsigned int : 13; // Reserved
 } DIFSEL;
-// CALFACT
+// Calibration Factors
  struct {
       unsigned int CALFACT_S: 7; // CALFACT_S
       unsigned int : 9; // Reserved

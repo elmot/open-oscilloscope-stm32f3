@@ -8,7 +8,7 @@ import java.io.PrintWriter;
 /**
  * (c) elmot on 16.4.2017.
  */
-public class Field extends NamedElement implements Comparable<Field>, Copyable {
+public class Field extends NamedElement implements Comparable<Field>{
     private int bitOffset;
     private int bitWidth;
     private String access;
@@ -36,15 +36,6 @@ public class Field extends NamedElement implements Comparable<Field>, Copyable {
     @Override
     public int compareTo(Field o) {
         return Long.compare(bitOffset, o.getBitOffset());
-    }
-
-    @Override
-    public void copyFrom(Copyable o) {
-        super.copyFrom(o);
-        Field another = (Field) o;
-        bitOffset = another.bitOffset;
-        bitWidth = another.bitWidth;
-        access = another.access;
     }
 
     public static void writeUnused(PrintWriter writer, int unusedSize) {

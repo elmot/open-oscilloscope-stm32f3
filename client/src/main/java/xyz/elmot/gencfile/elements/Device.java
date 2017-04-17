@@ -1,5 +1,6 @@
 package xyz.elmot.gencfile.elements;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
@@ -7,6 +8,7 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -25,7 +27,7 @@ public class Device extends NamedElement {
     protected Map<String, Map<String, Peripheral>> peripheralGroups = new LinkedHashMap<>();
     private final Defaults defaults = new Defaults();
 
-    public static class Defaults {
+    public static class Defaults implements Serializable {
         int addressUnitBits;
         int width;
         Integer size;
@@ -48,7 +50,14 @@ public class Device extends NamedElement {
         if (PERIPHERALS.equals(innerElement.getName().getLocalPart())) {
             XMLEvent event;
             while ((event = reader.nextTag()).isStartElement()) {
-                Peripheral peripheral = new Peripheral(this);
+                Peripheral peripheral;
+                Attribute derivedFromName = event.asStartElement().getAttributeByName(QName.valueOf(Peripheral.DERIVED_FROM));
+                if (derivedFromName != null) {
+                    Peripheral derivedFrom = peripherals.get(derivedFromName.getValue());
+                    peripheral = Peripheral.copyOf(derivedFrom);
+                } else {
+                    peripheral = new Peripheral(this);
+                }
                 peripheral.rootTag(reader, event);
                 String name = peripheral.getName();
                 peripherals.put(name, peripheral);

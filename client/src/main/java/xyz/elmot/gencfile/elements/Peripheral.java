@@ -16,8 +16,9 @@ import java.util.List;
 /**
  * (c) elmot on 16.4.2017.
  */
-public class Peripheral extends NamedElement implements Copyable {
-    private final Device parent;
+public class Peripheral extends NamedElement {
+    public static final String DERIVED_FROM = "derivedFrom";
+    private transient Device parent;
     private String groupName;
     private long baseAddress;
     private List<AddressBlock> addressBlocks = new ArrayList<>();
@@ -68,11 +69,8 @@ public class Peripheral extends NamedElement implements Copyable {
 
     @Override
     protected void processRootAttribute(Attribute attribute) {
-        if ("derivedFrom".equals(attribute.getName().getLocalPart())) {
-            Peripheral derivedFrom = parent.getPeripherals().get(attribute.getValue());
-            Assert.assertNotNull(derivedFrom);
-            copyFrom(derivedFrom);
-            return;
+        if (DERIVED_FROM.equals(attribute.getName().getLocalPart())) {
+            return;//already processed
         }
         super.processRootAttribute(attribute);
     }
@@ -93,20 +91,10 @@ public class Peripheral extends NamedElement implements Copyable {
         return registers;
     }
 
-    @Override
-    public void copyFrom(Copyable o) {
-        super.copyFrom(o);
-        Peripheral another = (Peripheral) o;
-        groupName = another.groupName;
-        baseAddress = another.baseAddress;
-        addressBlocks = copy(another.addressBlocks);
-        registers = copy(another.registers);
-    }
-
     public void write(File file, Device.Defaults defaults) throws IOException {
         try (FileOutputStream stream = new FileOutputStream(file);
              PrintWriter writer = new PrintWriter(new OutputStreamWriter(stream, StandardCharsets.US_ASCII))) {
-            writer.printf("// %s\n extern struct {\n",description);
+            writer.printf("// %s\n extern struct {\n", description);
 
             Collections.sort(registers);
             long offsetAddress = 0;
@@ -114,6 +102,21 @@ public class Peripheral extends NamedElement implements Copyable {
                 offsetAddress = register.write(offsetAddress, defaults, writer);
             }
             writer.printf("} SVD_%s __attribute__ ((packed));\nasm(\".equ SVD_%s, 0x%08x\");\n", name, name, baseAddress);
+        }
+    }
+
+    public static Peripheral copyOf(Peripheral derivedFrom) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+             ObjectOutputStream objectOutputStream = new ObjectOutputStream(baos)) {
+            objectOutputStream.writeObject(derivedFrom);
+            objectOutputStream.close();
+            try (ObjectInputStream objectInputStream = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()))) {
+                Peripheral peripheral = (Peripheral) objectInputStream.readObject();
+                peripheral.parent = derivedFrom.parent;
+                return peripheral;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

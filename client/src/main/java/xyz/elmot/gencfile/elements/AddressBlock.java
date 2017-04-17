@@ -7,7 +7,7 @@ import javax.xml.stream.events.StartElement;
 /**
  * (c) elmot on 16.4.2017.
  */
-public class AddressBlock extends CommonElement implements Comparable<AddressBlock>, Copyable {
+public class AddressBlock extends CommonElement implements Comparable<AddressBlock>{
     private String usage;
     private long offset;
     private long size;
@@ -42,11 +42,4 @@ public class AddressBlock extends CommonElement implements Comparable<AddressBlo
         return Long.compare(offset, o.getOffset());
     }
 
-    @Override
-    public void copyFrom(Copyable o) {
-        AddressBlock another = (AddressBlock) o;
-        usage = another.usage;
-        offset = another.offset;
-        size = another.size;
-    }
 }

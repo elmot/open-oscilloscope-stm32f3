@@ -17,7 +17,7 @@ import static org.junit.Assert.assertTrue;
  * (c) elmot on 16.4.2017.
  */
 @SuppressWarnings("WeakerAccess")
-public class Register extends NamedElement implements Comparable<Register>, Copyable {
+public class Register extends NamedElement implements Comparable<Register> {
     public static final String FIELDS = "fields";
     private String displayName;
     private long addressOffset;
@@ -83,19 +83,6 @@ public class Register extends NamedElement implements Comparable<Register>, Copy
     @Override
     public int compareTo(Register o) {
         return Long.compare(addressOffset, o.getAddressOffset());
-    }
-
-    @Override
-    public void copyFrom(Copyable o) {
-        super.copyFrom(o);
-        Register another = (Register) o;
-        displayName = another.displayName;
-        addressOffset = another.addressOffset;
-        alternateRegister = another.alternateRegister;
-        size = another.size;
-        access = another.access;
-        resetValue = another.resetValue;
-        fields = copy(another.getFields());
     }
 
     public long write(long currentAddressOffset, Device.Defaults defaults, PrintWriter writer) {

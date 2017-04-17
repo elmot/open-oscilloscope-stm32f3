@@ -1,270 +1,270 @@
-// TIM1
+// Advanced timer
  extern struct {
-// CR1
+// control register 1
  struct {
-      unsigned int CEN: 1; // CEN
-      unsigned int UDIS: 1; // UDIS
-      unsigned int URS: 1; // URS
-      unsigned int OPM: 1; // OPM
-      unsigned int DIR: 1; // DIR
-      unsigned int CMS: 2; // CMS
-      unsigned int ARPE: 1; // ARPE
-      unsigned int CKD: 2; // CKD
+      unsigned int CEN: 1; // Counter enable
+      unsigned int UDIS: 1; // Update disable
+      unsigned int URS: 1; // Update request source
+      unsigned int OPM: 1; // One-pulse mode
+      unsigned int DIR: 1; // Direction
+      unsigned int CMS: 2; // Center-aligned mode selection
+      unsigned int ARPE: 1; // Auto-reload preload enable
+      unsigned int CKD: 2; // Clock division
       unsigned int : 1; // Reserved
-      unsigned int UIFREMAP: 1; // UIFREMAP
+      unsigned int UIFREMAP: 1; // UIF status bit remapping
       unsigned int : 20; // Reserved
 } CR1;
-// CR2
+// control register 2
  struct {
-      unsigned int CCPC: 1; // CCPC
+      unsigned int CCPC: 1; // Capture/compare preloaded control
       unsigned int : 1; // Reserved
-      unsigned int CCUS: 1; // CCUS
-      unsigned int CCDS: 1; // CCDS
-      unsigned int MMS: 3; // MMS
-      unsigned int TI1S: 1; // TI1S
-      unsigned int OIS1: 1; // OIS1
-      unsigned int OIS1N: 1; // OIS1N
-      unsigned int OIS2: 1; // OIS2
-      unsigned int OIS2N: 1; // OIS2N
-      unsigned int OIS3: 1; // OIS3
-      unsigned int OIS3N: 1; // OIS3N
-      unsigned int OIS4: 1; // OIS4
+      unsigned int CCUS: 1; // Capture/compare control update selection
+      unsigned int CCDS: 1; // Capture/compare DMA selection
+      unsigned int MMS: 3; // Master mode selection
+      unsigned int TI1S: 1; // TI1 selection
+      unsigned int OIS1: 1; // Output Idle state 1
+      unsigned int OIS1N: 1; // Output Idle state 1
+      unsigned int OIS2: 1; // Output Idle state 2
+      unsigned int OIS2N: 1; // Output Idle state 2
+      unsigned int OIS3: 1; // Output Idle state 3
+      unsigned int OIS3N: 1; // Output Idle state 3
+      unsigned int OIS4: 1; // Output Idle state 4
       unsigned int : 1; // Reserved
-      unsigned int OIS5: 1; // OIS5
+      unsigned int OIS5: 1; // Output Idle state 5
       unsigned int : 1; // Reserved
-      unsigned int OIS6: 1; // OIS6
+      unsigned int OIS6: 1; // Output Idle state 6
       unsigned int : 1; // Reserved
-      unsigned int MMS2: 4; // MMS2
+      unsigned int MMS2: 4; // Master mode selection 2
       unsigned int : 8; // Reserved
 } CR2;
-// SMCR
+// slave mode control register
  struct {
-      unsigned int SMS: 3; // SMS
-      unsigned int OCCS: 1; // OCCS
-      unsigned int TS: 3; // TS
-      unsigned int MSM: 1; // MSM
-      unsigned int ETF: 4; // ETF
-      unsigned int ETPS: 2; // ETPS
-      unsigned int ECE: 1; // ECE
-      unsigned int ETP: 1; // ETP
-      unsigned int SMS3: 1; // SMS3
+      unsigned int SMS: 3; // Slave mode selection
+      unsigned int OCCS: 1; // OCREF clear selection
+      unsigned int TS: 3; // Trigger selection
+      unsigned int MSM: 1; // Master/Slave mode
+      unsigned int ETF: 4; // External trigger filter
+      unsigned int ETPS: 2; // External trigger prescaler
+      unsigned int ECE: 1; // External clock enable
+      unsigned int ETP: 1; // External trigger polarity
+      unsigned int SMS3: 1; // Slave mode selection bit 3
       unsigned int : 15; // Reserved
 } SMCR;
-// DIER
+// DMA/Interrupt enable register
  struct {
-      unsigned int UIE: 1; // UIE
-      unsigned int CC1IE: 1; // CC1IE
-      unsigned int CC2IE: 1; // CC2IE
-      unsigned int CC3IE: 1; // CC3IE
-      unsigned int CC4IE: 1; // CC4IE
-      unsigned int COMIE: 1; // COMIE
-      unsigned int TIE: 1; // TIE
-      unsigned int BIE: 1; // BIE
-      unsigned int UDE: 1; // UDE
-      unsigned int CC1DE: 1; // CC1DE
-      unsigned int CC2DE: 1; // CC2DE
-      unsigned int CC3DE: 1; // CC3DE
-      unsigned int CC4DE: 1; // CC4DE
-      unsigned int COMDE: 1; // COMDE
-      unsigned int TDE: 1; // TDE
+      unsigned int UIE: 1; // Update interrupt enable
+      unsigned int CC1IE: 1; // Capture/Compare 1 interrupt enable
+      unsigned int CC2IE: 1; // Capture/Compare 2 interrupt enable
+      unsigned int CC3IE: 1; // Capture/Compare 3 interrupt enable
+      unsigned int CC4IE: 1; // Capture/Compare 4 interrupt enable
+      unsigned int COMIE: 1; // COM interrupt enable
+      unsigned int TIE: 1; // Trigger interrupt enable
+      unsigned int BIE: 1; // Break interrupt enable
+      unsigned int UDE: 1; // Update DMA request enable
+      unsigned int CC1DE: 1; // Capture/Compare 1 DMA request enable
+      unsigned int CC2DE: 1; // Capture/Compare 2 DMA request enable
+      unsigned int CC3DE: 1; // Capture/Compare 3 DMA request enable
+      unsigned int CC4DE: 1; // Capture/Compare 4 DMA request enable
+      unsigned int COMDE: 1; // Reserved
+      unsigned int TDE: 1; // Trigger DMA request enable
       unsigned int : 17; // Reserved
 } DIER;
-// SR
+// status register
  struct {
-      unsigned int UIF: 1; // UIF
-      unsigned int CC1IF: 1; // CC1IF
-      unsigned int CC2IF: 1; // CC2IF
-      unsigned int CC3IF: 1; // CC3IF
-      unsigned int CC4IF: 1; // CC4IF
-      unsigned int COMIF: 1; // COMIF
-      unsigned int TIF: 1; // TIF
-      unsigned int BIF: 1; // BIF
-      unsigned int B2IF: 1; // B2IF
-      unsigned int CC1OF: 1; // CC1OF
-      unsigned int CC2OF: 1; // CC2OF
-      unsigned int CC3OF: 1; // CC3OF
-      unsigned int CC4OF: 1; // CC4OF
+      unsigned int UIF: 1; // Update interrupt flag
+      unsigned int CC1IF: 1; // Capture/compare 1 interrupt flag
+      unsigned int CC2IF: 1; // Capture/Compare 2 interrupt flag
+      unsigned int CC3IF: 1; // Capture/Compare 3 interrupt flag
+      unsigned int CC4IF: 1; // Capture/Compare 4 interrupt flag
+      unsigned int COMIF: 1; // COM interrupt flag
+      unsigned int TIF: 1; // Trigger interrupt flag
+      unsigned int BIF: 1; // Break interrupt flag
+      unsigned int B2IF: 1; // Break 2 interrupt flag
+      unsigned int CC1OF: 1; // Capture/Compare 1 overcapture flag
+      unsigned int CC2OF: 1; // Capture/compare 2 overcapture flag
+      unsigned int CC3OF: 1; // Capture/Compare 3 overcapture flag
+      unsigned int CC4OF: 1; // Capture/Compare 4 overcapture flag
       unsigned int : 3; // Reserved
-      unsigned int C5IF: 1; // C5IF
-      unsigned int C6IF: 1; // C6IF
+      unsigned int C5IF: 1; // Capture/Compare 5 interrupt flag
+      unsigned int C6IF: 1; // Capture/Compare 6 interrupt flag
       unsigned int : 14; // Reserved
 } SR;
-// EGR
+// event generation register
  struct {
-      unsigned int UG: 1; // UG
-      unsigned int CC1G: 1; // CC1G
-      unsigned int CC2G: 1; // CC2G
-      unsigned int CC3G: 1; // CC3G
-      unsigned int CC4G: 1; // CC4G
-      unsigned int COMG: 1; // COMG
-      unsigned int TG: 1; // TG
-      unsigned int BG: 1; // BG
-      unsigned int B2G: 1; // B2G
+      unsigned int UG: 1; // Update generation
+      unsigned int CC1G: 1; // Capture/compare 1 generation
+      unsigned int CC2G: 1; // Capture/compare 2 generation
+      unsigned int CC3G: 1; // Capture/compare 3 generation
+      unsigned int CC4G: 1; // Capture/compare 4 generation
+      unsigned int COMG: 1; // Capture/Compare control update generation
+      unsigned int TG: 1; // Trigger generation
+      unsigned int BG: 1; // Break generation
+      unsigned int B2G: 1; // Break 2 generation
       unsigned int : 23; // Reserved
 } EGR;
-// CCMR1_Output
+// capture/compare mode register (output mode)
  struct {
-      unsigned int CC1S: 2; // CC1S
-      unsigned int OC1FE: 1; // OC1FE
-      unsigned int OC1PE: 1; // OC1PE
-      unsigned int OC1M: 3; // OC1M
-      unsigned int OC1CE: 1; // OC1CE
-      unsigned int CC2S: 2; // CC2S
-      unsigned int OC2FE: 1; // OC2FE
-      unsigned int OC2PE: 1; // OC2PE
-      unsigned int OC2M: 3; // OC2M
-      unsigned int OC2CE: 1; // OC2CE
-      unsigned int OC1M_3: 1; // OC1M_3
+      unsigned int CC1S: 2; // Capture/Compare 1 selection
+      unsigned int OC1FE: 1; // Output Compare 1 fast enable
+      unsigned int OC1PE: 1; // Output Compare 1 preload enable
+      unsigned int OC1M: 3; // Output Compare 1 mode
+      unsigned int OC1CE: 1; // Output Compare 1 clear enable
+      unsigned int CC2S: 2; // Capture/Compare 2 selection
+      unsigned int OC2FE: 1; // Output Compare 2 fast enable
+      unsigned int OC2PE: 1; // Output Compare 2 preload enable
+      unsigned int OC2M: 3; // Output Compare 2 mode
+      unsigned int OC2CE: 1; // Output Compare 2 clear enable
+      unsigned int OC1M_3: 1; // Output Compare 1 mode bit 3
       unsigned int : 7; // Reserved
-      unsigned int OC2M_3: 1; // OC2M_3
+      unsigned int OC2M_3: 1; // Output Compare 2 mode bit 3
       unsigned int : 7; // Reserved
 } CCMR1_Output;
-// CCMR2_Output
+// capture/compare mode register (output mode)
  struct {
-      unsigned int CC3S: 2; // CC3S
-      unsigned int OC3FE: 1; // OC3FE
-      unsigned int OC3PE: 1; // OC3PE
-      unsigned int OC3M: 3; // OC3M
-      unsigned int OC3CE: 1; // OC3CE
-      unsigned int CC4S: 2; // CC4S
-      unsigned int OC4FE: 1; // OC4FE
-      unsigned int OC4PE: 1; // OC4PE
-      unsigned int OC4M: 3; // OC4M
-      unsigned int OC4CE: 1; // OC4CE
-      unsigned int OC3M_3: 1; // OC3M_3
+      unsigned int CC3S: 2; // Capture/Compare 3 selection
+      unsigned int OC3FE: 1; // Output compare 3 fast enable
+      unsigned int OC3PE: 1; // Output compare 3 preload enable
+      unsigned int OC3M: 3; // Output compare 3 mode
+      unsigned int OC3CE: 1; // Output compare 3 clear enable
+      unsigned int CC4S: 2; // Capture/Compare 4 selection
+      unsigned int OC4FE: 1; // Output compare 4 fast enable
+      unsigned int OC4PE: 1; // Output compare 4 preload enable
+      unsigned int OC4M: 3; // Output compare 4 mode
+      unsigned int OC4CE: 1; // Output compare 4 clear enable
+      unsigned int OC3M_3: 1; // Output Compare 3 mode bit 3
       unsigned int : 7; // Reserved
-      unsigned int OC4M_3: 1; // OC4M_3
+      unsigned int OC4M_3: 1; // Output Compare 4 mode bit 3
       unsigned int : 7; // Reserved
 } CCMR2_Output;
-// CCER
+// capture/compare enable register
  struct {
-      unsigned int CC1E: 1; // CC1E
-      unsigned int CC1P: 1; // CC1P
-      unsigned int CC1NE: 1; // CC1NE
-      unsigned int CC1NP: 1; // CC1NP
-      unsigned int CC2E: 1; // CC2E
-      unsigned int CC2P: 1; // CC2P
-      unsigned int CC2NE: 1; // CC2NE
-      unsigned int CC2NP: 1; // CC2NP
-      unsigned int CC3E: 1; // CC3E
-      unsigned int CC3P: 1; // CC3P
-      unsigned int CC3NE: 1; // CC3NE
-      unsigned int CC3NP: 1; // CC3NP
-      unsigned int CC4E: 1; // CC4E
-      unsigned int CC4P: 1; // CC4P
+      unsigned int CC1E: 1; // Capture/Compare 1 output enable
+      unsigned int CC1P: 1; // Capture/Compare 1 output Polarity
+      unsigned int CC1NE: 1; // Capture/Compare 1 complementary output enable
+      unsigned int CC1NP: 1; // Capture/Compare 1 output Polarity
+      unsigned int CC2E: 1; // Capture/Compare 2 output enable
+      unsigned int CC2P: 1; // Capture/Compare 2 output Polarity
+      unsigned int CC2NE: 1; // Capture/Compare 2 complementary output enable
+      unsigned int CC2NP: 1; // Capture/Compare 2 output Polarity
+      unsigned int CC3E: 1; // Capture/Compare 3 output enable
+      unsigned int CC3P: 1; // Capture/Compare 3 output Polarity
+      unsigned int CC3NE: 1; // Capture/Compare 3 complementary output enable
+      unsigned int CC3NP: 1; // Capture/Compare 3 output Polarity
+      unsigned int CC4E: 1; // Capture/Compare 4 output enable
+      unsigned int CC4P: 1; // Capture/Compare 3 output Polarity
       unsigned int : 1; // Reserved
-      unsigned int CC4NP: 1; // CC4NP
-      unsigned int CC5E: 1; // CC5E
-      unsigned int CC5P: 1; // CC5P
+      unsigned int CC4NP: 1; // Capture/Compare 4 output Polarity
+      unsigned int CC5E: 1; // Capture/Compare 5 output enable
+      unsigned int CC5P: 1; // Capture/Compare 5 output Polarity
       unsigned int : 2; // Reserved
-      unsigned int CC6E: 1; // CC6E
-      unsigned int CC6P: 1; // CC6P
+      unsigned int CC6E: 1; // Capture/Compare 6 output enable
+      unsigned int CC6P: 1; // Capture/Compare 6 output Polarity
       unsigned int : 10; // Reserved
 } CCER;
-// CNT
+// counter
  struct {
-      unsigned int CNT: 16; // CNT
+      unsigned int CNT: 16; // counter value
       unsigned int : 15; // Reserved
-      unsigned int UIFCPY: 1; // UIFCPY
+      unsigned int UIFCPY: 1; // UIF copy
 } CNT;
-// PSC
+// prescaler
  struct {
-      unsigned int PSC: 16; // PSC
+      unsigned int PSC: 16; // Prescaler value
       unsigned int : 16; // Reserved
 } PSC;
-// ARR
+// auto-reload register
  struct {
-      unsigned int ARR: 16; // ARR
+      unsigned int ARR: 16; // Auto-reload value
       unsigned int : 16; // Reserved
 } ARR;
-// RCR
+// repetition counter register
  struct {
-      unsigned int REP: 16; // REP
+      unsigned int REP: 16; // Repetition counter value
       unsigned int : 16; // Reserved
 } RCR;
-// CCR1
+// capture/compare register 1
  struct {
-      unsigned int CCR1: 16; // CCR1
+      unsigned int CCR1: 16; // Capture/Compare 1 value
       unsigned int : 16; // Reserved
 } CCR1;
-// CCR2
+// capture/compare register 2
  struct {
-      unsigned int CCR2: 16; // CCR2
+      unsigned int CCR2: 16; // Capture/Compare 2 value
       unsigned int : 16; // Reserved
 } CCR2;
-// CCR3
+// capture/compare register 3
  struct {
-      unsigned int CCR3: 16; // CCR3
+      unsigned int CCR3: 16; // Capture/Compare 3 value
       unsigned int : 16; // Reserved
 } CCR3;
-// CCR4
+// capture/compare register 4
  struct {
-      unsigned int CCR4: 16; // CCR4
+      unsigned int CCR4: 16; // Capture/Compare 3 value
       unsigned int : 16; // Reserved
 } CCR4;
-// BDTR
+// break and dead-time register
  struct {
-      unsigned int DTG: 8; // DTG
-      unsigned int LOCK: 2; // LOCK
-      unsigned int OSSI: 1; // OSSI
-      unsigned int OSSR: 1; // OSSR
-      unsigned int BKE: 1; // BKE
-      unsigned int BKP: 1; // BKP
-      unsigned int AOE: 1; // AOE
-      unsigned int MOE: 1; // MOE
-      unsigned int BKF: 4; // BKF
-      unsigned int BK2F: 4; // BK2F
-      unsigned int BK2E: 1; // BK2E
-      unsigned int BK2P: 1; // BK2P
+      unsigned int DTG: 8; // Dead-time generator setup
+      unsigned int LOCK: 2; // Lock configuration
+      unsigned int OSSI: 1; // Off-state selection for Idle mode
+      unsigned int OSSR: 1; // Off-state selection for Run mode
+      unsigned int BKE: 1; // Break enable
+      unsigned int BKP: 1; // Break polarity
+      unsigned int AOE: 1; // Automatic output enable
+      unsigned int MOE: 1; // Main output enable
+      unsigned int BKF: 4; // Break filter
+      unsigned int BK2F: 4; // Break 2 filter
+      unsigned int BK2E: 1; // Break 2 enable
+      unsigned int BK2P: 1; // Break 2 polarity
       unsigned int : 6; // Reserved
 } BDTR;
-// DCR
+// DMA control register
  struct {
-      unsigned int DBA: 5; // DBA
+      unsigned int DBA: 5; // DMA base address
       unsigned int : 3; // Reserved
-      unsigned int DBL: 5; // DBL
+      unsigned int DBL: 5; // DMA burst length
       unsigned int : 19; // Reserved
 } DCR;
-// DMAR
+// DMA address for full transfer
  struct {
-      unsigned int DMAB: 16; // DMAB
+      unsigned int DMAB: 16; // DMA register for burst accesses
       unsigned int : 16; // Reserved
 } DMAR;
       unsigned int : 32; // Reserved
-// CCMR3_Output
+// capture/compare mode register 3 (output mode)
  struct {
       unsigned int : 2; // Reserved
-      unsigned int OC5FE: 1; // OC5FE
-      unsigned int OC5PE: 1; // OC5PE
-      unsigned int OC5M: 3; // OC5M
-      unsigned int OC5CE: 1; // OC5CE
+      unsigned int OC5FE: 1; // Output compare 5 fast enable
+      unsigned int OC5PE: 1; // Output compare 5 preload enable
+      unsigned int OC5M: 3; // Output compare 5 mode
+      unsigned int OC5CE: 1; // Output compare 5 clear enable
       unsigned int : 2; // Reserved
-      unsigned int OC6FE: 1; // OC6FE
-      unsigned int OC6PE: 1; // OC6PE
-      unsigned int OC6M: 3; // OC6M
-      unsigned int OC6CE: 1; // OC6CE
-      unsigned int OC5M_3: 1; // OC5M_3
+      unsigned int OC6FE: 1; // Output compare 6 fast enable
+      unsigned int OC6PE: 1; // Output compare 6 preload enable
+      unsigned int OC6M: 3; // Output compare 6 mode
+      unsigned int OC6CE: 1; // Output compare 6 clear enable
+      unsigned int OC5M_3: 1; // Outout Compare 5 mode bit 3
       unsigned int : 7; // Reserved
-      unsigned int OC6M_3: 1; // OC6M_3
+      unsigned int OC6M_3: 1; // Outout Compare 6 mode bit 3
       unsigned int : 7; // Reserved
 } CCMR3_Output;
-// CCR5
+// capture/compare register 5
  struct {
-      unsigned int CCR5: 16; // CCR5
+      unsigned int CCR5: 16; // Capture/Compare 5 value
       unsigned int : 13; // Reserved
-      unsigned int GC5C1: 1; // GC5C1
-      unsigned int GC5C2: 1; // GC5C2
-      unsigned int GC5C3: 1; // GC5C3
+      unsigned int GC5C1: 1; // Group Channel 5 and Channel 1
+      unsigned int GC5C2: 1; // Group Channel 5 and Channel 2
+      unsigned int GC5C3: 1; // Group Channel 5 and Channel 3
 } CCR5;
-// CCR6
+// capture/compare register 6
  struct {
-      unsigned int CCR6: 16; // CCR6
+      unsigned int CCR6: 16; // Capture/Compare 6 value
       unsigned int : 16; // Reserved
 } CCR6;
-// OR
+// option registers
  struct {
-      unsigned int TIM1_ETR_ADC1_RMP: 2; // TIM1_ETR_ADC1_RMP
-      unsigned int TIM1_ETR_ADC4_RMP: 2; // TIM1_ETR_ADC4_RMP
+      unsigned int TIM1_ETR_ADC1_RMP: 2; // TIM1_ETR_ADC1 remapping capability
+      unsigned int TIM1_ETR_ADC4_RMP: 2; // TIM1_ETR_ADC4 remapping capability
       unsigned int : 28; // Reserved
 } OR;
 } SVD_TIM20 __attribute__ ((packed));
