@@ -239,5 +239,5 @@
       unsigned int CNT: 14; // Counter value
       unsigned int : 18; // Reserved
 } IOG8CR;
-} SVD_TSC __attribute__ ((packed));
+} SVD_TSC;
 asm(".equ SVD_TSC, 0x40024000");

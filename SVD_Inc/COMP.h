@@ -120,5 +120,5 @@
       unsigned int COMP7OUT: 1; // Comparator 7 output
       unsigned int COMP7LOCK: 1; // Comparator 7 lock
 } COMP7_CSR;
-} SVD_COMP __attribute__ ((packed));
+} SVD_COMP;
 asm(".equ SVD_COMP, 0x4001001c");

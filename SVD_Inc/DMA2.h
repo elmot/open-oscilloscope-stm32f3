@@ -273,5 +273,5 @@
  struct {
       unsigned int MA: 32; // Memory address
 } CMAR7;
-} SVD_DMA2 __attribute__ ((packed));
+} SVD_DMA2;
 asm(".equ SVD_DMA2, 0x40020400");

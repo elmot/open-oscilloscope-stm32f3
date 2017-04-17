@@ -55,5 +55,5 @@
       unsigned int ARR: 16; // Low Auto-reload value
       unsigned int : 16; // Reserved
 } ARR;
-} SVD_TIM6 __attribute__ ((packed));
+} SVD_TIM6;
 asm(".equ SVD_TIM6, 0x40001000");

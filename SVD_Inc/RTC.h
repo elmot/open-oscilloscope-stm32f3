@@ -337,5 +337,5 @@
  struct {
       unsigned int BKP: 32; // BKP
 } BKP31R;
-} SVD_RTC __attribute__ ((packed));
+} SVD_RTC;
 asm(".equ SVD_RTC, 0x40002800");

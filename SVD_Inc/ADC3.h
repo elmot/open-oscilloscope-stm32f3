@@ -274,5 +274,5 @@
       unsigned int CALFACT_D: 7; // CALFACT_D
       unsigned int : 9; // Reserved
 } CALFACT;
-} SVD_ADC3 __attribute__ ((packed));
+} SVD_ADC3;
 asm(".equ SVD_ADC3, 0x50000400");

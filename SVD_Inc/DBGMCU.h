@@ -47,5 +47,5 @@
       unsigned int DBG_TIM19_STOP: 1; // Debug Timer 19 stopped when Core is halted
       unsigned int : 26; // Reserved
 } APB2FZ;
-} SVD_DBGMCU __attribute__ ((packed));
+} SVD_DBGMCU;
 asm(".equ SVD_DBGMCU, 0xe0042000");

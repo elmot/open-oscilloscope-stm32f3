@@ -97,5 +97,5 @@
       unsigned int DMAUDR2: 1; // DAC channel2 DMA underrun flag
       unsigned int : 2; // Reserved
 } SR;
-} SVD_DAC __attribute__ ((packed));
+} SVD_DAC;
 asm(".equ SVD_DAC, 0x40007400");

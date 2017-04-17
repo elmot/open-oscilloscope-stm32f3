@@ -132,5 +132,5 @@
       unsigned int TXDATA: 8; // 8-bit transmit data
       unsigned int : 24; // Reserved
 } TXDR;
-} SVD_I2C3 __attribute__ ((packed));
+} SVD_I2C3;
 asm(".equ SVD_I2C3, 0x40007800");

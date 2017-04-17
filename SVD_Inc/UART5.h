@@ -156,5 +156,5 @@
       unsigned int TDR: 9; // Transmit data value
       unsigned int : 23; // Reserved
 } TDR;
-} SVD_UART5 __attribute__ ((packed));
+} SVD_UART5;
 asm(".equ SVD_UART5, 0x40005000");

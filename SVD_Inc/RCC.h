@@ -229,5 +229,5 @@
       unsigned int UART5SW: 2; // UART5 clock source selection
       unsigned int : 8; // Reserved
 } CFGR3;
-} SVD_RCC __attribute__ ((packed));
+} SVD_RCC;
 asm(".equ SVD_RCC, 0x40021000");

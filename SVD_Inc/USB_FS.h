@@ -180,5 +180,5 @@
       unsigned int BTABLE: 13; // Buffer table
       unsigned int : 16; // Reserved
 } BTABLE;
-} SVD_USB_FS __attribute__ ((packed));
+} SVD_USB_FS;
 asm(".equ SVD_USB_FS, 0x40005c00");

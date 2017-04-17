@@ -176,5 +176,5 @@
       unsigned int FP_HPFP: 4; // FP HPFP
       unsigned int FP_fused_MAC: 4; // FP fused MAC
 } MVFR1;
-} SVD_FPU __attribute__ ((packed));
+} SVD_FPU;
 asm(".equ SVD_FPU, 0xe000ed88");

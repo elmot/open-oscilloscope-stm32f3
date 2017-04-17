@@ -18,5 +18,5 @@
       unsigned int EWIF: 1; // Early wakeup interrupt flag
       unsigned int : 31; // Reserved
 } SR;
-} SVD_WWDG __attribute__ ((packed));
+} SVD_WWDG;
 asm(".equ SVD_WWDG, 0x40002c00");

@@ -267,5 +267,5 @@
       unsigned int TIM1_ETR_ADC4_RMP: 2; // TIM1_ETR_ADC4 remapping capability
       unsigned int : 28; // Reserved
 } OR;
-} SVD_TIM1 __attribute__ ((packed));
+} SVD_TIM1;
 asm(".equ SVD_TIM1, 0x40012c00");

@@ -80,5 +80,5 @@
       unsigned int OUTCAL: 1; // OPAMP 4 ouput status flag
       unsigned int LOCK: 1; // OPAMP 4 lock
 } OPAMP4_CR;
-} SVD_OPAMP __attribute__ ((packed));
+} SVD_OPAMP;
 asm(".equ SVD_OPAMP, 0x40010038");

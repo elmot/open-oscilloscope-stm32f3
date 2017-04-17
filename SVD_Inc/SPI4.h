@@ -89,5 +89,5 @@
       unsigned int MCKOE: 1; // Master clock output enable
       unsigned int : 22; // Reserved
 } I2SPR;
-} SVD_SPI4 __attribute__ ((packed));
+} SVD_SPI4;
 asm(".equ SVD_SPI4, 0x40013c00");

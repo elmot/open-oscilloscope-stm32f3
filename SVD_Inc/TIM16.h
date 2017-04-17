@@ -139,5 +139,5 @@
  struct {
       unsigned int : 32; // Reserved
 } OR;
-} SVD_TIM16 __attribute__ ((packed));
+} SVD_TIM16;
 asm(".equ SVD_TIM16, 0x40014400");

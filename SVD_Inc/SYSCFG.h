@@ -79,5 +79,5 @@
       unsigned int SRAM_PEF: 1; // SRAM parity flag
       unsigned int : 23; // Reserved
 } CFGR2;
-} SVD_SYSCFG __attribute__ ((packed));
+} SVD_SYSCFG;
 asm(".equ SVD_SYSCFG, 0x40010000");

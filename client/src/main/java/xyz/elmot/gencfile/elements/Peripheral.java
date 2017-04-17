@@ -101,7 +101,7 @@ public class Peripheral extends NamedElement {
             for (Register register : registers) {
                 offsetAddress = register.write(offsetAddress, defaults, writer);
             }
-            writer.printf("} SVD_%s __attribute__ ((packed));\nasm(\".equ SVD_%s, 0x%08x\");\n", name, name, baseAddress);
+            writer.printf("} SVD_%s;\nasm(\".equ SVD_%s, 0x%08x\");\n", name, name, baseAddress);
         }
     }
 

@@ -70,5 +70,5 @@
  struct {
       unsigned int WRP: 32; // Write protect
 } WRPR;
-} SVD_Flash __attribute__ ((packed));
+} SVD_Flash;
 asm(".equ SVD_Flash, 0x40022000");

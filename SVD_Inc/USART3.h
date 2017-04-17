@@ -156,5 +156,5 @@
       unsigned int TDR: 9; // Transmit data value
       unsigned int : 23; // Reserved
 } TDR;
-} SVD_USART3 __attribute__ ((packed));
+} SVD_USART3;
 asm(".equ SVD_USART3, 0x40004800");

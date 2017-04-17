@@ -1140,5 +1140,5 @@
       unsigned int INTID: 9; // interrupt to be triggered
       unsigned int : 23; // Reserved
 } STIR;
-} SVD_NVIC __attribute__ ((packed));
+} SVD_NVIC;
 asm(".equ SVD_NVIC, 0xe000e000");

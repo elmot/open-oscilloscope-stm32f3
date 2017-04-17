@@ -48,5 +48,5 @@
       unsigned int RDATA_MST: 16; // Regular data of the master ADC
       unsigned int RDATA_SLV: 16; // Regular data of the slave ADC
 } CDR;
-} SVD_ADC3_4 __attribute__ ((packed));
+} SVD_ADC3_4;
 asm(".equ SVD_ADC3_4, 0x50000700");

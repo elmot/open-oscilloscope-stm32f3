@@ -21,5 +21,5 @@
       unsigned int EWUP2: 1; // Enable WKUP2 pin
       unsigned int : 22; // Reserved
 } CSR;
-} SVD_PWR __attribute__ ((packed));
+} SVD_PWR;
 asm(".equ SVD_PWR, 0x40007000");

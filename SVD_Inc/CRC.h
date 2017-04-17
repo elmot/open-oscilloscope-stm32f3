@@ -27,5 +27,5 @@
  struct {
       unsigned int POL: 32; // Programmable polynomial
 } POL;
-} SVD_CRC __attribute__ ((packed));
+} SVD_CRC;
 asm(".equ SVD_CRC, 0x40023000");

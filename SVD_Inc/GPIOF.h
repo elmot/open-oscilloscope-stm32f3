@@ -215,5 +215,5 @@
       unsigned int BR15: 1; // Port x Reset bit y
       unsigned int : 16; // Reserved
 } BRR;
-} SVD_GPIOF __attribute__ ((packed));
+} SVD_GPIOF;
 asm(".equ SVD_GPIOF, 0x48001400");

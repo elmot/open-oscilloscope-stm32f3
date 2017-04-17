@@ -2472,5 +2472,5 @@
       unsigned int FB30: 1; // Filter bits
       unsigned int FB31: 1; // Filter bits
 } F27R2;
-} SVD_CAN __attribute__ ((packed));
+} SVD_CAN;
 asm(".equ SVD_CAN, 0x40006400");

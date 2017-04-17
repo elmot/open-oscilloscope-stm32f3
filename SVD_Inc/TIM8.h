@@ -267,5 +267,5 @@
       unsigned int TIM8_ETR_ADC3_RMP: 2; // TIM8_ETR_ADC3 remapping capability
       unsigned int : 28; // Reserved
 } OR;
-} SVD_TIM8 __attribute__ ((packed));
+} SVD_TIM8;
 asm(".equ SVD_TIM8, 0x40013400");

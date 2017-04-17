@@ -27,5 +27,5 @@
       unsigned int WIN: 12; // Watchdog counter window value
       unsigned int : 20; // Reserved
 } WINR;
-} SVD_IWDG __attribute__ ((packed));
+} SVD_IWDG;
 asm(".equ SVD_IWDG, 0x40003000");

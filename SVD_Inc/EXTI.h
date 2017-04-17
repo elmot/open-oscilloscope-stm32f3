@@ -230,5 +230,5 @@
       unsigned int PR33: 1; // Pending bit on line 33
       unsigned int : 30; // Reserved
 } PR2;
-} SVD_EXTI __attribute__ ((packed));
+} SVD_EXTI;
 asm(".equ SVD_EXTI, 0x40010400");

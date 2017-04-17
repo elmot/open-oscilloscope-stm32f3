@@ -166,5 +166,5 @@
       unsigned int DMAB: 16; // DMA register for burst accesses
       unsigned int : 16; // Reserved
 } DMAR;
-} SVD_TIM15 __attribute__ ((packed));
+} SVD_TIM15;
 asm(".equ SVD_TIM15, 0x40014000");
