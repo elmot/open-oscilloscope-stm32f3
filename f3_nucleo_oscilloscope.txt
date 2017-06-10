@@ -1,0 +1,71 @@
+Configuration	f3_nucleo_oscilloscope
+STM32CubeMX 	4.21.0
+Date	06/10/2017
+MCU	STM32F303RETx
+
+
+
+PERIPHERALS	MODES	FUNCTIONS	PINS
+ADC2	OPAMP2 Output Differential	ADC2_OPAMP_OUT2	VP_ADC2_OPAMP_OUT2
+ADC2	OPAMP2 Output Differential	ADC2_IN4	PA7
+ADC2	VOPAMP2 Channel	ADC2_OPAMP_INTERNAL2	VP_ADC2_OPAMP_INTERNAL2
+DAC1	OUT1 Configuration	DAC1_OUT1	PA4
+OPAMP2	Standalone	OPAMP2_VINM	PC5
+OPAMP2	Standalone	OPAMP2_VINP	PB0
+OPAMP2	Standalone	OPAMP2_VOUT	PA6
+RCC	BYPASS Clock Source	RCC_OSC_IN	PF0-OSC_IN
+SYS	Trace Asynchronous Sw	SYS_JTCK-SWCLK	PA14
+SYS	Trace Asynchronous Sw	SYS_JTMS-SWDIO	PA13
+SYS	Trace Asynchronous Sw	SYS_JTDO-TRACESWO	PB3
+SYS	SysTick	SYS_VS_Systick	VP_SYS_VS_Systick
+TIM1	ITR1	TIM1_VS_ClockSourceITR	VP_TIM1_VS_ClockSourceITR
+TIM1	Internal Clock	TIM1_VS_ClockSourceINT	VP_TIM1_VS_ClockSourceINT
+TIM2	External Clock Mode 1	TIM2_VS_ControllerModeClock	VP_TIM2_VS_ControllerModeClock
+TIM2	ITR0	TIM2_VS_ClockSourceITR	VP_TIM2_VS_ClockSourceITR
+USART2	Asynchronous	USART2_RX	PA3
+USART2	Asynchronous	USART2_TX	PA2
+
+
+
+Pin Nb	PINs	FUNCTIONs	LABELs
+2	PC13	GPIO_EXTI13	B1 [Blue PushButton]
+5	PF0-OSC_IN	RCC_OSC_IN	
+16	PA2	USART2_TX	USART_TX
+17	PA3	USART2_RX	USART_RX
+20	PA4	DAC1_OUT1	
+21	PA5	GPIO_Output	LD2 [Green Led]
+22	PA6	ADC2_IN3 OPAMP2_VOUT	
+23	PA7	ADC2_IN4	
+25	PC5	OPAMP2_VINM	
+26	PB0	OPAMP2_VINP	
+46	PA13	SYS_JTMS-SWDIO	TMS
+49	PA14	SYS_JTCK-SWCLK	TCK
+55	PB3	SYS_JTDO-TRACESWO	SWO
+
+
+
+SOFTWARE PROJECT
+
+Project Settings : 
+Project Name : f3_nucleo_oscilloscope
+Project Folder : /home/elmot/projects/f3_nucleo_oscilloscope
+Toolchain / IDE : SW4STM32
+Firmware Package Name and Version : STM32Cube FW_F3 V1.8.0
+
+
+Code Generation Settings : 
+STM32Cube Firmware Library Package : Copy only the necessary library files
+Generate peripheral initialization as a pair of '.c/.h' files per peripheral : No
+Backup previously generated files when re-generating : No
+Delete previously generated files when not re-generated : Yes
+Set all free pins as analog (to optimize the power consumption) : No
+
+
+Toolchains Settings : 
+Compiler Optimizations : Balanced Size/Speed
+
+
+
+
+
+
