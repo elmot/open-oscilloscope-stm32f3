@@ -123,18 +123,27 @@ int main(void)
   MX_DAC1_Init();
 
   /* USER CODE BEGIN 2 */
-
+  setupOscill();
+  setupGenerator();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-noreturn"
   while (1)
   {
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
+    LD2_GPIO_Port->ODR = LD2_Pin;
+    HAL_Delay(200);
+
+    LD2_GPIO_Port->ODR = 0;
+    HAL_Delay(500);
 
   }
+#pragma clang diagnostic pop
   /* USER CODE END 3 */
 
 }
@@ -397,7 +406,7 @@ static void MX_TIM7_Init(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim7, &sMasterConfig) != HAL_OK)
   {
@@ -521,7 +530,9 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#pragma clang diagnostic ignored "-Wmissing-noreturn"
 /* USER CODE END 4 */
 
 /**
@@ -533,9 +544,10 @@ void _Error_Handler(char * file, int line)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-  while(1) 
+  while (1)
   {
   }
+#pragma clang diagnostic pop
   /* USER CODE END Error_Handler_Debug */ 
 }
 

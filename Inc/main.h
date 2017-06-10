@@ -41,7 +41,9 @@
   /* Includes ------------------------------------------------------------------*/
 
 /* USER CODE BEGIN Includes */
-
+#include <sched.h>
+#include "stdbool.h"
+#include "stdint.h"
 /* USER CODE END Includes */
 
 /* Private define ------------------------------------------------------------*/
@@ -62,6 +64,31 @@
 #define SWO_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
+#define FRAME_LEN 200
+typedef volatile enum {
+    EMPTY,
+    BUSY,
+    READY
+} STATUS;
+
+typedef struct {
+    volatile int16_t buffer[FRAME_LEN];
+    volatile STATUS status;
+} FRAME;
+
+typedef volatile struct {
+    volatile FRAME frame;
+    volatile FRAME keyFrame;
+    volatile int16_t buffer[2 * FRAME_LEN];
+} CHANNEL;
+
+extern CHANNEL chA;
+
+void setupOscill();
+void setupGenerator();
+
+#define WORD_DMA hdma_memtomem_dma1_channel2
+#define HALFWORD_DMA hdma_memtomem_dma1_channel1
 
 /* USER CODE END Private defines */
 
