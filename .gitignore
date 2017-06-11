@@ -1,4 +1,5 @@
 # Created by .ignore support plugin (hsz.mobi)
-.idea/
 cmake-build-debug/
 .mxproject
+.idea/*.xml
+*.iml

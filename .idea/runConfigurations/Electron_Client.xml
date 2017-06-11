@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Electron-Client" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="." WORKING_DIR="file://$PROJECT_DIR$/client" PASS_PARENT_ENVS_2="true" PROJECT_NAME="f3_nucleo_oscilloscope" TARGET_NAME="f3_nucleo_oscilloscope.elf" CONFIG_NAME="Debug" RUN_PATH="/usr/local/bin/electron">
+    <envs />
+    <method />
+  </configuration>
+</component>

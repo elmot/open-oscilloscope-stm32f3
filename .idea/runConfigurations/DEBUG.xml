@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="DEBUG" type="CLion_Remote" factoryName="GDB Remote Debug" singleton="true" remoteCommand="tcp:localhost:3333" symbolFile="$PROJECT_DIR$/cmake-build-debug/f3_nucleo_oscilloscope.elf" sysroot="">
+    <method>
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="UPLOAD" run_configuration_type="CMakeRunConfiguration" />
+    </method>
+  </configuration>
+</component>

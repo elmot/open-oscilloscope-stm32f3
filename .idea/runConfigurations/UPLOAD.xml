@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="UPLOAD" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="f3_nucleo_oscilloscope" TARGET_NAME="UPLOAD" CONFIG_NAME="Debug" RUN_PATH="/bin/echo">
+    <envs />
+    <method />
+  </configuration>
+</component>
