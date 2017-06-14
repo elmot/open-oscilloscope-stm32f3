@@ -3,3 +3,5 @@ cmake-build-debug/
 .mxproject
 .idea/*.xml
 *.iml
+/client/Elmot-oscilloscope-*
+

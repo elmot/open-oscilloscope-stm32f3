@@ -62,7 +62,7 @@
 #define SWO_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-#define FRAME_LEN 200
+#define FRAME_LEN 2000
 typedef volatile enum {
     EMPTY,
     BUSY,
