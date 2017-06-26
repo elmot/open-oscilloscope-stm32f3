@@ -1,6 +1,9 @@
 # Created by .ignore support plugin (hsz.mobi)
 cmake-build-debug/
 .mxproject
-.idea/*.xml
+.idea/workspace.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
 *.iml
 client/nwjs-sdk-v0.23.4-linux-x64*

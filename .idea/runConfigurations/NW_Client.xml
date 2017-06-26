@@ -1,0 +1,8 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="NW-Client" type="CMakeRunConfiguration" factoryName="Application" singleton="true" PROGRAM_PARAMS="." WORKING_DIR="file://$PROJECT_DIR$/client" PASS_PARENT_ENVS_2="true" PROJECT_NAME="f3_nucleo_oscilloscope" TARGET_NAME="f3_nucleo_oscilloscope.elf" CONFIG_NAME="Debug" RUN_PATH="$PROJECT_DIR$/client/nwjs-sdk-v0.23.4-linux-x64/nw">
+    <envs />
+    <method>
+      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="false" />
+    </method>
+  </configuration>
+</component>
