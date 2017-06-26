@@ -1,8 +1,0 @@
-{
-  "name"    : "Elmot-oscilloscope",
-  "version" : "0.1.0",
-  "main"    : "main.js",
-  "dependencies": {
-    "shelljs": "^0.7.8"
-  }
-}

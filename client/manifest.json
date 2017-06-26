@@ -1,0 +1,19 @@
+{
+  "name": "Elmot-oscilloscope",
+  "description": "My first Chrome App.",
+  "version": "0.2.0",
+  "manifest_version": 2,
+  "app": {
+    "background": {
+      "scripts": [
+        "background.js"
+      ]
+    }
+  },
+  "icons": {
+    "128": "icon_128.png"
+  },
+  "permissions": [
+    "serial"
+  ]
+}
