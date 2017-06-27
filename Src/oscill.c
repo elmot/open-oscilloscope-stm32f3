@@ -1,7 +1,8 @@
 #include <sched.h>
 #include <main.h>
-#include <stdbool.h>
+#include <stm32f303xe.h>
 #include "stm32f3xx_hal.h"
+#include "ADC2.h"
 
 CHANNEL chA;
 extern ADC_HandleTypeDef hadc2;
@@ -21,6 +22,9 @@ extern DMA_HandleTypeDef hdma_usart2_tx;
 
 extern DMA_HandleTypeDef hdma_memtomem_dma1_channel1;
 extern DMA_HandleTypeDef hdma_memtomem_dma1_channel2;
+
+struct SVD_ADC2;
+struct SVD_TIM2;
 
 bool lockBuffer(volatile FRAME *frame) {
   __disable_irq();
@@ -78,15 +82,71 @@ void setupGenerator() {
 void setupOscill() {
   HAL_ADCEx_Calibration_Start(&hadc2, ADC_DIFFERENTIAL_ENDED);
   HAL_ADC_PollForConversion(&hadc2, 200);
+
+  ADC_AnalogWDGConfTypeDef AnalogWDGConfig;
+  AnalogWDGConfig.WatchdogNumber = ADC_ANALOGWATCHDOG_2;
+  AnalogWDGConfig.WatchdogMode = ADC_ANALOGWATCHDOG_SINGLE_REG;
+  AnalogWDGConfig.HighThreshold = 4095;
+  AnalogWDGConfig.LowThreshold = 900;
+  AnalogWDGConfig.Channel = ADC_CHANNEL_3;
+  AnalogWDGConfig.ITMode = ENABLE;
+  if (HAL_ADC_AnalogWDGConfig(&hadc2, &AnalogWDGConfig) != HAL_OK) {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+
   HAL_ADC_Start_DMA(&hadc2, (uint32_t *) chA.buffer, FRAME_LEN * 2);
+
+
+  hadc2.Instance->IER = ADC_IT_AWD1;//Only watchdog 1 is enabled
+  __HAL_TIM_CLEAR_FLAG(&htim2,TIM_FLAG_UPDATE);
+  __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
   HAL_TIM_Base_Start(&htim1);
+}
+
+volatile bool dryRun = false;
+volatile int triggerFrameShift = FRAME_LEN;
+
+
+void __unused ADC1_2_IRQHandler(void) {
+  if (__HAL_ADC_GET_FLAG(&hadc2, ADC_FLAG_AWD1)) {// trigger histeresis detected
+
+    __HAL_ADC_CLEAR_FLAG(&hadc2, ADC_FLAG_AWD1);
+    hadc2.Instance->IER = ADC_IT_AWD2;//Only watchdog 2 is enabled
+
+  } else {
+    hadc2.Instance->IER = 0;//disable everything
+    // trigger detected, run TIM2 to stop measurement
+    __HAL_TIM_SET_AUTORELOAD(&htim2, triggerFrameShift);
+    __HAL_TIM_CLEAR_FLAG(&htim2,TIM_FLAG_UPDATE);
+    __HAL_TIM_ENABLE(&htim2);
+  }
+
+}
+
+void __unused TIM2_IRQHandler(void) {
+  if(dryRun) {
+    __HAL_TIM_DISABLE(&htim2);
+    __HAL_ADC_CLEAR_FLAG(&hadc2, ADC_FLAG_AWD1 | ADC_FLAG_AWD2);
+    hadc2.Instance->IER = ADC_IT_AWD1;//Only watchdog 1 is enabled
+    dryRun = false;
+  } else {
+    __HAL_TIM_DISABLE(&htim1);
+    __HAL_TIM_SET_AUTORELOAD(&htim2, 2*FRAME_LEN); //todo calc correct value
+    dryRun = true;
+    //todo copy frame
+    __HAL_TIM_ENABLE(&htim1);
+  }
+  __HAL_TIM_SET_COUNTER(&htim2, 0);
+  __HAL_TIM_CLEAR_FLAG(&htim2,TIM_FLAG_UPDATE);
+  __HAL_TIM_CLEAR_IT(&htim2,TIM_IT_UPDATE);
 }
 
 #define CRLF "\r\n"
 const char hex[] = "0123456789ABCDEF";
 bool transmitFrame(volatile FRAME *frame, bool key) {
   if (lockReadyBuffer(frame)) {
-    puts(key ? "KYFRAME"CRLF : "FRAME");
+    puts(key ? "KYFRAME" : "FRAME");
     for (int i = 0; i < FRAME_LEN; ++i) {
       int16_t val = frame->buffer[i];
       char buf[] = "XXX";
