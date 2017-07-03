@@ -86,7 +86,16 @@ static void MX_DAC1_Init(void);
 
 /* USER CODE BEGIN 0 */
 int __unused _write(int __unused file, char *ptr, int len) {
-  HAL_UART_Transmit(&huart2, (uint8_t *) ptr, (uint16_t) len, 20000);
+  while(!__HAL_UART_GET_FLAG(&huart2,UART_FLAG_TXE));
+  HAL_DMA_Start(huart2.hdmatx, (uint32_t) ptr, (uint32_t) &huart2.Instance->TDR, (uint32_t) len);
+  __HAL_UART_CLEAR_FLAG(&huart2, UART_CLEAR_TCF);
+
+  /* Enable the DMA transfer for transmit request by setting the DMAT bit
+     in the UART CR3 register */
+  SET_BIT(huart2.Instance->CR3, USART_CR3_DMAT);
+
+  HAL_DMA_PollForTransfer(huart2.hdmatx,HAL_DMA_FULL_TRANSFER,20000);
+  //HAL_UART_Transmit(&huart2, (uint8_t *) ptr, (uint16_t) len, 20000);
   return len;
 }
 
@@ -145,7 +154,7 @@ int main(void)
 
   /* USER CODE BEGIN 3 */
     if (!transmitFrame(&chA.keyFrame, true)) {
-      transmitFrame(&chA.frame, false);
+//      transmitFrame(&chA.frame, false);
     }
 //    __WFI();
   }

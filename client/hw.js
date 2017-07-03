@@ -35,10 +35,10 @@ function initHW() {
                     let frameIndex = port.received.indexOf(startString);
                     if (frameIndex >= 0 && frameIndex < endIndex) {
                         let frameText = port.received.substring(frameIndex + startString.length, endIndex);
-                        frameText = frameText.split(/\n/);
+                        //frameText = frameText.split(/\n/);
                         let data = [];
-                        for (let i = 0; i < frameText.length; i++) {
-                            data.push(parseInt(frameText[i],16))
+                        for (let i = 0; i < frameText.length; i += 3) {
+                            data.push(parseInt(frameText.substr(i, 3), 16))
                         }
                         drawData([data])
                     }

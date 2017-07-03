@@ -2,14 +2,11 @@
 #include <main.h>
 #include <stm32f303xe.h>
 #include "stm32f3xx_hal.h"
-#include "ADC2.h"
 
 CHANNEL chA;
 extern ADC_HandleTypeDef hadc2;
-extern DMA_HandleTypeDef hdma_adc1;
 
 extern DAC_HandleTypeDef hdac1;
-extern DMA_HandleTypeDef hdma_dac_ch1;
 
 extern OPAMP_HandleTypeDef hopamp2;
 
@@ -105,7 +102,7 @@ void setupOscill() {
 }
 
 volatile bool dryRun = false;
-volatile int triggerFrameShift = FRAME_LEN;
+volatile int triggerFrameShift = FRAME_LEN / 2;
 
 
 void __unused ADC1_2_IRQHandler(void) {
@@ -134,7 +131,30 @@ void __unused TIM2_IRQHandler(void) {
     __HAL_TIM_DISABLE(&htim1);
     __HAL_TIM_SET_AUTORELOAD(&htim2, 2*FRAME_LEN); //todo calc correct value
     dryRun = true;
-    //todo copy frame
+    if (lockBuffer(&chA.keyFrame)) {
+      uint32_t remainingSamples = hadc2.DMA_Handle->Instance->CNDTR;
+      if (remainingSamples > FRAME_LEN) {
+        //End of the buffer contains some data
+        uint32_t tailLen = remainingSamples - FRAME_LEN;
+        HAL_DMA_Start(&HALFWORD_DMA, (uint32_t) &chA.buffer[2 * FRAME_LEN - tailLen],
+                      (uint32_t) chA.keyFrame.buffer, tailLen);
+        HAL_DMA_PollForTransfer(&HALFWORD_DMA, HAL_DMA_FULL_TRANSFER, 200);
+
+        if (tailLen < FRAME_LEN) {
+          HAL_DMA_Start(&HALFWORD_DMA, (uint32_t) chA.buffer,
+                        (uint32_t) &chA.keyFrame.buffer[tailLen], FRAME_LEN - tailLen);
+          HAL_DMA_PollForTransfer(&HALFWORD_DMA, HAL_DMA_FULL_TRANSFER, 200);
+        }
+
+      } else {
+        HAL_DMA_Start(&HALFWORD_DMA, (uint32_t) &chA.buffer[FRAME_LEN - remainingSamples],
+                      (uint32_t) chA.keyFrame.buffer, FRAME_LEN);
+        HAL_DMA_PollForTransfer(&HALFWORD_DMA, HAL_DMA_FULL_TRANSFER, 200);
+      }
+      unlockBuffer(&chA.keyFrame, READY);
+    }
+
+
     __HAL_TIM_ENABLE(&htim1);
   }
   __HAL_TIM_SET_COUNTER(&htim2, 0);
@@ -142,7 +162,7 @@ void __unused TIM2_IRQHandler(void) {
   __HAL_TIM_CLEAR_IT(&htim2,TIM_IT_UPDATE);
 }
 
-#define CRLF "\r\n"
+//#define CRLF "\r\n"
 const char hex[] = "0123456789ABCDEF";
 bool transmitFrame(volatile FRAME *frame, bool key) {
   if (lockReadyBuffer(frame)) {
@@ -153,9 +173,10 @@ bool transmitFrame(volatile FRAME *frame, bool key) {
       buf[0] = hex[(val >> 8) & 0xf];
       buf[1] = hex[(val >> 4) & 0xf];
       buf[2] = hex[(val) & 0xf];
-      puts(buf);
+      fputs(buf, stdout);
+//      puts(buf);
     }
-    puts("END");
+    puts("\nEND");
 
     unlockBuffer(frame, EMPTY);
     return true;
