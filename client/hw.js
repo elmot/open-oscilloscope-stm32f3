@@ -48,7 +48,7 @@ function initHW() {
         }
     ;
     chrome.serial.onReceive.addListener(onReceiveCallback);
-    chrome.serial.connect(port.path, {bitrate: 1152000}, function (connectionInfo) {
+    chrome.serial.connect(port.path, {bitrate: 2000000}, function (connectionInfo) {
         // The serial port has been opened. Save its id to use later.
         port.connectionId = connectionInfo.connectionId;
         // Do whatever you need to do with the opened port.

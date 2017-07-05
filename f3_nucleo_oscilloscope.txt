@@ -1,6 +1,6 @@
 Configuration	f3_nucleo_oscilloscope
 STM32CubeMX 	4.21.0
-Date	06/15/2017
+Date	07/05/2017
 MCU	STM32F303RETx
 
 
